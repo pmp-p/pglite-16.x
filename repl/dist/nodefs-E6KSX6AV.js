@@ -1,0 +1,2 @@
+import{i as e,j as n,k as i}from"./chunk-ZNUN4UQH.js";e();import*as t from"fs";import*as r from"path";var p=class extends n{constructor(s){super(s),this.rootDir=r.resolve(s),t.existsSync(r.join(this.rootDir,"PG_VERSION"))||t.mkdirSync(this.rootDir)}async emscriptenOpts(s){return{...s,preRun:[o=>{let m=o.FS.filesystems.NODEFS;o.FS.mkdir(i),o.FS.mount(m,{root:this.rootDir},i)}]}}};export{p as NodeFS};
+//# sourceMappingURL=nodefs-E6KSX6AV.js.map

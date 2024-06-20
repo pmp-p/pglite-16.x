@@ -1,2 +1,0 @@
-import{i,j as n,k as o}from"./chunk-BATUPDMZ.js";i();import*as r from"fs";import*as s from"path";var a=class extends n{constructor(t){super(t),this.rootDir=s.resolve(t)}async init(t){if(!this.dataDir)throw new Error("No datadir specified");return r.existsSync(s.join(this.dataDir,"PG_VERSION"))?!1:(r.mkdirSync(this.dataDir),!0)}async emscriptenOpts(t){return{...t,preRun:[e=>{let p=e.FS.filesystems.NODEFS;e.FS.mkdir(o),e.FS.mount(p,{root:this.rootDir},o)}]}}};export{a as NodeFS};
-//# sourceMappingURL=nodefs-TYWY4H7Z.js.map
