@@ -1,2 +1,2 @@
-import{a,b,c,d,e,f}from"./chunk-VGER4DPK.js";import"./chunk-YOMDXLGH.js";export{a as Mutex,d as PGlite,e as messages,c as parse,f as protocol,b as types};
+import{a,b,c,d,e,f}from"./chunk-3A2EQ4G5.js";import"./chunk-YOMDXLGH.js";export{a as Mutex,d as PGlite,e as messages,c as parse,f as protocol,b as types};
 //# sourceMappingURL=index.js.map
