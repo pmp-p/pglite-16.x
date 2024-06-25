@@ -1,2 +1,2 @@
-import{i as e}from"../chunk-GN6HPVTV.js";e();var n=async(s,t)=>({emscriptenOpts:t,bundlePath:new URL("../../release/vector.tar.gz",import.meta.url)}),i={name:"pgvector",setup:n};export{i as vector};
+import{i as e}from"../chunk-GN6HPVTV.js";e();var n=async(s,t)=>({emscriptenOpts:t,bundlePath:new URL("../vector.tar.gz",import.meta.url)}),i={name:"pgvector",setup:n};export{i as vector};
 //# sourceMappingURL=index.js.map
