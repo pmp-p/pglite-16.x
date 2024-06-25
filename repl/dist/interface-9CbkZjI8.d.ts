@@ -516,7 +516,7 @@ interface Extension<T = any> {
     setup: ExtensionSetup;
 }
 type Extensions = {
-    [namespace: string]: Extension;
+    [namespace: string]: Extension | URL;
 };
 interface PGliteOptions {
     dataDir?: string;

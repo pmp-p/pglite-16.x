@@ -1,4 +1,4 @@
-import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-CVKhRy_U.js';
+import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-9CbkZjI8.js';
 
 declare class PGliteWorker implements PGliteInterface {
     #private;

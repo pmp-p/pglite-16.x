@@ -1,4 +1,4 @@
-import { a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-CVKhRy_U.js';
+import { a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-9CbkZjI8.js';
 
 declare const worker: {
     init(dataDir?: string, options?: PGliteOptions): Promise<boolean>;
