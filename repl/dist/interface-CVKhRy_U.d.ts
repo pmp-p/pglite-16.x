@@ -503,19 +503,29 @@ interface QueryOptions {
 interface ExecProtocolOptions {
     syncToFs?: boolean;
 }
+interface ExtensionSetupResult {
+    emscriptenOpts?: any;
+    namespaceObj?: any;
+    bundlePath?: URL;
+    init?: () => Promise<void>;
+    close?: () => Promise<void>;
+}
+type ExtensionSetup = (pg: PGliteInterface, emscriptenOpts: any) => Promise<ExtensionSetupResult>;
 interface Extension<T = any> {
     name: string;
-    nameSpace?: string;
-    setup: (mod: any, pg: PGliteInterface) => T;
+    setup: ExtensionSetup;
 }
+type Extensions = {
+    [namespace: string]: Extension;
+};
 interface PGliteOptions {
     dataDir?: string;
     fs?: Filesystem;
     debug?: DebugLevel;
     relaxedDurability?: boolean;
-    extensions?: Extension[];
+    extensions?: Extensions;
 }
-type PGliteInterface<E extends Extension[] = []> = {
+type PGliteInterface = {
     readonly waitReady: Promise<void>;
     readonly debug: DebugLevel;
     readonly ready: boolean;
@@ -525,8 +535,6 @@ type PGliteInterface<E extends Extension[] = []> = {
     exec(query: string, options?: QueryOptions): Promise<Array<Results>>;
     transaction<T>(callback: (tx: Transaction) => Promise<T>): Promise<T | undefined>;
     execProtocol(message: Uint8Array, options?: ExecProtocolOptions): Promise<Array<[BackendMessage, Uint8Array]>>;
-} & {
-    [K in E[number]["nameSpace"] extends string ? E[number]["nameSpace"] : never]: ReturnType<E[number]["setup"]>;
 };
 type Row<T = {
     [key: string]: any;
@@ -548,4 +556,4 @@ interface Transaction {
     get closed(): boolean;
 }
 
-export { type BackendMessage as B, type DebugLevel as D, type ExecProtocolOptions as E, type Filesystem as F, type PGliteInterface as P, type QueryOptions as Q, type Results as R, type Transaction as T, type PGliteOptions as a, type ParserOptions as b, type FilesystemType as c, type RowMode as d, type Extension as e, type Row as f, messages as m };
+export { type BackendMessage as B, type DebugLevel as D, type ExecProtocolOptions as E, type Filesystem as F, type PGliteInterface as P, type QueryOptions as Q, type Results as R, type Transaction as T, type PGliteOptions as a, type ParserOptions as b, type FilesystemType as c, type RowMode as d, type ExtensionSetupResult as e, type ExtensionSetup as f, type Extension as g, type Extensions as h, type Row as i, messages as m };
