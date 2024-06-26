@@ -1,4 +1,4 @@
-import { P as PGliteInterface } from '../interface-BbwV817K.js';
+import { P as PGliteInterface } from '../interface-Bao8xdzS.js';
 
 declare const vector: {
     name: string;
