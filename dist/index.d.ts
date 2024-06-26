@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import { P as PGliteInterface, F as Filesystem, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, B as BackendMessage$1, b as ParserOptions } from './interface-pzbXg7zK.js';
-export { g as Extension, f as ExtensionSetup, e as ExtensionSetupResult, h as Extensions, c as FilesystemType, i as Row, d as RowMode, m as messages } from './interface-pzbXg7zK.js';
+import { P as PGliteInterface, F as Filesystem, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, B as BackendMessage$1, b as ParserOptions } from './interface-BbwV817K.js';
+export { g as Extension, f as ExtensionSetup, e as ExtensionSetupResult, h as Extensions, c as FilesystemType, i as Row, d as RowMode, m as messages } from './interface-BbwV817K.js';
 
 declare class PGlite implements PGliteInterface {
     #private;

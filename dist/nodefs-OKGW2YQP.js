@@ -1,0 +1,2 @@
+import{a as n,c as i}from"./chunk-FVC3OTRG.js";import{i as e}from"./chunk-GN6HPVTV.js";e();import*as s from"fs";import*as r from"path";var p=class extends n{constructor(t){super(t),this.rootDir=r.resolve(t),s.existsSync(r.join(this.rootDir,"PG_VERSION"))||s.mkdirSync(this.rootDir)}async emscriptenOpts(t){return{...t,preRun:[o=>{let m=o.FS.filesystems.NODEFS;o.FS.mkdir(i),o.FS.mount(m,{root:this.rootDir},i)}]}}};export{p as NodeFS};
+//# sourceMappingURL=nodefs-OKGW2YQP.js.map
