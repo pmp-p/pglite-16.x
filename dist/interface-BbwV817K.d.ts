@@ -1,275 +1,22 @@
-/** Based on https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/emscripten/index.d.ts */
-/** Other WebAssembly declarations, for compatibility with older versions of Typescript */
-declare namespace WebAssembly {
-  interface Module {}
-}
-
-declare namespace Emscripten {
-  interface FileSystemType {}
-  type EnvironmentType = "WEB" | "NODE" | "SHELL" | "WORKER";
-
-  type JSType = "number" | "string" | "array" | "boolean";
-  type TypeCompatibleWithC = number | string | any[] | boolean;
-
-  type CIntType = "i8" | "i16" | "i32" | "i64";
-  type CFloatType = "float" | "double";
-  type CPointerType =
-    | "i8*"
-    | "i16*"
-    | "i32*"
-    | "i64*"
-    | "float*"
-    | "double*"
-    | "*";
-  type CType = CIntType | CFloatType | CPointerType;
-
-  type WebAssemblyImports = Array<{
-    name: string;
-    kind: string;
-  }>;
-
-  type WebAssemblyExports = Array<{
-    module: string;
-    name: string;
-    kind: string;
-  }>;
-
-  interface CCallOpts {
-    async?: boolean | undefined;
-  }
-}
-
-interface EmscriptenModule {
-  print(str: string): void;
-  printErr(str: string): void;
-  arguments: string[];
-  environment: Emscripten.EnvironmentType;
-  preInit: Array<{ (mod: EmscriptenModule): void }>;
-  preRun: Array<{ (mod: EmscriptenModule): void }>;
-  postRun: Array<{ (mod: EmscriptenModule): void }>;
-  onAbort: { (what: any): void };
-  onRuntimeInitialized: { (): void };
-  preinitializedWebGLContext: WebGLRenderingContext;
-  noInitialRun: boolean;
-  noExitRuntime: boolean;
-  logReadFiles: boolean;
-  filePackagePrefixURL: string;
-  wasmBinary: ArrayBuffer;
-
-  destroy(object: object): void;
-  getPreloadedPackage(
-    remotePackageName: string,
-    remotePackageSize: number
-  ): ArrayBuffer;
-  instantiateWasm(
-    imports: Emscripten.WebAssemblyImports,
-    successCallback: (module: WebAssembly.Module) => void
-  ): Emscripten.WebAssemblyExports;
-  locateFile(url: string, scriptDirectory: string): string;
-  onCustomMessage(event: MessageEvent): void;
-
-  // USE_TYPED_ARRAYS == 1
-  HEAP: Int32Array;
-  IHEAP: Int32Array;
-  FHEAP: Float64Array;
-
-  // USE_TYPED_ARRAYS == 2
-  HEAP8: Int8Array;
-  HEAP16: Int16Array;
-  HEAP32: Int32Array;
-  HEAPU8: Uint8Array;
-  HEAPU16: Uint16Array;
-  HEAPU32: Uint32Array;
-  HEAPF32: Float32Array;
-  HEAPF64: Float64Array;
-  HEAP64: BigInt64Array;
-  HEAPU64: BigUint64Array;
-
-  TOTAL_STACK: number;
-  TOTAL_MEMORY: number;
-  FAST_MEMORY: number;
-
-  addOnPreRun(cb: () => any): void;
-  addOnInit(cb: () => any): void;
-  addOnPreMain(cb: () => any): void;
-  addOnExit(cb: () => any): void;
-  addOnPostRun(cb: () => any): void;
-
-  preloadedImages: any;
-  preloadedAudios: any;
-
-  _malloc(size: number): number;
-  _free(ptr: number): void;
-}
-
-interface FS {
-  Lookup: {
-    path: string;
-    node: FSNode;
-  };
-
-  FSStream: {};
-  FSNode: {};
-  ErrnoError: {};
-
-  ignorePermissions: boolean;
-  trackingDelegate: any;
-  tracking: any;
-  genericErrors: any;
-
-  filesystems: {
-    NODEFS: Emscripten.FileSystemType;
-    MEMFS: Emscripten.FileSystemType;
-    IDBFS: Emscripten.FileSystemType;
-    PGFS: Emscripten.FileSystemType;
-  };
-
-  //
-  // paths
-  //
-  lookupPath(path: string, opts: any): Lookup;
-  getPath(node: FSNode): string;
-
-  //
-  // nodes
-  //
-  isFile(mode: number): boolean;
-  isDir(mode: number): boolean;
-  isLink(mode: number): boolean;
-  isChrdev(mode: number): boolean;
-  isBlkdev(mode: number): boolean;
-  isFIFO(mode: number): boolean;
-  isSocket(mode: number): boolean;
-
-  //
-  // devices
-  //
-  major(dev: number): number;
-  minor(dev: number): number;
-  makedev(ma: number, mi: number): number;
-  registerDevice(dev: number, ops: any): void;
-
-  //
-  // core
-  //
-  syncfs(populate: boolean, callback: (e: any) => any): void;
-  syncfs(callback: (e: any) => any, populate?: boolean): void;
-  mount(type: Emscripten.FileSystemType, opts: any, mountpoint: string): any;
-  unmount(mountpoint: string): void;
-
-  mkdir(path: string, mode?: number): any;
-  mkdev(path: string, mode?: number, dev?: number): any;
-  symlink(oldpath: string, newpath: string): any;
-  rename(old_path: string, new_path: string): void;
-  rmdir(path: string): void;
-  readdir(path: string): any;
-  unlink(path: string): void;
-  readlink(path: string): string;
-  stat(path: string, dontFollow?: boolean): any;
-  lstat(path: string): any;
-  chmod(path: string, mode: number, dontFollow?: boolean): void;
-  lchmod(path: string, mode: number): void;
-  fchmod(fd: number, mode: number): void;
-  chown(path: string, uid: number, gid: number, dontFollow?: boolean): void;
-  lchown(path: string, uid: number, gid: number): void;
-  fchown(fd: number, uid: number, gid: number): void;
-  truncate(path: string, len: number): void;
-  ftruncate(fd: number, len: number): void;
-  utime(path: string, atime: number, mtime: number): void;
-  open(
-    path: string,
-    flags: string,
-    mode?: number,
-    fd_start?: number,
-    fd_end?: number
-  ): FSStream;
-  close(stream: FSStream): void;
-  llseek(stream: FSStream, offset: number, whence: number): any;
-  read(
-    stream: FSStream,
-    buffer: ArrayBufferView,
-    offset: number,
-    length: number,
-    position?: number
-  ): number;
-  write(
-    stream: FSStream,
-    buffer: ArrayBufferView,
-    offset: number,
-    length: number,
-    position?: number,
-    canOwn?: boolean
-  ): number;
-  allocate(stream: FSStream, offset: number, length: number): void;
-  mmap(
-    stream: FSStream,
-    buffer: ArrayBufferView,
-    offset: number,
-    length: number,
-    position: number,
-    prot: number,
-    flags: number
-  ): any;
-  ioctl(stream: FSStream, cmd: any, arg: any): any;
-  readFile(
-    path: string,
-    opts: { encoding: "binary"; flags?: string | undefined }
-  ): Uint8Array;
-  readFile(
-    path: string,
-    opts: { encoding: "utf8"; flags?: string | undefined }
-  ): string;
-  readFile(path: string, opts?: { flags?: string | undefined }): Uint8Array;
-  writeFile(
-    path: string,
-    data: string | ArrayBufferView,
-    opts?: { flags?: string | undefined }
-  ): void;
-
-  //
-  // module-level FS code
-  //
-  cwd(): string;
-  chdir(path: string): void;
-  init(
-    input: null | (() => number | null),
-    output: null | ((c: number) => any),
-    error: null | ((c: number) => any)
-  ): void;
-
-  createLazyFile(
-    parent: string | FSNode,
-    name: string,
-    url: string,
-    canRead: boolean,
-    canWrite: boolean
-  ): FSNode;
-  createPreloadedFile(
-    parent: string | FSNode,
-    name: string,
-    url: string,
-    canRead: boolean,
-    canWrite: boolean,
-    onload?: () => void,
-    onerror?: () => void,
-    dontCreateFile?: boolean,
-    canOwn?: boolean
-  ): void;
-  createDataFile(
-    parent: string | FSNode,
-    name: string,
-    data: ArrayBufferView,
-    canRead: boolean,
-    canWrite: boolean,
-    canOwn: boolean
-  ): FSNode;
-}
-
-interface EmPostgres extends EmscriptenModule {
-  FS: FS;
-  eventTarget: EventTarget;
-  Event: typeof CustomEvent;
-  onRuntimeInitialized: (Module: EmPostgres) => Promise<void>;
+type FS = typeof FS & {
+    filesystems: {
+        MEMFS: Emscripten.FileSystemType;
+        NODEFS: Emscripten.FileSystemType;
+        IDBFS: Emscripten.FileSystemType;
+        PGFS: Emscripten.FileSystemType;
+    };
+};
+interface EmPostgres extends Omit<EmscriptenModule, 'preInit' | 'preRun' | 'postRun'> {
+    preInit: Array<{
+        (mod: EmPostgres): void;
+    }>;
+    preRun: Array<{
+        (mod: EmPostgres): void;
+    }>;
+    postRun: Array<{
+        (mod: EmPostgres): void;
+    }>;
+    FS: FS;
 }
 
 interface Filesystem {
@@ -500,7 +247,6 @@ interface ParserOptions {
 interface QueryOptions {
     rowMode?: RowMode;
     parsers?: ParserOptions;
-    blob?: Blob | File;
 }
 interface ExecProtocolOptions {
     syncToFs?: boolean;
@@ -513,7 +259,7 @@ interface ExtensionSetupResult {
     close?: () => Promise<void>;
 }
 type ExtensionSetup = (pg: PGliteInterface, emscriptenOpts: any) => Promise<ExtensionSetupResult>;
-interface Extension {
+interface Extension<T = any> {
     name: string;
     setup: ExtensionSetup;
 }
@@ -537,14 +283,7 @@ type PGliteInterface = {
     exec(query: string, options?: QueryOptions): Promise<Array<Results>>;
     transaction<T>(callback: (tx: Transaction) => Promise<T>): Promise<T | undefined>;
     execProtocol(message: Uint8Array, options?: ExecProtocolOptions): Promise<Array<[BackendMessage, Uint8Array]>>;
-    listen(channel: string, callback: (payload: string) => void): Promise<() => Promise<void>>;
-    unlisten(channel: string, callback?: (payload: string) => void): Promise<void>;
-    onNotification(callback: (channel: string, payload: string) => void): () => void;
-    offNotification(callback: (channel: string, payload: string) => void): void;
 };
-type PGliteInterfaceExtensions<E> = E extends Extensions ? {
-    [K in keyof E]: E[K] extends Extension ? Awaited<ReturnType<E[K]["setup"]>>["namespaceObj"] extends infer N ? N extends undefined | null | void ? never : N : never : never;
-} : {};
 type Row<T = {
     [key: string]: any;
 }> = T;
@@ -557,7 +296,6 @@ type Results<T = {
         name: string;
         dataTypeID: number;
     }[];
-    blob?: Blob;
 };
 interface Transaction {
     query<T>(query: string, params?: any[], options?: QueryOptions): Promise<Results<T>>;
@@ -566,4 +304,4 @@ interface Transaction {
     get closed(): boolean;
 }
 
-export { type BackendMessage as B, type DebugLevel as D, type ExecProtocolOptions as E, type Filesystem as F, type PGliteInterface as P, type QueryOptions as Q, type Results as R, type Transaction as T, type PGliteOptions as a, type PGliteInterfaceExtensions as b, type ParserOptions as c, type FilesystemType as d, type RowMode as e, type ExtensionSetupResult as f, type ExtensionSetup as g, type Extension as h, type Extensions as i, type Row as j, messages as m };
+export { type BackendMessage as B, type DebugLevel as D, type ExecProtocolOptions as E, type Filesystem as F, type PGliteInterface as P, type QueryOptions as Q, type Results as R, type Transaction as T, type PGliteOptions as a, type ParserOptions as b, type FilesystemType as c, type RowMode as d, type ExtensionSetupResult as e, type ExtensionSetup as f, type Extension as g, type Extensions as h, type Row as i, messages as m };

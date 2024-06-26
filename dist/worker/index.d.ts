@@ -1,4 +1,4 @@
-import { P as PGliteInterface, d as FilesystemType, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-Bao8xdzS.js';
+import { P as PGliteInterface, c as FilesystemType, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-BbwV817K.js';
 
 declare class PGliteWorker implements PGliteInterface {
     #private;
@@ -14,11 +14,6 @@ declare class PGliteWorker implements PGliteInterface {
     exec(query: string, options?: QueryOptions): Promise<Array<Results>>;
     transaction<T>(callback: (tx: any) => Promise<T>): Promise<any>;
     execProtocol(message: Uint8Array): Promise<Array<[BackendMessage, Uint8Array]>>;
-    listen(channel: string, callback: (payload: string) => void): Promise<() => Promise<void>>;
-    unlisten(channel: string, callback?: (payload: string) => void): Promise<void>;
-    onNotification(callback: (channel: string, payload: string) => void): () => void;
-    offNotification(callback: (channel: string, payload: string) => void): void;
-    receiveNotification(channel: string, payload: string): void;
 }
 
 export { PGliteWorker };

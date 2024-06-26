@@ -1,7 +1,7 @@
-import { a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-Bao8xdzS.js';
+import { a as PGliteOptions, Q as QueryOptions, R as Results, B as BackendMessage } from '../interface-BbwV817K.js';
 
 declare const worker: {
-    init(dataDir?: string, options?: PGliteOptions, onNotification?: (channel: string, payload: string) => void): Promise<boolean>;
+    init(dataDir?: string, options?: PGliteOptions): Promise<boolean>;
     close(): Promise<void>;
     query(query: string, params?: any[], options?: QueryOptions): Promise<Results<unknown>>;
     exec(query: string, options?: QueryOptions): Promise<Results[]>;

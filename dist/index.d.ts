@@ -1,6 +1,6 @@
 /// <reference types="node" />
-import { P as PGliteInterface, F as Filesystem, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, B as BackendMessage$1, b as PGliteInterfaceExtensions, c as ParserOptions } from './interface-Bao8xdzS.js';
-export { h as Extension, g as ExtensionSetup, f as ExtensionSetupResult, i as Extensions, d as FilesystemType, j as Row, e as RowMode, m as messages } from './interface-Bao8xdzS.js';
+import { P as PGliteInterface, F as Filesystem, D as DebugLevel, a as PGliteOptions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, B as BackendMessage$1, b as ParserOptions } from './interface-BbwV817K.js';
+export { g as Extension, f as ExtensionSetup, e as ExtensionSetupResult, h as Extensions, c as FilesystemType, i as Row, d as RowMode, m as messages } from './interface-BbwV817K.js';
 
 declare class PGlite implements PGliteInterface {
     #private;
@@ -61,39 +61,6 @@ declare class PGlite implements PGliteInterface {
      * @returns The result of the query
      */
     execProtocol(message: Uint8Array, { syncToFs }?: ExecProtocolOptions): Promise<Array<[BackendMessage$1, Uint8Array]>>;
-    /**
-     * Listen for a notification
-     * @param channel The channel to listen on
-     * @param callback The callback to call when a notification is received
-     */
-    listen(channel: string, callback: (payload: string) => void): Promise<() => Promise<void>>;
-    /**
-     * Stop listening for a notification
-     * @param channel The channel to stop listening on
-     * @param callback The callback to remove
-     */
-    unlisten(channel: string, callback?: (payload: string) => void): Promise<void>;
-    /**
-     * Listen to notifications
-     * @param callback The callback to call when a notification is received
-     */
-    onNotification(callback: (channel: string, payload: string) => void): () => void;
-    /**
-     * Stop listening to notifications
-     * @param callback The callback to remove
-     */
-    offNotification(callback: (channel: string, payload: string) => void): void;
-    /**
-     * Create a new PGlite instance with extensions on the Typescript interface
-     * (The main constructor does enable extensions, however due to the limitations
-     * of Typescript, the extensions are not available on the instance interface)
-     * @param dataDir The directory to store the database files
-     *                Prefix with idb:// to use indexeddb filesystem in the browser
-     *                Use memory:// to use in-memory filesystem
-     * @param options Optional options
-     * @returns A new PGlite instance with extensions
-     */
-    static withExtensions<O extends PGliteOptions>(options?: O): PGlite & PGliteInterfaceExtensions<O["extensions"]>;
 }
 
 declare const BOOL = 16;
@@ -331,7 +298,7 @@ declare namespace types$1 {
  * This function is used to parse the results of either a simple or extended query.
  * https://www.postgresql.org/docs/current/protocol-flow.html#PROTOCOL-FLOW-SIMPLE-QUERY
  */
-declare function parseResults(messages: Array<BackendMessage$1>, options?: QueryOptions, blob?: Blob): Array<Results>;
+declare function parseResults(messages: Array<BackendMessage$1>, options?: QueryOptions): Array<Results>;
 
 declare const parse$1_parseResults: typeof parseResults;
 declare namespace parse$1 {
@@ -466,4 +433,4 @@ declare class Mutex implements MutexInterface {
     private _semaphore;
 }
 
-export { DebugLevel, ExecProtocolOptions, Mutex, PGlite, PGliteInterface, PGliteInterfaceExtensions, PGliteOptions, ParserOptions, QueryOptions, Results, Transaction, parse$1 as parse, index as protocol, types$1 as types };
+export { DebugLevel, ExecProtocolOptions, Mutex, PGlite, PGliteInterface, PGliteOptions, ParserOptions, QueryOptions, Results, Transaction, parse$1 as parse, index as protocol, types$1 as types };
