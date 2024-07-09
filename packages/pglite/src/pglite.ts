@@ -202,7 +202,6 @@ export class PGlite implements PGliteInterface {
     this.emp = await EmPostgresFactory(emscriptenOpts);
 
     // just for loadExtensions
-    //this.emp['pg_extensions'] =  extensionBundlePromises;
     this.emp.FS['Module'] = this.emp;
 
     // if ok, NOW:
