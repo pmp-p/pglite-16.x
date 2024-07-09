@@ -182,5 +182,6 @@ jobs:
       - name: Test pglite
         working-directory: ./packages/pglite
         run: |
+          mkdir -p /tmp/pglite/base 
           pnpm exec playwright install --with-deps
           pnpm run test
