@@ -220,7 +220,7 @@ emcc $EMCC_WEB -fPIC -sMAIN_MODULE=2 \
 mkdir -p ${WEBROOT}
 
 cp -v postgres.* ${WEBROOT}/
-cp ${PGROOT}/lib/libecpg.so ${WEBROOT}/
+#cp ${PGROOT}/lib/libecpg.so ${WEBROOT}/
 cp ${PGROOT}/sdk/*.tar ${WEBROOT}/
 for tarf in ${WEBROOT}/*.tar
 do
