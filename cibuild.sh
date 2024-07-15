@@ -199,12 +199,12 @@ fi
 
 if echo "$*"|grep " postgis"
 then
-    echo "================================================="
-    PG_LINK=em++ echo "WIP - requires latests python-wasm-sdk, not just emsdk"
+    echo "======================= postgis ======================="
+
+    ./cibuild/postgis.sh
 
     python3 cibuild/pack_extension.py
 fi
-
 
 
 if echo "$*"|grep " quack"

@@ -75,26 +75,14 @@ pushd src/backend
 
 
 
-if false
+PG_L="../../src/common/libpgcommon_srv.a ../../src/port/libpgport_srv.a ../.././src/interfaces/libpq/libpq.a"
+
+if ${DEV:-false}
 then
     # PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so /tmp/pglite/lib/postgresql/libduckdb.so"
-    PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so /tmp/libduckdb.so -lstdc++"
-else
-    PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so"
-    PG_L="../../src/common/libpgcommon_srv.a ../../src/port/libpgport_srv.a ../.././src/interfaces/libpq/libpq.a"
+    PG_L="$PG_L /tmp/libduckdb.so -lstdc++"
 
 fi
-
-# ../../src/common/libpgcommon_shlib.a"
-# ./src/common/libpgcommon.a: binary file matches
-# ./src/common/libpgcommon_shlib.a: binary file matches
-# error: undefined symbol: fsync_pgdata (referenced by root reference (e.g. compiled C/C++ code))
-# error: undefined symbol: get_restricted_token (referenced by root reference (e.g. compiled C/C++ code))
-# error: undefined symbol: pg_malloc_extended (referenced by root reference (e.g. compiled C/C++ code))
-# error: undefined symbol: pg_realloc (referenced by root reference (e.g. compiled C/C++ code))
-# error: undefined symbol: pg_strdup (referenced by root reference (e.g. compiled C/C++ code))
-# error: undefined symbol: simple_prompt (referenced by root reference (e.g. compiled C/C++ code))
-
 
 
 ## \

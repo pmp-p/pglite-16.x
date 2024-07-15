@@ -77,7 +77,7 @@ async def archive(target_folder):
                     print("custom:", test)
 
 
-PGROOT=Path(os.environ['PGROOT'])
+PGROOT=Path(os.environ.get('PGROOT',"/tmp/pglite"))
 
 INSTALLED = []
 
@@ -93,7 +93,7 @@ print("="*80)
 asyncio.run( archive(PGROOT) )
 print("="*80)
 print(f"""
-
+PG installed in : {PGROOT=}
 
 
     {EXTNAME =} ({len(SYMBOLS)} imports)

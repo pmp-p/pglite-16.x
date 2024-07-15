@@ -48,6 +48,10 @@ jobs:
       run: |
         bash ./cibuild.sh vector
 
+    - name: Build postgis
+      run: |
+        bash ./cibuild.sh postgis
+
 #    - name: Build duckdb+pg_quack
 #      run: |
 #        bash ./cibuild.sh quack
