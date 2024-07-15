@@ -1,4 +1,4 @@
-import test from "ava";
+import test from "./polytest.js";
 import { PGlite } from "../dist/index.js";
 
 test("basic exec", async (t) => {
@@ -320,7 +320,6 @@ test("basic transaction", async (t) => {
   });
 });
 
-/*
 test("basic copy to/from blob", async (t) => {
   const db = new PGlite();
   await db.exec(`
@@ -372,4 +371,3 @@ test("basic copy to/from blob", async (t) => {
     affectedRows: 0,
   });
 });
-*/

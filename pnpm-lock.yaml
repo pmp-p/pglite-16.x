@@ -17,7 +17,7 @@ importers:
     dependencies:
       wa-sqlite:
         specifier: github:rhashimoto/wa-sqlite
-        version: github.com/rhashimoto/wa-sqlite/5c3691569c150ca884314aa1a0d7e2760c48e873
+        version: github.com/rhashimoto/wa-sqlite/55bf0b6646ac1bb81b00b9c25636b59a87e4a918
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.9
@@ -55,6 +55,9 @@ importers:
       buffer:
         specifier: ^6.0.3
         version: 6.0.3
+      bun:
+        specifier: ^1.1.18
+        version: 1.1.18
       comlink:
         specifier: ^4.4.1
         version: 4.4.1
@@ -73,6 +76,9 @@ importers:
       prettier:
         specifier: 3.2.5
         version: 3.2.5
+      tinytar:
+        specifier: ^0.1.0
+        version: 0.1.0
       tsup:
         specifier: ^8.0.2
         version: 8.0.2(typescript@5.3.3)
@@ -1197,6 +1203,70 @@ packages:
       fastq: 1.17.1
     dev: true
 
+  /@oven/bun-darwin-aarch64@1.1.18:
+    resolution: {integrity: sha512-2YMh1G+S5AxDqOEDh9i+9kc17887mkP/yzK/d5DQ0NyPt5uR2w5FKGaalPLDiu5w139y3LKBi+1eGba1oEJnyw==}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@oven/bun-darwin-x64-baseline@1.1.18:
+    resolution: {integrity: sha512-shwwfe9Yugpyr490FdjQ90O3JtETbszyUk4PBXQrbz3babPfhXGuVGewis8ORNYeb8zoWGo/adk4biby6kKwHA==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@oven/bun-darwin-x64@1.1.18:
+    resolution: {integrity: sha512-ppeJpQqEXO6nfCneq2TXYFO/l1S/KYKTt3cintTiQxW0ISvj36vQcP/l0ln8BxEu46EnqulVKDrkTBAttv9sww==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@oven/bun-linux-aarch64@1.1.18:
+    resolution: {integrity: sha512-cDwqcGA/PiiqM8pQkZSRW0HbSh3r1hMsS2ew61d6FjjEI7HP+bwTuu0n0rGdzQKWTtb3PzzXvOkiFZywKS5Gzg==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@oven/bun-linux-x64-baseline@1.1.18:
+    resolution: {integrity: sha512-hxnFwssve6M9i4phusIn9swFvQKwLI+9i2taWSotshp1axLXQ5ruIIE9WPKJGR0i+yuw5Q8HBCnUDDh5ZMp9rA==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@oven/bun-linux-x64@1.1.18:
+    resolution: {integrity: sha512-oce0pELxlVhRO7clQGAkbo8vfxaCmRpf7Tu/Swn+T/wqeA5tew02HmsZAnDQqgYx8Z2/QpCOfF1SvLsdg7hR+A==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@oven/bun-windows-x64-baseline@1.1.18:
+    resolution: {integrity: sha512-Wlb55q9QbayO+7NvfYMnU8oaTPz1k2xMr7mm9+JOnG/I6q82HMvIQEG181bAhU1kcm5YcZZ5E0WMp2gX3NFsEw==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@oven/bun-windows-x64@1.1.18:
+    resolution: {integrity: sha512-d639p5g8hrXyvFX3FK9EpsaoVEhMRThftmkueljjpYnYjMvIiMQ2crHtI2zwZ6yLEHvecaFXVXlocu2+jxia7g==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
   /@pkgjs/parseargs@0.11.0:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
@@ -2201,6 +2271,23 @@ packages:
     dependencies:
       base64-js: 1.5.1
       ieee754: 1.2.1
+    dev: true
+
+  /bun@1.1.18:
+    resolution: {integrity: sha512-bv1wLYtmkn6GCqYFsVO9xZzPvNaDlA3xHbtePGHMtXMqq8N/vo+L6b19LB4+I5RKXFAsSmgzonyh2oMExaaWcQ==}
+    cpu: [arm64, x64]
+    os: [darwin, linux, win32]
+    hasBin: true
+    requiresBuild: true
+    optionalDependencies:
+      '@oven/bun-darwin-aarch64': 1.1.18
+      '@oven/bun-darwin-x64': 1.1.18
+      '@oven/bun-darwin-x64-baseline': 1.1.18
+      '@oven/bun-linux-aarch64': 1.1.18
+      '@oven/bun-linux-x64': 1.1.18
+      '@oven/bun-linux-x64-baseline': 1.1.18
+      '@oven/bun-windows-x64': 1.1.18
+      '@oven/bun-windows-x64-baseline': 1.1.18
     dev: true
 
   /bundle-require@4.0.2(esbuild@0.19.12):
@@ -4707,6 +4794,11 @@ packages:
     engines: {node: '>=4'}
     dev: true
 
+  /tinytar@0.1.0:
+    resolution: {integrity: sha512-Ko2BT2VtuszvlWz3fC1y5EJu2pTZ1bf4HvDRh9RhVJbeXXRtoSrWj7ml1RrWp5dA+JRKSlTcYDwFXlm/0fqDuw==}
+    engines: {node: ^4.0.0, npm: ^2.0.0}
+    dev: true
+
   /to-fast-properties@2.0.0:
     resolution: {integrity: sha512-/OaKK0xYrs3DmxRYqL/yDc+FxFUVYhDlXMhRmv3z915w2HF1tnN1omB354j8VUGO/hbRzyD6Y3sA7v7GS/ceog==}
     engines: {node: '>=4'}
@@ -5122,8 +5214,8 @@ packages:
       commander: 9.5.0
     dev: true
 
-  github.com/rhashimoto/wa-sqlite/5c3691569c150ca884314aa1a0d7e2760c48e873:
-    resolution: {tarball: https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/5c3691569c150ca884314aa1a0d7e2760c48e873}
+  github.com/rhashimoto/wa-sqlite/55bf0b6646ac1bb81b00b9c25636b59a87e4a918:
+    resolution: {tarball: https://codeload.github.com/rhashimoto/wa-sqlite/tar.gz/55bf0b6646ac1bb81b00b9c25636b59a87e4a918}
     name: wa-sqlite
-    version: 1.0.0-beta.2
+    version: 1.0.0
     dev: false
