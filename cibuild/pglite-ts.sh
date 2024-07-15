@@ -79,9 +79,15 @@ END
         mkdir -p /tmp/web/pglite
         cp -r ${PGLITE}/dist /tmp/web/pglite/
         cp -r ${PGLITE}/examples /tmp/web/pglite/
-        pushd /tmp/web/
-        ln -s ../dist/postgres.data
-        popd
+
+        for dir in /tmp/web /tmp/web/pglite/examples
+        do
+            pushd "$dir"
+            cp ${PGLITE}/dist/postgres.data ./
+            popd
+        done
+
+
         # link files for xterm based repl
         ln ${WEBROOT}/dist/postgres.* ${WEBROOT}/ || echo pass
 
