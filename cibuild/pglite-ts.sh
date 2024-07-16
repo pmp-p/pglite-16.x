@@ -9,17 +9,6 @@
         PGLITE=$(pwd)
     fi
 
-    # not used for now, everything in PGROOT is to be bundled
-    cat > $PGLITE/release/share.js <<END
-
-    function loadPgShare(module, require) {
-        console.warn("share.js: loadPgShare");
-    }
-
-    export default loadPgShare;
-END
-
-
     pnpm install
 
     mkdir -p $PGLITE/release
@@ -33,15 +22,11 @@ END
     if $CI
     then
         cp -vf /tmp/web/postgres.{js,data,wasm} $PGLITE/release/
-        cp -vf /tmp/web/libecpg.so $PGLITE/release/postgres.so
+        #cp -vf /tmp/web/libecpg.so $PGLITE/release/postgres.so
     else
         cp ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
-        cp ${WEBROOT}/libecpg.so ${PGLITE}/release/postgres.so
+        #cp ${WEBROOT}/libecpg.so ${PGLITE}/release/postgres.so
     fi
-
-    # unused right now
-    # touch $PGLITE/release/share.data
-
 
 
     if ${DEV:-false}
@@ -83,26 +68,22 @@ END
         for dir in /tmp/web /tmp/web/pglite/examples
         do
             pushd "$dir"
-            cp ${PGLITE}/dist/postgres.data ./
+            cp /tmp/web/pglite/postgres.data ./
             popd
         done
 
-
-        # link files for xterm based repl
-        ln ${WEBROOT}/dist/postgres.* ${WEBROOT}/ || echo pass
-
-            echo "<html>
-            <body>
-                <ul>
-                    <li><a href=./pglite/examples/repl.html>PGlite REPL (in-memory)</a></li>
-                    <li><a href=./pglite/examples/repl-idb.html>PGlite REPL (indexedDB)</a></li>
-                    <li><a href=./pglite/examples/notify.html>list/notify test</a></li>
-                    <li><a href=./pglite/examples/index.html>All PGlite Examples</a></li>
-                    <li><a href=./pglite/benchmark/index.html>Benchmarks</a> / <a href=./pglite/benchmark/rtt.html>RTT Benchmarks</a></li>
-                    <li><a href=./postgres.html>Postgres xterm REPL</a></li>
-                </ul>
-            </body>
-            </html>" > ${WEBROOT}/index.html
+        echo "<html>
+        <body>
+            <ul>
+                <li><a href=./pglite/examples/repl.html>PGlite REPL (in-memory)</a></li>
+                <li><a href=./pglite/examples/repl-idb.html>PGlite REPL (indexedDB)</a></li>
+                <li><a href=./pglite/examples/notify.html>list/notify test</a></li>
+                <li><a href=./pglite/examples/index.html>All PGlite Examples</a></li>
+                <li><a href=./pglite/benchmark/index.html>Benchmarks</a> / <a href=./pglite/benchmark/rtt.html>RTT Benchmarks</a></li>
+                <li><a href=./postgres.html>Postgres xterm REPL</a></li>
+            </ul>
+        </body>
+        </html>" > ${WEBROOT}/index.html
 
     else
         mkdir -p ${WEBROOT}/node_modules/@electric-sql/pglite

@@ -1,8 +1,6 @@
-diff --git a/src/backend/bootstrap/bootstrap.c b/src/backend/bootstrap/bootstrap.c
-index 986f6f1..5e77deb 100644
---- a/src/backend/bootstrap/bootstrap.c
-+++ b/src/backend/bootstrap/bootstrap.c
-@@ -195,7 +195,11 @@ CheckerModeMain(void)
+--- postgresql-16.3/src/backend/bootstrap/bootstrap.c
++++ postgresql-16.3-wasm/src/backend/bootstrap/bootstrap.c
+@@ -199,7 +199,11 @@
   *	 to shared memory sizing, options work (or at least do not cause an error
   *	 up to shared memory creation).
   */
@@ -14,13 +12,23 @@ index 986f6f1..5e77deb 100644
  BootstrapModeMain(int argc, char *argv[], bool check_only)
  {
  	int			i;
-@@ -365,7 +369,11 @@ BootstrapModeMain(int argc, char *argv[], bool check_only)
+@@ -353,7 +357,7 @@
+ 	 */
+ 	if (pg_link_canary_is_frontend())
+ 		elog(ERROR, "backend is incorrectly linked to frontend functions");
+-
++puts("# 360: InitPostgres(boot): " __FILE__ );
+ 	InitPostgres(NULL, InvalidOid, NULL, InvalidOid, false, false, NULL);
+ 
+ 	/* Initialize stuff for bootstrap-file processing */
+@@ -378,7 +382,12 @@
  
  	/* Clean up and exit */
  	cleanup();
 +#if !defined(__EMSCRIPTEN__) && !defined(__wasi__)
  	proc_exit(0);
 +#else
++	puts("# 338 cleanup(boot): " __FILE__);
 +	return 0;
 +#endif
  }
