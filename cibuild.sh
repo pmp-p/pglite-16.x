@@ -55,30 +55,34 @@ fi
 
 # setup compiler+node. emsdk provides node (18), recent enough for bun.
 # TODO: but may need to adjust $PATH with stock emsdk.
-
-if which emcc
+if ${WASI:-false}
 then
-    echo "Using provided emsdk from $(which emcc)"
+    echo "Wasi build (experimental)"
+    . /opt/python-wasm-sdk/wasm32-wasi-shell.sh
 else
-    . /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
+    if which emcc
+    then
+        echo "Using provided emsdk from $(which emcc)"
+    else
+        . /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
+    fi
+
+    # custom code for node/web builds that modify pg main/tools behaviour
+    # this used by both node/linkweb build stages
+
+    # pass the "kernel" contiguous memory zone size to the C compiler.
+    CC_PGLITE="-DCMA_MB=${CMA_MB}"
+
+    # these are files that shadow original portion of pg core, with minimal changes
+    # to original code
+    # some may be included multiple time
+    CC_PGLITE="-DPATCH_MAIN=${GITHUB_WORKSPACE}/patches/pg_main.c ${CC_PGLITE}"
+    CC_PGLITE="-DPATCH_LOOP=${GITHUB_WORKSPACE}/patches/interactive_one.c ${CC_PGLITE}"
+    CC_PGLITE="-DPATCH_PLUGIN=${GITHUB_WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
+
 fi
 
-
-# custom code for node/web builds that modify pg main/tools behaviour
-# this used by both node/linkweb build stages
-
-# pass the "kernel" contiguous memory zone size to the C compiler.
-CC_PGLITE="-DCMA_MB=${CMA_MB}"
-
-# these are files that shadow original portion of pg core, with minimal changes
-# to original code
-# some may be included multiple time
-CC_PGLITE="-DPATCH_MAIN=${GITHUB_WORKSPACE}/patches/pg_main.c ${CC_PGLITE}"
-CC_PGLITE="-DPATCH_LOOP=${GITHUB_WORKSPACE}/patches/interactive_one.c ${CC_PGLITE}"
-CC_PGLITE="-DPATCH_PLUGIN=${GITHUB_WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
-
 export CC_PGLITE
-
 
 
 if [ -f ${WEBROOT}/postgres.js ]
@@ -305,10 +309,6 @@ do
             mkdir /tmp/web/repl/dist-webcomponent -p
             cp -r ${GITHUB_WORKSPACE}/packages/repl/dist-webcomponent /tmp/web/repl/
 
-            pushd /tmp/web/pglite/examples
-            ln -s ../dist/postgres.data
-            popd
-
             if $CI
             then
                 tar -cpRz ${PGROOT} > /tmp/sdk/pglite-pg${PGVERSION}.tar.gz
@@ -321,7 +321,6 @@ do
             mkdir $PGLITE/release || rm $PGLITE/release/*
             # copy packed extensions
             cp ${WEBROOT}/*.tar.gz ${PGLITE}/release/
-
 
             cp -vf ${WEBROOT}/postgres.{js,data,wasm} $PGLITE/release/
             cp -vf ${WEBROOT}/libecpg.so $PGLITE/release/postgres.so

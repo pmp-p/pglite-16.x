@@ -71,8 +71,8 @@
 +#   define PG_PLUGIN_INCLUDE  em_xstr(PATCH_PLUGIN)
 +#else
 +#   define WASM_PREFIX "/pgdata"
-+#   define PG_MAIN_INCLUDE "/data/git/pg/pg_main.c"
-+#   define PG_PLUGIN_INCLUDE "/data/git/pg/pg_plugin.h"
++#   define PG_MAIN_INCLUDE "/data/git/pg/patches/pg_main.c"
++#   define PG_PLUGIN_INCLUDE "/data/git/pg/patches/pg_plugin.h"
 +#endif
 +
 +#define IDB_PIPE_FILE "/tmp/initdb.txt"

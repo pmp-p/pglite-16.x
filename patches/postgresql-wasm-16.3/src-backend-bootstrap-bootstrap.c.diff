@@ -1,0 +1,28 @@
+diff --git a/src/backend/bootstrap/bootstrap.c b/src/backend/bootstrap/bootstrap.c
+index 986f6f1..5e77deb 100644
+--- a/src/backend/bootstrap/bootstrap.c
++++ b/src/backend/bootstrap/bootstrap.c
+@@ -195,7 +195,11 @@ CheckerModeMain(void)
+  *	 to shared memory sizing, options work (or at least do not cause an error
+  *	 up to shared memory creation).
+  */
++#if !defined(__EMSCRIPTEN__) && !defined(__wasi__)
+ void
++#else
++int
++#endif
+ BootstrapModeMain(int argc, char *argv[], bool check_only)
+ {
+ 	int			i;
+@@ -365,7 +369,11 @@ BootstrapModeMain(int argc, char *argv[], bool check_only)
+ 
+ 	/* Clean up and exit */
+ 	cleanup();
++#if !defined(__EMSCRIPTEN__) && !defined(__wasi__)
+ 	proc_exit(0);
++#else
++	return 0;
++#endif
+ }
+ 
+ 
