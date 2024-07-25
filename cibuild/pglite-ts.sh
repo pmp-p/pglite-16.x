@@ -22,32 +22,8 @@
     if $CI
     then
         cp -vf /tmp/web/postgres.{js,data,wasm} $PGLITE/release/
-        #cp -vf /tmp/web/libecpg.so $PGLITE/release/postgres.so
     else
         cp ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
-        #cp ${WEBROOT}/libecpg.so ${PGLITE}/release/postgres.so
-    fi
-
-
-    if ${DEV:-false}
-    then
-        echo "
-
-
-
-        ===============================  dev test mode ===========================
-
-
-
-
-
-"
-        # this is the ES6 wasm module loader from emscripten.
-        cp $PGLITE/release/postgres.js $PGLITE/release/pgbuild.js
-        # use a javascript wasm module loader with a thin api for tests
-        cat ${GITHUB_WORKSPACE}/patches/pgbuild.js > $PGLITE/release/postgres.js
-    else
-        echo "using emscripten es6->ts interface"
     fi
 
     # debug CI does not use pnpm/npm for building pg, so call the typescript build

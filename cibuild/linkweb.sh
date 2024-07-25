@@ -70,11 +70,6 @@ pushd src/backend
  ../../src/timezone/strftime.o \
  ../../pg_initdb.o"
 
-    PG_L="-L../../src/port -L../../src/common \
- ../../src/common/libpgcommon_srv.a ../../src/port/libpgport_srv.a"
-
-
-
 PG_L="../../src/common/libpgcommon_srv.a ../../src/port/libpgport_srv.a ../.././src/interfaces/libpq/libpq.a"
 
 if ${DEV:-false}
@@ -84,16 +79,16 @@ then
 
 fi
 
+=======
+if false
+then
+    # PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so /tmp/pglite/lib/postgresql/libduckdb.so"
+    PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so /tmp/libduckdb.so -lstdc++"
+else
+    PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so"
+    PG_L="../../src/common/libpgcommon_srv.a ../../src/port/libpgport_srv.a ../.././src/interfaces/libpq/libpq.a"
 
-## \
-# /opt/python-wasm-sdk/devices/emsdk/usr/lib/libxml2.a \
-# /opt/python-wasm-sdk/devices/emsdk/usr/lib/libgeos.a \
-# /opt/python-wasm-sdk/devices/emsdk/usr/lib/libgeos_c.a \
-# /opt/python-wasm-sdk/devices/emsdk/usr/lib/libproj.a"
-
-# /data/git/pglite-build/pglite/postgres/libgeosall.so
-# /data/git/pglite-build/pglite/postgres/libduckdb.so"
-
+fi
 
 # ? -sLZ4=1  -sENVIRONMENT=web
 # -sSINGLE_FILE  => Uncaught SyntaxError: Cannot use 'import.meta' outside a module (at postgres.html:1:6033)
@@ -104,16 +99,10 @@ if ${PGES6:-true}
 then
     # es6
     MODULE="-g0 -Os -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module --shell-file ${GITHUB_WORKSPACE}/tests/repl.html"
-    # unused debug module.
-    touch ${GITHUB_WORKSPACE}/packages/pglite/release/pgbuild.js
 else
     # local debug fast build
     MODULE="-g3 -O0 -sMODULARIZE=0 -sEXPORT_ES6=0 --shell-file ${GITHUB_WORKSPACE}/tests/repl.html"
 fi
-
-
-# closure -sSIMPLE_OPTIMIZATION
-
 
 # =======================================================
 # size optimisations

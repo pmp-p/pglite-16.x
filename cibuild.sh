@@ -55,6 +55,7 @@ fi
 
 # setup compiler+node. emsdk provides node (18), recent enough for bun.
 # TODO: but may need to adjust $PATH with stock emsdk.
+<<<<<<< HEAD
 if ${WASI:-false}
 then
     echo "Wasi build (experimental)"
@@ -85,6 +86,34 @@ fi
 export CC_PGLITE
 
 
+=======
+
+if which emcc
+then
+    echo "Using provided emsdk from $(which emcc)"
+else
+    . /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
+fi
+
+
+# custom code for node/web builds that modify pg main/tools behaviour
+# this used by both node/linkweb build stages
+
+# pass the "kernel" contiguous memory zone size to the C compiler.
+CC_PGLITE="-DCMA_MB=${CMA_MB}"
+
+# these are files that shadow original portion of pg core, with minimal changes
+# to original code
+# some may be included multiple time
+CC_PGLITE="-DPATCH_MAIN=${GITHUB_WORKSPACE}/patches/pg_main.c ${CC_PGLITE}"
+CC_PGLITE="-DPATCH_LOOP=${GITHUB_WORKSPACE}/patches/interactive_one.c ${CC_PGLITE}"
+CC_PGLITE="-DPATCH_PLUGIN=${GITHUB_WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
+
+export CC_PGLITE
+
+
+
+>>>>>>> upstream/main
 if [ -f ${WEBROOT}/postgres.js ]
 then
     echo using current from ${WEBROOT}
@@ -203,14 +232,23 @@ fi
 
 if echo "$*"|grep " postgis"
 then
+<<<<<<< HEAD
     echo "======================= postgis ======================="
 
     ./cibuild/postgis.sh
+=======
+    echo "================================================="
+    PG_LINK=em++ echo "WIP - requires latests python-wasm-sdk, not just emsdk"
+>>>>>>> upstream/main
 
     python3 cibuild/pack_extension.py
 fi
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> upstream/main
 if echo "$*"|grep " quack"
 then
     echo "================================================="
@@ -294,7 +332,7 @@ fi
 while test $# -gt 0
 do
     case "$1" in
-        pglite) echo "=================== pglite ======================="
+        pglite) echo "=================== pglite : $(pwd) ======================="
             # TODO: SAMs NOTE - Not using this in GitHub action as it doesnt resolve pnpm correctly
             # replaced with pglite-prep and pglite-bundle-sdk
 
@@ -307,7 +345,7 @@ do
             cp -r $PGLITE ${PGROOT}/sdk/packages/
 
             mkdir /tmp/web/repl/dist-webcomponent -p
-            cp -r ${GITHUB_WORKSPACE}/packages/repl/dist-webcomponent /tmp/web/repl/
+            cp -r ${WORKSPACE}/packages/repl/dist-webcomponent /tmp/web/repl/
 
             if $CI
             then
@@ -321,9 +359,7 @@ do
             mkdir $PGLITE/release || rm $PGLITE/release/*
             # copy packed extensions
             cp ${WEBROOT}/*.tar.gz ${PGLITE}/release/
-
             cp -vf ${WEBROOT}/postgres.{js,data,wasm} $PGLITE/release/
-            cp -vf ${WEBROOT}/libecpg.so $PGLITE/release/postgres.so
 
             ;;
 
