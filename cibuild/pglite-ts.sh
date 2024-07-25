@@ -9,7 +9,22 @@
         PGLITE=$(pwd)
     fi
 
+    # not used for now, everything in PGROOT is to be bundled
+    cat > $PGLITE/release/share.js <<END
+
+    function loadPgShare(module, require) {
+        console.warn("share.js: loadPgShare");
+    }
+
+    export default loadPgShare;
+END
+
+
     pnpm install
+    pushd  $PGLITE/../repl
+        pnpm install
+        pnpm run build:react && pnpm run build:webcomp
+    popd
 
     mkdir -p $PGLITE/release
     rm $PGLITE/release/* 2>/dev/null
@@ -19,11 +34,32 @@
 
     # copy wasm web prebuilt artifacts to release folder
     # TODO: get them from web for nosdk systems.
-    if $CI
+
+    cp ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
+
+    # unused right now
+    # touch $PGLITE/release/share.data
+
+
+    if ${DEV:-false}
     then
-        cp -vf /tmp/web/postgres.{js,data,wasm} $PGLITE/release/
+        echo "
+
+
+
+        ===============================  dev test mode ===========================
+
+
+
+
+
+"
+        # this is the ES6 wasm module loader from emscripten.
+        cp $PGLITE/release/postgres.js $PGLITE/release/pgbuild.js
+        # use a javascript wasm module loader with a thin api for tests
+        cat ${GITHUB_WORKSPACE}/patches/pgbuild.js > $PGLITE/release/postgres.js
     else
-        cp ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
+        echo "using emscripten es6->ts interface"
     fi
 
     # debug CI does not use pnpm/npm for building pg, so call the typescript build
@@ -44,7 +80,7 @@
         for dir in /tmp/web /tmp/web/pglite/examples
         do
             pushd "$dir"
-            cp /tmp/web/pglite/postgres.data ./
+            cp ${PGLITE}/dist/postgres.data ./
             popd
         done
 
