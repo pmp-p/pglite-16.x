@@ -55,7 +55,7 @@ fi
 
 # setup compiler+node. emsdk provides node (18), recent enough for bun.
 # TODO: but may need to adjust $PATH with stock emsdk.
-<<<<<<< HEAD
+
 if ${WASI:-false}
 then
     echo "Wasi build (experimental)"
@@ -232,30 +232,13 @@ fi
 
 if echo "$*"|grep " postgis"
 then
-<<<<<<< HEAD
     echo "======================= postgis ======================="
 
     ./cibuild/postgis.sh
-=======
-    echo "================================================="
-    PG_LINK=em++ echo "WIP - requires latests python-wasm-sdk, not just emsdk"
->>>>>>> upstream/main
 
     python3 cibuild/pack_extension.py
 fi
 
-
-<<<<<<< HEAD
-=======
-
->>>>>>> upstream/main
-if echo "$*"|grep " quack"
-then
-    echo "================================================="
-    ./cibuild/pg_quack.sh
-    cp $PGROOT/lib/libduckdb.so /tmp/
-    python3 cibuild/pack_extension.py
-fi
 
 
 # ===========================================================================
