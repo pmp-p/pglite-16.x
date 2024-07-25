@@ -165,7 +165,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpxl0jjx0_.js
+// include: /tmp/tmpd2bh18uf.js
 
   if (!Module.expectedDataFileDownloads) {
     Module.expectedDataFileDownloads = 0;
@@ -389,7 +389,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmpxl0jjx0_.js
+// end include: /tmp/tmpd2bh18uf.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -10581,7 +10581,7 @@ var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69184348;
 var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69184352;
 var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69184356;
 var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69184364;
-var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68282240;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68283376;
 var _stdin = Module['_stdin'] = 69165528;
 var _progname = Module['_progname'] = 69184900;
 var _single_mode_feed = Module['_single_mode_feed'] = 69184916;
