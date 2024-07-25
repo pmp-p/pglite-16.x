@@ -53,7 +53,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpm2c6x9w8.js
+// include: /tmp/tmph483kktb.js
 
   if (!Module.expectedDataFileDownloads) {
     Module.expectedDataFileDownloads = 0;
@@ -275,7 +275,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmpm2c6x9w8.js
+// end include: /tmp/tmph483kktb.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -932,15 +932,11 @@ function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  68888596: ($0) => { Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope; Module.FD_BUFFER_MAX = $0; Module.emscripten_copy_to = console.warn; },  
- 68888769: () => { console.warn("prerun(C-node) worker=", Module.is_worker); Module['postMessage'] = function custom_postMessage(event) { console.log("onCustomMessage:", event); }; },  
- 68888935: () => { console.warn("prerun(C-web) worker=", Module.is_worker); },  
- 68888996: () => { if (Module.is_worker) { console.log("Main: running in a worker, setting onCustomMessage"); function onCustomMessage(event) { console.log("onCustomMessage:", event); }; Module['onCustomMessage'] = onCustomMessage; } else { console.log("Running in main thread, faking onCustomMessage"); Module['postMessage'] = function custom_postMessage(event) { switch (event.type) { case "raw" : { stringToUTF8( event.data, shm_rawinput, Module.FD_BUFFER_MAX); break; } case "stdin" : { stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX); break; } case "rcon" : { stringToUTF8( event.data, shm_rcon, Module.FD_BUFFER_MAX); break; } default : console.warn("custom_postMessage?", event); } }; }; }
+  
 };
 function peek_fd(fd) { return test_data.length; }
 function fnc_getfd(fd) { return fnc_stdin() }
 function is_web_env() { try { if (window) return 1; } catch(x) {return 0} }
-is_web_env.sig = 'i';
 
 // end include: preamble.js
 
@@ -1195,7 +1191,7 @@ is_web_env.sig = 'i';
   
   
   
-  var ___heap_base = 73239472;
+  var ___heap_base = 73527872;
   
   var zeroMemory = (address, size) => {
       HEAPU8.fill(0, address, address + size);
@@ -1347,7 +1343,7 @@ is_web_env.sig = 'i';
   
   /** @type {WebAssembly.Table} */
   var wasmTable = new WebAssembly.Table({
-    'initial': 5008,
+    'initial': 5642,
     'element': 'anyfunc'
   });
   ;
@@ -2044,7 +2040,7 @@ is_web_env.sig = 'i';
 
   var ___memory_base = new WebAssembly.Global({'value': 'i32', 'mutable': false}, 67108864);
 
-  var ___stack_pointer = new WebAssembly.Global({'value': 'i32', 'mutable': true}, 73239472);
+  var ___stack_pointer = new WebAssembly.Global({'value': 'i32', 'mutable': true}, 73527872);
 
   var PATH = {
   isAbs:(path) => path.charAt(0) === '/',
@@ -4874,6 +4870,7 @@ is_web_env.sig = 'i';
   quit() {
         FS.init.initialized = false;
         // force-flush all streams, so we get musl std streams printed out
+        _fflush(0);
         // close all of our streams
         for (var i = 0; i < FS.streams.length; i++) {
           var stream = FS.streams[i];
@@ -6406,6 +6403,33 @@ is_web_env.sig = 'i';
   }
   ___syscall_fallocate.sig = 'iiijj';
 
+  function ___syscall_fchmod(fd, mode) {
+  try {
+  
+      FS.fchmod(fd, mode);
+      return 0;
+    } catch (e) {
+    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
+    return -e.errno;
+  }
+  }
+  ___syscall_fchmod.sig = 'iii';
+
+  function ___syscall_fchmodat2(dirfd, path, mode, flags) {
+  try {
+  
+      var nofollow = flags & 256;
+      path = SYSCALLS.getStr(path);
+      path = SYSCALLS.calculateAt(dirfd, path);
+      FS.chmod(path, mode, nofollow);
+      return 0;
+    } catch (e) {
+    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
+    return -e.errno;
+  }
+  }
+  ___syscall_fchmodat2.sig = 'iipii';
+
   /** @suppress {duplicate } */
   function syscallGetVarargI() {
       // the `+` prepended here is necessary to convince the JSCompiler that varargs is indeed a number.
@@ -7166,6 +7190,30 @@ is_web_env.sig = 'i';
   }
   ___syscall_stat64.sig = 'ipp';
 
+  function ___syscall_statfs64(path, size, buf) {
+  try {
+  
+      path = SYSCALLS.getStr(path);
+      // NOTE: None of the constants here are true. We're just returning safe and
+      //       sane values.
+      HEAP32[(((buf)+(4))>>2)] = 4096;
+      HEAP32[(((buf)+(40))>>2)] = 4096;
+      HEAP32[(((buf)+(8))>>2)] = 1000000;
+      HEAP32[(((buf)+(12))>>2)] = 500000;
+      HEAP32[(((buf)+(16))>>2)] = 500000;
+      HEAP32[(((buf)+(20))>>2)] = FS.nextInode;
+      HEAP32[(((buf)+(24))>>2)] = 1000000;
+      HEAP32[(((buf)+(28))>>2)] = 42;
+      HEAP32[(((buf)+(44))>>2)] = 2;  // ST_NOSUID
+      HEAP32[(((buf)+(36))>>2)] = 255;
+      return 0;
+    } catch (e) {
+    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
+    return -e.errno;
+  }
+  }
+  ___syscall_statfs64.sig = 'ippp';
+
   function ___syscall_symlink(target, linkpath) {
   try {
   
@@ -7218,6 +7266,36 @@ is_web_env.sig = 'i';
   }
   }
   ___syscall_unlinkat.sig = 'iipi';
+
+  var readI53FromI64 = (ptr) => {
+      return HEAPU32[((ptr)>>2)] + HEAP32[(((ptr)+(4))>>2)] * 4294967296;
+    };
+  
+  function ___syscall_utimensat(dirfd, path, times, flags) {
+  try {
+  
+      path = SYSCALLS.getStr(path);
+      path = SYSCALLS.calculateAt(dirfd, path, true);
+      if (!times) {
+        var atime = Date.now();
+        var mtime = atime;
+      } else {
+        var seconds = readI53FromI64(times);
+        var nanoseconds = HEAP32[(((times)+(8))>>2)];
+        atime = (seconds*1000) + (nanoseconds/(1000*1000));
+        times += 16;
+        seconds = readI53FromI64(times);
+        nanoseconds = HEAP32[(((times)+(8))>>2)];
+        mtime = (seconds*1000) + (nanoseconds/(1000*1000));
+      }
+      FS.utime(path, atime, mtime);
+      return 0;
+    } catch (e) {
+    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
+    return -e.errno;
+  }
+  }
+  ___syscall_utimensat.sig = 'iippi';
 
   var ___table_base = new WebAssembly.Global({'value': 'i32', 'mutable': false}, 1);
 
@@ -7616,50 +7694,8 @@ is_web_env.sig = 'i';
     };
   __tzset_js.sig = 'vpppp';
 
-  var readEmAsmArgsArray = [];
-  var readEmAsmArgs = (sigPtr, buf) => {
-      readEmAsmArgsArray.length = 0;
-      var ch;
-      // Most arguments are i32s, so shift the buffer pointer so it is a plain
-      // index into HEAP32.
-      while (ch = HEAPU8[sigPtr++]) {
-        // Floats are always passed as doubles, so all types except for 'i'
-        // are 8 bytes and require alignment.
-        var wide = (ch != 105);
-        wide &= (ch != 112);
-        buf += wide && (buf % 8) ? 4 : 0;
-        readEmAsmArgsArray.push(
-          // Special case for pointers under wasm64 or CAN_ADDRESS_2GB mode.
-          ch == 112 ? HEAPU32[((buf)>>2)] :
-          ch == 106 ? HEAP64[((buf)>>3)] :
-          ch == 105 ?
-            HEAP32[((buf)>>2)] :
-            HEAPF64[((buf)>>3)]
-        );
-        buf += wide ? 8 : 4;
-      }
-      return readEmAsmArgsArray;
-    };
-  var runEmAsmFunction = (code, sigPtr, argbuf) => {
-      var args = readEmAsmArgs(sigPtr, argbuf);
-      return ASM_CONSTS[code](...args);
-    };
-  var _emscripten_asm_const_int = (code, sigPtr, argbuf) => {
-      return runEmAsmFunction(code, sigPtr, argbuf);
-    };
-  _emscripten_asm_const_int.sig = 'ippp';
-
   var _emscripten_date_now = () => Date.now();
   _emscripten_date_now.sig = 'd';
-
-  
-  
-  var _emscripten_force_exit = (status) => {
-      __emscripten_runtime_keepalive_clear();
-      _exit(status);
-    };
-  _emscripten_force_exit.sig = 'vi';
-
 
   var getHeapMax = () =>
       // Stay one Wasm page short of 4GB: while e.g. Chrome is able to allocate
@@ -7667,6 +7703,10 @@ is_web_env.sig = 'i';
       // for any code that deals with heap sizes, which would require special
       // casing all heap size related code to treat 0 specially.
       2147483648;
+  var _emscripten_get_heap_max = () => getHeapMax();
+  _emscripten_get_heap_max.sig = 'p';
+
+
   
   var growMemory = (size) => {
       var b = wasmMemory.buffer;
@@ -9099,6 +9139,142 @@ is_web_env.sig = 'i';
 
   var FS_createDevice = FS.createDevice;
 
+  /** @suppress {duplicate } */
+  var setTempRet0 = (val) => __emscripten_tempret_set(val);
+  var _setTempRet0 = setTempRet0;
+  Module['_setTempRet0'] = _setTempRet0;
+
+  /** @suppress {duplicate } */
+  var getTempRet0 = (val) => __emscripten_tempret_get();
+  var _getTempRet0 = getTempRet0;
+  Module['_getTempRet0'] = _getTempRet0;
+
+  var _sched_yield = () => 0;
+  Module['_sched_yield'] = _sched_yield;
+  _sched_yield.sig = 'i';
+
+
+  var uncaughtExceptionCount = 0;
+  var ___cxa_uncaught_exceptions = () => uncaughtExceptionCount;
+  Module['___cxa_uncaught_exceptions'] = ___cxa_uncaught_exceptions;
+  ___cxa_uncaught_exceptions.sig = 'i';
+
+  var exceptionCaught =  [];
+  
+  var ___cxa_current_primary_exception = () => {
+      if (!exceptionCaught.length) {
+        return 0;
+      }
+      var info = exceptionCaught[exceptionCaught.length - 1];
+      ___cxa_increment_exception_refcount(info.excPtr);
+      return info.excPtr;
+    };
+  Module['___cxa_current_primary_exception'] = ___cxa_current_primary_exception;
+  ___cxa_current_primary_exception.sig = 'p';
+
+  class ExceptionInfo {
+      // excPtr - Thrown object pointer to wrap. Metadata pointer is calculated from it.
+      constructor(excPtr) {
+        this.excPtr = excPtr;
+        this.ptr = excPtr - 24;
+      }
+  
+      set_type(type) {
+        HEAPU32[(((this.ptr)+(4))>>2)] = type;
+      }
+  
+      get_type() {
+        return HEAPU32[(((this.ptr)+(4))>>2)];
+      }
+  
+      set_destructor(destructor) {
+        HEAPU32[(((this.ptr)+(8))>>2)] = destructor;
+      }
+  
+      get_destructor() {
+        return HEAPU32[(((this.ptr)+(8))>>2)];
+      }
+  
+      set_caught(caught) {
+        caught = caught ? 1 : 0;
+        HEAP8[(this.ptr)+(12)] = caught;
+      }
+  
+      get_caught() {
+        return HEAP8[(this.ptr)+(12)] != 0;
+      }
+  
+      set_rethrown(rethrown) {
+        rethrown = rethrown ? 1 : 0;
+        HEAP8[(this.ptr)+(13)] = rethrown;
+      }
+  
+      get_rethrown() {
+        return HEAP8[(this.ptr)+(13)] != 0;
+      }
+  
+      // Initialize native structure fields. Should be called once after allocated.
+      init(type, destructor) {
+        this.set_adjusted_ptr(0);
+        this.set_type(type);
+        this.set_destructor(destructor);
+      }
+  
+      set_adjusted_ptr(adjustedPtr) {
+        HEAPU32[(((this.ptr)+(16))>>2)] = adjustedPtr;
+      }
+  
+      get_adjusted_ptr() {
+        return HEAPU32[(((this.ptr)+(16))>>2)];
+      }
+  
+      // Get pointer which is expected to be received by catch clause in C++ code. It may be adjusted
+      // when the pointer is casted to some of the exception object base classes (e.g. when virtual
+      // inheritance is used). When a pointer is thrown this method should return the thrown pointer
+      // itself.
+      get_exception_ptr() {
+        // Work around a fastcomp bug, this code is still included for some reason in a build without
+        // exceptions support.
+        var isPointer = ___cxa_is_pointer_type(this.get_type());
+        if (isPointer) {
+          return HEAPU32[((this.excPtr)>>2)];
+        }
+        var adjusted = this.get_adjusted_ptr();
+        if (adjusted !== 0) return adjusted;
+        return this.excPtr;
+      }
+    }
+  
+  
+  
+  var exceptionLast = 0;
+  
+  var ___cxa_rethrow = () => {
+      var info = exceptionCaught.pop();
+      if (!info) {
+        abort('no exception to throw');
+      }
+      var ptr = info.excPtr;
+      if (!info.get_rethrown()) {
+        // Only pop if the corresponding push was through rethrow_primary_exception
+        exceptionCaught.push(info);
+        info.set_rethrown(true);
+        info.set_caught(false);
+        uncaughtExceptionCount++;
+      }
+      exceptionLast = ptr;
+      throw exceptionLast;
+    };
+  ___cxa_rethrow.sig = 'v';
+  var ___cxa_rethrow_primary_exception = (ptr) => {
+      if (!ptr) return;
+      var info = new ExceptionInfo(ptr);
+      exceptionCaught.push(info);
+      info.set_rethrown(true);
+      ___cxa_rethrow();
+    };
+  Module['___cxa_rethrow_primary_exception'] = ___cxa_rethrow_primary_exception;
+  ___cxa_rethrow_primary_exception.sig = 'vp';
 
       registerWasmPlugin();
       ;
@@ -9122,6 +9298,12 @@ var wasmImports = {
   __assert_fail: ___assert_fail,
   /** @export */
   __call_sighandler: ___call_sighandler,
+  /** @export */
+  __cxa_current_primary_exception: ___cxa_current_primary_exception,
+  /** @export */
+  __cxa_rethrow_primary_exception: ___cxa_rethrow_primary_exception,
+  /** @export */
+  __cxa_uncaught_exceptions: ___cxa_uncaught_exceptions,
   /** @export */
   __heap_base: ___heap_base,
   /** @export */
@@ -9150,6 +9332,10 @@ var wasmImports = {
   __syscall_fadvise64: ___syscall_fadvise64,
   /** @export */
   __syscall_fallocate: ___syscall_fallocate,
+  /** @export */
+  __syscall_fchmod: ___syscall_fchmod,
+  /** @export */
+  __syscall_fchmodat2: ___syscall_fchmodat2,
   /** @export */
   __syscall_fcntl64: ___syscall_fcntl64,
   /** @export */
@@ -9193,11 +9379,15 @@ var wasmImports = {
   /** @export */
   __syscall_stat64: ___syscall_stat64,
   /** @export */
+  __syscall_statfs64: ___syscall_statfs64,
+  /** @export */
   __syscall_symlink: ___syscall_symlink,
   /** @export */
   __syscall_truncate64: ___syscall_truncate64,
   /** @export */
   __syscall_unlinkat: ___syscall_unlinkat,
+  /** @export */
+  __syscall_utimensat: ___syscall_utimensat,
   /** @export */
   __table_base: ___table_base,
   /** @export */
@@ -9227,11 +9417,9 @@ var wasmImports = {
   /** @export */
   _tzset_js: __tzset_js,
   /** @export */
-  emscripten_asm_const_int: _emscripten_asm_const_int,
-  /** @export */
   emscripten_date_now: _emscripten_date_now,
   /** @export */
-  emscripten_force_exit: _emscripten_force_exit,
+  emscripten_get_heap_max: _emscripten_get_heap_max,
   /** @export */
   emscripten_get_now: _emscripten_get_now,
   /** @export */
@@ -9260,6 +9448,8 @@ var wasmImports = {
   fd_sync: _fd_sync,
   /** @export */
   fd_write: _fd_write,
+  /** @export */
+  getTempRet0: _getTempRet0,
   /** @export */
   getaddrinfo: _getaddrinfo,
   /** @export */
@@ -9357,19 +9547,456 @@ var wasmImports = {
   /** @export */
   invoke_vji,
   /** @export */
-  is_web_env,
-  /** @export */
   memory: wasmMemory,
   /** @export */
-  proc_exit: _proc_exit
+  proc_exit: _proc_exit,
+  /** @export */
+  sched_yield: _sched_yield,
+  /** @export */
+  setTempRet0: _setTempRet0
 };
 var wasmExports = createWasm();
 var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])();
 var ___wasm_apply_data_relocs = () => (___wasm_apply_data_relocs = wasmExports['__wasm_apply_data_relocs'])();
-var _malloc = (a0) => (_malloc = wasmExports['malloc'])(a0);
+var _ScanKeywordLookup = Module['_ScanKeywordLookup'] = (a0, a1) => (_ScanKeywordLookup = Module['_ScanKeywordLookup'] = wasmExports['ScanKeywordLookup'])(a0, a1);
+var _pg_snprintf = Module['_pg_snprintf'] = (a0, a1, a2, a3) => (_pg_snprintf = Module['_pg_snprintf'] = wasmExports['pg_snprintf'])(a0, a1, a2, a3);
+var _strlen = Module['_strlen'] = (a0) => (_strlen = Module['_strlen'] = wasmExports['strlen'])(a0);
+var _memset = Module['_memset'] = (a0, a1, a2) => (_memset = Module['_memset'] = wasmExports['memset'])(a0, a1, a2);
+var _strchr = Module['_strchr'] = (a0, a1) => (_strchr = Module['_strchr'] = wasmExports['strchr'])(a0, a1);
+var _strstr = Module['_strstr'] = (a0, a1) => (_strstr = Module['_strstr'] = wasmExports['strstr'])(a0, a1);
+var _strspn = Module['_strspn'] = (a0, a1) => (_strspn = Module['_strspn'] = wasmExports['strspn'])(a0, a1);
+var _malloc = Module['_malloc'] = (a0) => (_malloc = Module['_malloc'] = wasmExports['malloc'])(a0);
+var _pg_strcasecmp = Module['_pg_strcasecmp'] = (a0, a1) => (_pg_strcasecmp = Module['_pg_strcasecmp'] = wasmExports['pg_strcasecmp'])(a0, a1);
+var _strcmp = Module['_strcmp'] = (a0, a1) => (_strcmp = Module['_strcmp'] = wasmExports['strcmp'])(a0, a1);
+var _free = Module['_free'] = (a0) => (_free = Module['_free'] = wasmExports['free'])(a0);
+var _memchr = Module['_memchr'] = (a0, a1, a2) => (_memchr = Module['_memchr'] = wasmExports['memchr'])(a0, a1, a2);
 var _getenv = Module['_getenv'] = (a0) => (_getenv = Module['_getenv'] = wasmExports['getenv'])(a0);
+var _fileno = Module['_fileno'] = (a0) => (_fileno = Module['_fileno'] = wasmExports['fileno'])(a0);
+var _isatty = Module['_isatty'] = (a0) => (_isatty = Module['_isatty'] = wasmExports['isatty'])(a0);
+var _strtok = Module['_strtok'] = (a0, a1) => (_strtok = Module['_strtok'] = wasmExports['strtok'])(a0, a1);
+var ___errno_location = Module['___errno_location'] = () => (___errno_location = Module['___errno_location'] = wasmExports['__errno_location'])();
+var _fflush = Module['_fflush'] = (a0) => (_fflush = Module['_fflush'] = wasmExports['fflush'])(a0);
+var _pg_vsnprintf = Module['_pg_vsnprintf'] = (a0, a1, a2, a3) => (_pg_vsnprintf = Module['_pg_vsnprintf'] = wasmExports['pg_vsnprintf'])(a0, a1, a2, a3);
 var _pg_malloc_extended = Module['_pg_malloc_extended'] = (a0, a1) => (_pg_malloc_extended = Module['_pg_malloc_extended'] = wasmExports['pg_malloc_extended'])(a0, a1);
+var _errstart_cold = Module['_errstart_cold'] = (a0, a1) => (_errstart_cold = Module['_errstart_cold'] = wasmExports['errstart_cold'])(a0, a1);
+var _errcode = Module['_errcode'] = (a0) => (_errcode = Module['_errcode'] = wasmExports['errcode'])(a0);
+var _errmsg_plural = Module['_errmsg_plural'] = (a0, a1, a2, a3) => (_errmsg_plural = Module['_errmsg_plural'] = wasmExports['errmsg_plural'])(a0, a1, a2, a3);
+var _errfinish = Module['_errfinish'] = (a0, a1, a2) => (_errfinish = Module['_errfinish'] = wasmExports['errfinish'])(a0, a1, a2);
+var _puts = Module['_puts'] = (a0) => (_puts = Module['_puts'] = wasmExports['puts'])(a0);
+var _errmsg_internal = Module['_errmsg_internal'] = (a0, a1) => (_errmsg_internal = Module['_errmsg_internal'] = wasmExports['errmsg_internal'])(a0, a1);
+var _errmsg = Module['_errmsg'] = (a0, a1) => (_errmsg = Module['_errmsg'] = wasmExports['errmsg'])(a0, a1);
+var _errdetail_internal = Module['_errdetail_internal'] = (a0, a1) => (_errdetail_internal = Module['_errdetail_internal'] = wasmExports['errdetail_internal'])(a0, a1);
+var _get_element_type = Module['_get_element_type'] = (a0) => (_get_element_type = Module['_get_element_type'] = wasmExports['get_element_type'])(a0);
+var _cstring_to_text = Module['_cstring_to_text'] = (a0) => (_cstring_to_text = Module['_cstring_to_text'] = wasmExports['cstring_to_text'])(a0);
+var _table_open = Module['_table_open'] = (a0, a1) => (_table_open = Module['_table_open'] = wasmExports['table_open'])(a0, a1);
+var _SearchSysCache3 = Module['_SearchSysCache3'] = (a0, a1, a2, a3) => (_SearchSysCache3 = Module['_SearchSysCache3'] = wasmExports['SearchSysCache3'])(a0, a1, a2, a3);
+var _errdetail = Module['_errdetail'] = (a0, a1) => (_errdetail = Module['_errdetail'] = wasmExports['errdetail'])(a0, a1);
+var _format_procedure = Module['_format_procedure'] = (a0) => (_format_procedure = Module['_format_procedure'] = wasmExports['format_procedure'])(a0);
+var _errhint = Module['_errhint'] = (a0, a1) => (_errhint = Module['_errhint'] = wasmExports['errhint'])(a0, a1);
+var _SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = (a0, a1, a2) => (_SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = wasmExports['SysCacheGetAttrNotNull'])(a0, a1, a2);
+var _text_to_cstring = Module['_text_to_cstring'] = (a0) => (_text_to_cstring = Module['_text_to_cstring'] = wasmExports['text_to_cstring'])(a0);
+var _exprType = Module['_exprType'] = (a0) => (_exprType = Module['_exprType'] = wasmExports['exprType'])(a0);
+var _ReleaseSysCache = Module['_ReleaseSysCache'] = (a0) => (_ReleaseSysCache = Module['_ReleaseSysCache'] = wasmExports['ReleaseSysCache'])(a0);
+var _heap_form_tuple = Module['_heap_form_tuple'] = (a0, a1, a2) => (_heap_form_tuple = Module['_heap_form_tuple'] = wasmExports['heap_form_tuple'])(a0, a1, a2);
+var _heap_freetuple = Module['_heap_freetuple'] = (a0) => (_heap_freetuple = Module['_heap_freetuple'] = wasmExports['heap_freetuple'])(a0);
+var _table_close = Module['_table_close'] = (a0, a1) => (_table_close = Module['_table_close'] = wasmExports['table_close'])(a0, a1);
+var _CommandCounterIncrement = Module['_CommandCounterIncrement'] = () => (_CommandCounterIncrement = Module['_CommandCounterIncrement'] = wasmExports['CommandCounterIncrement'])();
+var _OidFunctionCall1Coll = Module['_OidFunctionCall1Coll'] = (a0, a1, a2) => (_OidFunctionCall1Coll = Module['_OidFunctionCall1Coll'] = wasmExports['OidFunctionCall1Coll'])(a0, a1, a2);
+var _CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = (a0, a1) => (_CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = wasmExports['CheckFunctionValidatorAccess'])(a0, a1);
+var _SearchSysCache1 = Module['_SearchSysCache1'] = (a0, a1) => (_SearchSysCache1 = Module['_SearchSysCache1'] = wasmExports['SearchSysCache1'])(a0, a1);
+var _get_typtype = Module['_get_typtype'] = (a0) => (_get_typtype = Module['_get_typtype'] = wasmExports['get_typtype'])(a0);
+var _format_type_be = Module['_format_type_be'] = (a0) => (_format_type_be = Module['_format_type_be'] = wasmExports['format_type_be'])(a0);
+var _list_make1_impl = Module['_list_make1_impl'] = (a0, a1) => (_list_make1_impl = Module['_list_make1_impl'] = wasmExports['list_make1_impl'])(a0, a1);
+var _lappend = Module['_lappend'] = (a0, a1) => (_lappend = Module['_lappend'] = wasmExports['lappend'])(a0, a1);
+var _function_parse_error_transpose = Module['_function_parse_error_transpose'] = (a0) => (_function_parse_error_transpose = Module['_function_parse_error_transpose'] = wasmExports['function_parse_error_transpose'])(a0);
+var _set_errcontext_domain = Module['_set_errcontext_domain'] = (a0) => (_set_errcontext_domain = Module['_set_errcontext_domain'] = wasmExports['set_errcontext_domain'])(a0);
+var _errcontext_msg = Module['_errcontext_msg'] = (a0, a1) => (_errcontext_msg = Module['_errcontext_msg'] = wasmExports['errcontext_msg'])(a0, a1);
+var _geterrposition = Module['_geterrposition'] = () => (_geterrposition = Module['_geterrposition'] = wasmExports['geterrposition'])();
+var _getinternalerrposition = Module['_getinternalerrposition'] = () => (_getinternalerrposition = Module['_getinternalerrposition'] = wasmExports['getinternalerrposition'])();
+var _strncmp = Module['_strncmp'] = (a0, a1, a2) => (_strncmp = Module['_strncmp'] = wasmExports['strncmp'])(a0, a1, a2);
+var _pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = (a0, a1) => (_pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = wasmExports['pg_mbstrlen_with_len'])(a0, a1);
+var _errposition = Module['_errposition'] = (a0) => (_errposition = Module['_errposition'] = wasmExports['errposition'])(a0);
+var _internalerrposition = Module['_internalerrposition'] = (a0) => (_internalerrposition = Module['_internalerrposition'] = wasmExports['internalerrposition'])(a0);
+var _internalerrquery = Module['_internalerrquery'] = (a0) => (_internalerrquery = Module['_internalerrquery'] = wasmExports['internalerrquery'])(a0);
+var _pg_detoast_datum = Module['_pg_detoast_datum'] = (a0) => (_pg_detoast_datum = Module['_pg_detoast_datum'] = wasmExports['pg_detoast_datum'])(a0);
+var _ScanKeyInit = Module['_ScanKeyInit'] = (a0, a1, a2, a3, a4) => (_ScanKeyInit = Module['_ScanKeyInit'] = wasmExports['ScanKeyInit'])(a0, a1, a2, a3, a4);
+var _systable_beginscan = Module['_systable_beginscan'] = (a0, a1, a2, a3, a4, a5) => (_systable_beginscan = Module['_systable_beginscan'] = wasmExports['systable_beginscan'])(a0, a1, a2, a3, a4, a5);
+var _systable_getnext = Module['_systable_getnext'] = (a0) => (_systable_getnext = Module['_systable_getnext'] = wasmExports['systable_getnext'])(a0);
+var _systable_endscan = Module['_systable_endscan'] = (a0) => (_systable_endscan = Module['_systable_endscan'] = wasmExports['systable_endscan'])(a0);
+var _RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = (a0, a1, a2, a3, a4) => (_RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = wasmExports['RangeVarGetRelidExtended'])(a0, a1, a2, a3, a4);
+var _errstart = Module['_errstart'] = (a0, a1) => (_errstart = Module['_errstart'] = wasmExports['errstart'])(a0, a1);
+var _GetUserId = Module['_GetUserId'] = () => (_GetUserId = Module['_GetUserId'] = wasmExports['GetUserId'])();
+var _RelnameGetRelid = Module['_RelnameGetRelid'] = (a0) => (_RelnameGetRelid = Module['_RelnameGetRelid'] = wasmExports['RelnameGetRelid'])(a0);
+var _GetSysCacheOid = Module['_GetSysCacheOid'] = (a0, a1, a2, a3, a4, a5) => (_GetSysCacheOid = Module['_GetSysCacheOid'] = wasmExports['GetSysCacheOid'])(a0, a1, a2, a3, a4, a5);
+var _GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = () => (_GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = wasmExports['GetCurrentSubTransactionId'])();
+var _pstrdup = Module['_pstrdup'] = (a0) => (_pstrdup = Module['_pstrdup'] = wasmExports['pstrdup'])(a0);
+var _SplitIdentifierString = Module['_SplitIdentifierString'] = (a0, a1, a2) => (_SplitIdentifierString = Module['_SplitIdentifierString'] = wasmExports['SplitIdentifierString'])(a0, a1, a2);
+var _list_copy = Module['_list_copy'] = (a0) => (_list_copy = Module['_list_copy'] = wasmExports['list_copy'])(a0);
+var _list_free = Module['_list_free'] = (a0) => (_list_free = Module['_list_free'] = wasmExports['list_free'])(a0);
+var _pfree = Module['_pfree'] = (a0) => (_pfree = Module['_pfree'] = wasmExports['pfree'])(a0);
+var _get_namespace_name = Module['_get_namespace_name'] = (a0) => (_get_namespace_name = Module['_get_namespace_name'] = wasmExports['get_namespace_name'])(a0);
+var _TypenameGetTypid = Module['_TypenameGetTypid'] = (a0) => (_TypenameGetTypid = Module['_TypenameGetTypid'] = wasmExports['TypenameGetTypid'])(a0);
+var _FuncnameGetCandidates = Module['_FuncnameGetCandidates'] = (a0, a1, a2, a3, a4, a5, a6) => (_FuncnameGetCandidates = Module['_FuncnameGetCandidates'] = wasmExports['FuncnameGetCandidates'])(a0, a1, a2, a3, a4, a5, a6);
+var _get_func_arg_info = Module['_get_func_arg_info'] = (a0, a1, a2, a3) => (_get_func_arg_info = Module['_get_func_arg_info'] = wasmExports['get_func_arg_info'])(a0, a1, a2, a3);
+var _palloc = Module['_palloc'] = (a0) => (_palloc = Module['_palloc'] = wasmExports['palloc'])(a0);
+var _memcpy = Module['_memcpy'] = (a0, a1, a2) => (_memcpy = Module['_memcpy'] = wasmExports['memcpy'])(a0, a1, a2);
+var _memcmp = Module['_memcmp'] = (a0, a1, a2) => (_memcmp = Module['_memcmp'] = wasmExports['memcmp'])(a0, a1, a2);
+var _NameListToString = Module['_NameListToString'] = (a0) => (_NameListToString = Module['_NameListToString'] = wasmExports['NameListToString'])(a0);
+var _makeString = Module['_makeString'] = (a0) => (_makeString = Module['_makeString'] = wasmExports['makeString'])(a0);
+var _GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = () => (_GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = wasmExports['GetDatabaseEncoding'])();
+var _initStringInfo = Module['_initStringInfo'] = (a0) => (_initStringInfo = Module['_initStringInfo'] = wasmExports['initStringInfo'])(a0);
+var _appendStringInfoChar = Module['_appendStringInfoChar'] = (a0, a1) => (_appendStringInfoChar = Module['_appendStringInfoChar'] = wasmExports['appendStringInfoChar'])(a0, a1);
+var _appendStringInfoString = Module['_appendStringInfoString'] = (a0, a1) => (_appendStringInfoString = Module['_appendStringInfoString'] = wasmExports['appendStringInfoString'])(a0, a1);
+var _makeRangeVar = Module['_makeRangeVar'] = (a0, a1, a2) => (_makeRangeVar = Module['_makeRangeVar'] = wasmExports['makeRangeVar'])(a0, a1, a2);
+var _quote_identifier = Module['_quote_identifier'] = (a0) => (_quote_identifier = Module['_quote_identifier'] = wasmExports['quote_identifier'])(a0);
+var _atoi = Module['_atoi'] = (a0) => (_atoi = Module['_atoi'] = wasmExports['atoi'])(a0);
+var _palloc0 = Module['_palloc0'] = (a0) => (_palloc0 = Module['_palloc0'] = wasmExports['palloc0'])(a0);
+var _get_collation_oid = Module['_get_collation_oid'] = (a0, a1) => (_get_collation_oid = Module['_get_collation_oid'] = wasmExports['get_collation_oid'])(a0, a1);
+var _GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = () => (_GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = wasmExports['GetTransactionSnapshot'])();
+var _PushActiveSnapshot = Module['_PushActiveSnapshot'] = (a0) => (_PushActiveSnapshot = Module['_PushActiveSnapshot'] = wasmExports['PushActiveSnapshot'])(a0);
+var _PopActiveSnapshot = Module['_PopActiveSnapshot'] = () => (_PopActiveSnapshot = Module['_PopActiveSnapshot'] = wasmExports['PopActiveSnapshot'])();
+var _pre_format_elog_string = Module['_pre_format_elog_string'] = (a0, a1) => (_pre_format_elog_string = Module['_pre_format_elog_string'] = wasmExports['pre_format_elog_string'])(a0, a1);
+var _format_elog_string = Module['_format_elog_string'] = (a0, a1) => (_format_elog_string = Module['_format_elog_string'] = wasmExports['format_elog_string'])(a0, a1);
+var _makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = (a0) => (_makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = wasmExports['makeTypeNameFromNameList'])(a0);
+var _list_concat = Module['_list_concat'] = (a0, a1) => (_list_concat = Module['_list_concat'] = wasmExports['list_concat'])(a0, a1);
+var _SearchSysCache2 = Module['_SearchSysCache2'] = (a0, a1, a2) => (_SearchSysCache2 = Module['_SearchSysCache2'] = wasmExports['SearchSysCache2'])(a0, a1, a2);
+var _pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = (a0) => (_pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = wasmExports['pg_detoast_datum_copy'])(a0);
+var _get_attnum = Module['_get_attnum'] = (a0, a1) => (_get_attnum = Module['_get_attnum'] = wasmExports['get_attnum'])(a0, a1);
+var _get_rel_name = Module['_get_rel_name'] = (a0) => (_get_rel_name = Module['_get_rel_name'] = wasmExports['get_rel_name'])(a0);
+var _has_privs_of_role = Module['_has_privs_of_role'] = (a0, a1) => (_has_privs_of_role = Module['_has_privs_of_role'] = wasmExports['has_privs_of_role'])(a0, a1);
+var _getmissingattr = Module['_getmissingattr'] = (a0, a1, a2) => (_getmissingattr = Module['_getmissingattr'] = wasmExports['getmissingattr'])(a0, a1, a2);
+var _nocachegetattr = Module['_nocachegetattr'] = (a0, a1, a2) => (_nocachegetattr = Module['_nocachegetattr'] = wasmExports['nocachegetattr'])(a0, a1, a2);
+var _heap_getsysattr = Module['_heap_getsysattr'] = (a0, a1, a2, a3) => (_heap_getsysattr = Module['_heap_getsysattr'] = wasmExports['heap_getsysattr'])(a0, a1, a2, a3);
+var _CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = (a0) => (_CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = wasmExports['CreateTemplateTupleDesc'])(a0);
+var _TupleDescInitEntry = Module['_TupleDescInitEntry'] = (a0, a1, a2, a3, a4, a5) => (_TupleDescInitEntry = Module['_TupleDescInitEntry'] = wasmExports['TupleDescInitEntry'])(a0, a1, a2, a3, a4, a5);
+var _MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = (a0, a1) => (_MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = wasmExports['MemoryContextAllocZeroAligned'])(a0, a1);
+var _list_make2_impl = Module['_list_make2_impl'] = (a0, a1, a2) => (_list_make2_impl = Module['_list_make2_impl'] = wasmExports['list_make2_impl'])(a0, a1, a2);
+var _RelationGetIndexList = Module['_RelationGetIndexList'] = (a0) => (_RelationGetIndexList = Module['_RelationGetIndexList'] = wasmExports['RelationGetIndexList'])(a0);
+var _exprTypmod = Module['_exprTypmod'] = (a0) => (_exprTypmod = Module['_exprTypmod'] = wasmExports['exprTypmod'])(a0);
+var _get_base_element_type = Module['_get_base_element_type'] = (a0) => (_get_base_element_type = Module['_get_base_element_type'] = wasmExports['get_base_element_type'])(a0);
+var _index_close = Module['_index_close'] = (a0, a1) => (_index_close = Module['_index_close'] = wasmExports['index_close'])(a0, a1);
+var _RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = (a0, a1) => (_RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = wasmExports['RelationGetNumberOfBlocksInFork'])(a0, a1);
+var _plan_create_index_workers = Module['_plan_create_index_workers'] = (a0, a1) => (_plan_create_index_workers = Module['_plan_create_index_workers'] = wasmExports['plan_create_index_workers'])(a0, a1);
+var _CreateExecutorState = Module['_CreateExecutorState'] = () => (_CreateExecutorState = Module['_CreateExecutorState'] = wasmExports['CreateExecutorState'])();
+var _RegisterSnapshot = Module['_RegisterSnapshot'] = (a0) => (_RegisterSnapshot = Module['_RegisterSnapshot'] = wasmExports['RegisterSnapshot'])(a0);
+var _ProcessInterrupts = Module['_ProcessInterrupts'] = () => (_ProcessInterrupts = Module['_ProcessInterrupts'] = wasmExports['ProcessInterrupts'])();
+var _MemoryContextReset = Module['_MemoryContextReset'] = (a0) => (_MemoryContextReset = Module['_MemoryContextReset'] = wasmExports['MemoryContextReset'])(a0);
+var _UnregisterSnapshot = Module['_UnregisterSnapshot'] = (a0) => (_UnregisterSnapshot = Module['_UnregisterSnapshot'] = wasmExports['UnregisterSnapshot'])(a0);
+var _FreeExecutorState = Module['_FreeExecutorState'] = (a0) => (_FreeExecutorState = Module['_FreeExecutorState'] = wasmExports['FreeExecutorState'])(a0);
+var _index_open = Module['_index_open'] = (a0, a1) => (_index_open = Module['_index_open'] = wasmExports['index_open'])(a0, a1);
+var _BuildIndexInfo = Module['_BuildIndexInfo'] = (a0) => (_BuildIndexInfo = Module['_BuildIndexInfo'] = wasmExports['BuildIndexInfo'])(a0);
+var _get_opfamily_member = Module['_get_opfamily_member'] = (a0, a1, a2, a3) => (_get_opfamily_member = Module['_get_opfamily_member'] = wasmExports['get_opfamily_member'])(a0, a1, a2, a3);
+var _slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = (a0, a1) => (_slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = wasmExports['slot_getsomeattrs_int'])(a0, a1);
+var _tuplesort_performsort = Module['_tuplesort_performsort'] = (a0) => (_tuplesort_performsort = Module['_tuplesort_performsort'] = wasmExports['tuplesort_performsort'])(a0);
+var _pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = (a0, a1) => (_pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = wasmExports['pgstat_progress_update_param'])(a0, a1);
+var _tuplesort_end = Module['_tuplesort_end'] = (a0) => (_tuplesort_end = Module['_tuplesort_end'] = wasmExports['tuplesort_end'])(a0);
+var _Int64GetDatum = Module['_Int64GetDatum'] = (a0) => (_Int64GetDatum = Module['_Int64GetDatum'] = wasmExports['Int64GetDatum'])(a0);
+var _repalloc = Module['_repalloc'] = (a0, a1) => (_repalloc = Module['_repalloc'] = wasmExports['repalloc'])(a0, a1);
+var _pg_qsort = Module['_pg_qsort'] = (a0, a1, a2, a3) => (_pg_qsort = Module['_pg_qsort'] = wasmExports['pg_qsort'])(a0, a1, a2, a3);
+var _appendStringInfo = Module['_appendStringInfo'] = (a0, a1, a2) => (_appendStringInfo = Module['_appendStringInfo'] = wasmExports['appendStringInfo'])(a0, a1, a2);
+var _MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = (a0, a1) => (_MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = wasmExports['MakeSingleTupleTableSlot'])(a0, a1);
+var _ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = (a0) => (_ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = wasmExports['ExecStoreVirtualTuple'])(a0);
+var _AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = (a0, a1, a2, a3, a4) => (_AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = wasmExports['AllocSetContextCreateInternal'])(a0, a1, a2, a3, a4);
+var _MemoryContextDelete = Module['_MemoryContextDelete'] = (a0) => (_MemoryContextDelete = Module['_MemoryContextDelete'] = wasmExports['MemoryContextDelete'])(a0);
+var _MemoryContextAlloc = Module['_MemoryContextAlloc'] = (a0, a1) => (_MemoryContextAlloc = Module['_MemoryContextAlloc'] = wasmExports['MemoryContextAlloc'])(a0, a1);
+var _hash_create = Module['_hash_create'] = (a0, a1, a2, a3) => (_hash_create = Module['_hash_create'] = wasmExports['hash_create'])(a0, a1, a2, a3);
+var _hash_search = Module['_hash_search'] = (a0, a1, a2, a3) => (_hash_search = Module['_hash_search'] = wasmExports['hash_search'])(a0, a1, a2, a3);
+var _hash_get_num_entries = Module['_hash_get_num_entries'] = (a0) => (_hash_get_num_entries = Module['_hash_get_num_entries'] = wasmExports['hash_get_num_entries'])(a0);
+var _hash_seq_init = Module['_hash_seq_init'] = (a0, a1) => (_hash_seq_init = Module['_hash_seq_init'] = wasmExports['hash_seq_init'])(a0, a1);
+var _hash_seq_search = Module['_hash_seq_search'] = (a0) => (_hash_seq_search = Module['_hash_seq_search'] = wasmExports['hash_seq_search'])(a0);
+var _log_newpage_range = Module['_log_newpage_range'] = (a0, a1, a2, a3, a4) => (_log_newpage_range = Module['_log_newpage_range'] = wasmExports['log_newpage_range'])(a0, a1, a2, a3, a4);
+var _bms_add_member = Module['_bms_add_member'] = (a0, a1) => (_bms_add_member = Module['_bms_add_member'] = wasmExports['bms_add_member'])(a0, a1);
+var _bms_is_member = Module['_bms_is_member'] = (a0, a1) => (_bms_is_member = Module['_bms_is_member'] = wasmExports['bms_is_member'])(a0, a1);
+var _list_sort = Module['_list_sort'] = (a0, a1) => (_list_sort = Module['_list_sort'] = wasmExports['list_sort'])(a0, a1);
+var _init_MultiFuncCall = Module['_init_MultiFuncCall'] = (a0) => (_init_MultiFuncCall = Module['_init_MultiFuncCall'] = wasmExports['init_MultiFuncCall'])(a0);
+var _deconstruct_array = Module['_deconstruct_array'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_deconstruct_array = Module['_deconstruct_array'] = wasmExports['deconstruct_array'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _BlessTupleDesc = Module['_BlessTupleDesc'] = (a0) => (_BlessTupleDesc = Module['_BlessTupleDesc'] = wasmExports['BlessTupleDesc'])(a0);
+var _per_MultiFuncCall = Module['_per_MultiFuncCall'] = (a0) => (_per_MultiFuncCall = Module['_per_MultiFuncCall'] = wasmExports['per_MultiFuncCall'])(a0);
+var _HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = (a0) => (_HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = wasmExports['HeapTupleHeaderGetDatum'])(a0);
+var _end_MultiFuncCall = Module['_end_MultiFuncCall'] = (a0, a1) => (_end_MultiFuncCall = Module['_end_MultiFuncCall'] = wasmExports['end_MultiFuncCall'])(a0, a1);
+var _check_stack_depth = Module['_check_stack_depth'] = () => (_check_stack_depth = Module['_check_stack_depth'] = wasmExports['check_stack_depth'])();
+var _getBaseType = Module['_getBaseType'] = (a0) => (_getBaseType = Module['_getBaseType'] = wasmExports['getBaseType'])(a0);
+var _list_delete_last = Module['_list_delete_last'] = (a0) => (_list_delete_last = Module['_list_delete_last'] = wasmExports['list_delete_last'])(a0);
+var _SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = (a0, a1) => (_SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = wasmExports['SearchSysCacheAttName'])(a0, a1);
+var _coerce_to_target_type = Module['_coerce_to_target_type'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_coerce_to_target_type = Module['_coerce_to_target_type'] = wasmExports['coerce_to_target_type'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _parser_errposition = Module['_parser_errposition'] = (a0, a1) => (_parser_errposition = Module['_parser_errposition'] = wasmExports['parser_errposition'])(a0, a1);
+var _get_func_name = Module['_get_func_name'] = (a0) => (_get_func_name = Module['_get_func_name'] = wasmExports['get_func_name'])(a0);
+var _access = Module['_access'] = (a0, a1) => (_access = Module['_access'] = wasmExports['access'])(a0, a1);
+var _get_extension_oid = Module['_get_extension_oid'] = (a0, a1) => (_get_extension_oid = Module['_get_extension_oid'] = wasmExports['get_extension_oid'])(a0, a1);
+var _LookupTypeName = Module['_LookupTypeName'] = (a0, a1, a2, a3) => (_LookupTypeName = Module['_LookupTypeName'] = wasmExports['LookupTypeName'])(a0, a1, a2, a3);
+var _typeStringToTypeName = Module['_typeStringToTypeName'] = (a0, a1) => (_typeStringToTypeName = Module['_typeStringToTypeName'] = wasmExports['typeStringToTypeName'])(a0, a1);
+var _get_call_result_type = Module['_get_call_result_type'] = (a0, a1, a2) => (_get_call_result_type = Module['_get_call_result_type'] = wasmExports['get_call_result_type'])(a0, a1, a2);
+var _quote_qualified_identifier = Module['_quote_qualified_identifier'] = (a0, a1) => (_quote_qualified_identifier = Module['_quote_qualified_identifier'] = wasmExports['quote_qualified_identifier'])(a0, a1);
+var _list_make3_impl = Module['_list_make3_impl'] = (a0, a1, a2, a3) => (_list_make3_impl = Module['_list_make3_impl'] = wasmExports['list_make3_impl'])(a0, a1, a2, a3);
+var _construct_md_array = Module['_construct_md_array'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_construct_md_array = Module['_construct_md_array'] = wasmExports['construct_md_array'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _construct_array = Module['_construct_array'] = (a0, a1, a2, a3, a4, a5) => (_construct_array = Module['_construct_array'] = wasmExports['construct_array'])(a0, a1, a2, a3, a4, a5);
+var _pnstrdup = Module['_pnstrdup'] = (a0, a1) => (_pnstrdup = Module['_pnstrdup'] = wasmExports['pnstrdup'])(a0, a1);
+var _stat = Module['_stat'] = (a0, a1) => (_stat = Module['_stat'] = wasmExports['stat'])(a0, a1);
+var _errcode_for_file_access = Module['_errcode_for_file_access'] = () => (_errcode_for_file_access = Module['_errcode_for_file_access'] = wasmExports['errcode_for_file_access'])();
 var _lowerstr = Module['_lowerstr'] = (a0) => (_lowerstr = Module['_lowerstr'] = wasmExports['lowerstr'])(a0);
+var _bsearch = Module['_bsearch'] = (a0, a1, a2, a3, a4) => (_bsearch = Module['_bsearch'] = wasmExports['bsearch'])(a0, a1, a2, a3, a4);
+var _stringToQualifiedNameList = Module['_stringToQualifiedNameList'] = (a0, a1) => (_stringToQualifiedNameList = Module['_stringToQualifiedNameList'] = wasmExports['stringToQualifiedNameList'])(a0, a1);
+var _AllocateFile = Module['_AllocateFile'] = (a0, a1) => (_AllocateFile = Module['_AllocateFile'] = wasmExports['AllocateFile'])(a0, a1);
+var _pg_any_to_server = Module['_pg_any_to_server'] = (a0, a1, a2) => (_pg_any_to_server = Module['_pg_any_to_server'] = wasmExports['pg_any_to_server'])(a0, a1, a2);
+var _FreeFile = Module['_FreeFile'] = (a0) => (_FreeFile = Module['_FreeFile'] = wasmExports['FreeFile'])(a0);
+var _tolower = Module['_tolower'] = (a0) => (_tolower = Module['_tolower'] = wasmExports['tolower'])(a0);
+var _get_restriction_variable = Module['_get_restriction_variable'] = (a0, a1, a2, a3, a4, a5) => (_get_restriction_variable = Module['_get_restriction_variable'] = wasmExports['get_restriction_variable'])(a0, a1, a2, a3, a4, a5);
+var _get_attstatsslot = Module['_get_attstatsslot'] = (a0, a1, a2, a3, a4) => (_get_attstatsslot = Module['_get_attstatsslot'] = wasmExports['get_attstatsslot'])(a0, a1, a2, a3, a4);
+var _free_attstatsslot = Module['_free_attstatsslot'] = (a0) => (_free_attstatsslot = Module['_free_attstatsslot'] = wasmExports['free_attstatsslot'])(a0);
+var _Float8GetDatum = Module['_Float8GetDatum'] = (a0) => (_Float8GetDatum = Module['_Float8GetDatum'] = wasmExports['Float8GetDatum'])(a0);
+var _pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = (a0) => (_pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = wasmExports['pg_detoast_datum_packed'])(a0);
+var _DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = (a0, a1, a2, a3) => (_DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = wasmExports['DirectFunctionCall2Coll'])(a0, a1, a2, a3);
+var _strcpy = Module['_strcpy'] = (a0, a1) => (_strcpy = Module['_strcpy'] = wasmExports['strcpy'])(a0, a1);
+var _strtol = Module['_strtol'] = (a0, a1, a2) => (_strtol = Module['_strtol'] = wasmExports['strtol'])(a0, a1, a2);
+var _pg_sprintf = Module['_pg_sprintf'] = (a0, a1, a2) => (_pg_sprintf = Module['_pg_sprintf'] = wasmExports['pg_sprintf'])(a0, a1, a2);
+var _strcat = Module['_strcat'] = (a0, a1) => (_strcat = Module['_strcat'] = wasmExports['strcat'])(a0, a1);
+var _TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = (a0) => (_TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = wasmExports['TupleDescGetAttInMetadata'])(a0);
+var _BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = (a0, a1) => (_BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = wasmExports['BuildTupleFromCStrings'])(a0, a1);
+var _FunctionCall2Coll = Module['_FunctionCall2Coll'] = (a0, a1, a2, a3) => (_FunctionCall2Coll = Module['_FunctionCall2Coll'] = wasmExports['FunctionCall2Coll'])(a0, a1, a2, a3);
+var _FunctionCall1Coll = Module['_FunctionCall1Coll'] = (a0, a1, a2) => (_FunctionCall1Coll = Module['_FunctionCall1Coll'] = wasmExports['FunctionCall1Coll'])(a0, a1, a2);
+var _DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = (a0, a1, a2, a3, a4) => (_DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = wasmExports['DirectFunctionCall3Coll'])(a0, a1, a2, a3, a4);
+var _DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = wasmExports['DirectFunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
+var _vacuum_delay_point = Module['_vacuum_delay_point'] = () => (_vacuum_delay_point = Module['_vacuum_delay_point'] = wasmExports['vacuum_delay_point'])();
+var _cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = (a0, a1) => (_cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = wasmExports['cstring_to_text_with_len'])(a0, a1);
+var _hash_bytes = Module['_hash_bytes'] = (a0, a1) => (_hash_bytes = Module['_hash_bytes'] = wasmExports['hash_bytes'])(a0, a1);
+var _ItemPointerEquals = Module['_ItemPointerEquals'] = (a0, a1) => (_ItemPointerEquals = Module['_ItemPointerEquals'] = wasmExports['ItemPointerEquals'])(a0, a1);
+var _PageInit = Module['_PageInit'] = (a0, a1, a2) => (_PageInit = Module['_PageInit'] = wasmExports['PageInit'])(a0, a1, a2);
+var _PageAddItemExtended = Module['_PageAddItemExtended'] = (a0, a1, a2, a3, a4) => (_PageAddItemExtended = Module['_PageAddItemExtended'] = wasmExports['PageAddItemExtended'])(a0, a1, a2, a3, a4);
+var _memmove = Module['_memmove'] = (a0, a1, a2) => (_memmove = Module['_memmove'] = wasmExports['memmove'])(a0, a1, a2);
+var _PageGetFreeSpace = Module['_PageGetFreeSpace'] = (a0) => (_PageGetFreeSpace = Module['_PageGetFreeSpace'] = wasmExports['PageGetFreeSpace'])(a0);
+var _PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = (a0) => (_PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = wasmExports['PageGetExactFreeSpace'])(a0);
+var _PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = (a0, a1, a2) => (_PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = wasmExports['PageIndexMultiDelete'])(a0, a1, a2);
+var _PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = (a0, a1, a2, a3) => (_PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = wasmExports['PageIndexTupleOverwrite'])(a0, a1, a2, a3);
+var _clock_gettime = Module['_clock_gettime'] = (a0, a1) => (_clock_gettime = Module['_clock_gettime'] = wasmExports['clock_gettime'])(a0, a1);
+var _unlink = Module['_unlink'] = (a0) => (_unlink = Module['_unlink'] = wasmExports['unlink'])(a0);
+var _LockBuffer = Module['_LockBuffer'] = (a0, a1) => (_LockBuffer = Module['_LockBuffer'] = wasmExports['LockBuffer'])(a0, a1);
+var _UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = (a0) => (_UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = wasmExports['UnlockReleaseBuffer'])(a0);
+var _ReleaseBuffer = Module['_ReleaseBuffer'] = (a0) => (_ReleaseBuffer = Module['_ReleaseBuffer'] = wasmExports['ReleaseBuffer'])(a0);
+var _ReadBufferExtended = Module['_ReadBufferExtended'] = (a0, a1, a2, a3, a4) => (_ReadBufferExtended = Module['_ReadBufferExtended'] = wasmExports['ReadBufferExtended'])(a0, a1, a2, a3, a4);
+var _MarkBufferDirty = Module['_MarkBufferDirty'] = (a0) => (_MarkBufferDirty = Module['_MarkBufferDirty'] = wasmExports['MarkBufferDirty'])(a0);
+var _s_init_lock_sema = Module['_s_init_lock_sema'] = (a0, a1) => (_s_init_lock_sema = Module['_s_init_lock_sema'] = wasmExports['s_init_lock_sema'])(a0, a1);
+var _tas_sema = Module['_tas_sema'] = (a0) => (_tas_sema = Module['_tas_sema'] = wasmExports['tas_sema'])(a0);
+var _s_lock = Module['_s_lock'] = (a0, a1, a2, a3) => (_s_lock = Module['_s_lock'] = wasmExports['s_lock'])(a0, a1, a2, a3);
+var _s_unlock_sema = Module['_s_unlock_sema'] = (a0) => (_s_unlock_sema = Module['_s_unlock_sema'] = wasmExports['s_unlock_sema'])(a0);
+var _strtoul = Module['_strtoul'] = (a0, a1, a2) => (_strtoul = Module['_strtoul'] = wasmExports['strtoul'])(a0, a1, a2);
+var _fiprintf = Module['_fiprintf'] = (a0, a1, a2) => (_fiprintf = Module['_fiprintf'] = wasmExports['fiprintf'])(a0, a1, a2);
+var _fopen = Module['_fopen'] = (a0, a1) => (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1);
+var _fclose = Module['_fclose'] = (a0) => (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0);
+var _truncate = Module['_truncate'] = (a0, a1) => (_truncate = Module['_truncate'] = wasmExports['truncate'])(a0, a1);
+var _pg_printf = Module['_pg_printf'] = (a0, a1) => (_pg_printf = Module['_pg_printf'] = wasmExports['pg_printf'])(a0, a1);
+var _CloseTransientFile = Module['_CloseTransientFile'] = (a0) => (_CloseTransientFile = Module['_CloseTransientFile'] = wasmExports['CloseTransientFile'])(a0);
+var _fd_durable_rename = Module['_fd_durable_rename'] = (a0, a1, a2) => (_fd_durable_rename = Module['_fd_durable_rename'] = wasmExports['fd_durable_rename'])(a0, a1, a2);
+var _rename = Module['_rename'] = (a0, a1) => (_rename = Module['_rename'] = wasmExports['rename'])(a0, a1);
+var _OpenTransientFile = Module['_OpenTransientFile'] = (a0, a1) => (_OpenTransientFile = Module['_OpenTransientFile'] = wasmExports['OpenTransientFile'])(a0, a1);
+var _close = Module['_close'] = (a0) => (_close = Module['_close'] = wasmExports['close'])(a0);
+var _dup = Module['_dup'] = (a0) => (_dup = Module['_dup'] = wasmExports['dup'])(a0);
+var _open = Module['_open'] = (a0, a1, a2) => (_open = Module['_open'] = wasmExports['open'])(a0, a1, a2);
+var _realloc = Module['_realloc'] = (a0, a1) => (_realloc = Module['_realloc'] = wasmExports['realloc'])(a0, a1);
+var _mkdir = Module['_mkdir'] = (a0, a1) => (_mkdir = Module['_mkdir'] = wasmExports['mkdir'])(a0, a1);
+var _pwrite = Module['_pwrite'] = (a0, a1, a2, a3) => (_pwrite = Module['_pwrite'] = wasmExports['pwrite'])(a0, a1, a2, a3);
+var _lseek = Module['_lseek'] = (a0, a1, a2) => (_lseek = Module['_lseek'] = wasmExports['lseek'])(a0, a1, a2);
+var _ftruncate = Module['_ftruncate'] = (a0, a1) => (_ftruncate = Module['_ftruncate'] = wasmExports['ftruncate'])(a0, a1);
+var _closedir = Module['_closedir'] = (a0) => (_closedir = Module['_closedir'] = wasmExports['closedir'])(a0);
+var _opendir = Module['_opendir'] = (a0) => (_opendir = Module['_opendir'] = wasmExports['opendir'])(a0);
+var _readdir = Module['_readdir'] = (a0) => (_readdir = Module['_readdir'] = wasmExports['readdir'])(a0);
+var _lstat = Module['_lstat'] = (a0, a1) => (_lstat = Module['_lstat'] = wasmExports['lstat'])(a0, a1);
+var _guc_malloc = Module['_guc_malloc'] = (a0, a1) => (_guc_malloc = Module['_guc_malloc'] = wasmExports['guc_malloc'])(a0, a1);
+var _read = Module['_read'] = (a0, a1, a2) => (_read = Module['_read'] = wasmExports['read'])(a0, a1, a2);
+var _write = Module['_write'] = (a0, a1, a2) => (_write = Module['_write'] = wasmExports['write'])(a0, a1, a2);
+var _add_size = Module['_add_size'] = (a0, a1) => (_add_size = Module['_add_size'] = wasmExports['add_size'])(a0, a1);
+var _MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = (a0, a1) => (_MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = wasmExports['MemoryContextAllocZero'])(a0, a1);
+var _LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = (a0, a1) => (_LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = wasmExports['LWLockRegisterTranche'])(a0, a1);
+var _GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = (a0) => (_GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = wasmExports['GetNamedLWLockTranche'])(a0);
+var _LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = () => (_LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = wasmExports['LWLockNewTrancheId'])();
+var _RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = (a0, a1) => (_RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = wasmExports['RequestNamedLWLockTranche'])(a0, a1);
+var _LWLockInitialize = Module['_LWLockInitialize'] = (a0, a1) => (_LWLockInitialize = Module['_LWLockInitialize'] = wasmExports['LWLockInitialize'])(a0, a1);
+var _LWLockAcquire = Module['_LWLockAcquire'] = (a0, a1) => (_LWLockAcquire = Module['_LWLockAcquire'] = wasmExports['LWLockAcquire'])(a0, a1);
+var _LWLockRelease = Module['_LWLockRelease'] = (a0) => (_LWLockRelease = Module['_LWLockRelease'] = wasmExports['LWLockRelease'])(a0);
+var _LockRelationForExtension = Module['_LockRelationForExtension'] = (a0, a1) => (_LockRelationForExtension = Module['_LockRelationForExtension'] = wasmExports['LockRelationForExtension'])(a0, a1);
+var _UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = (a0, a1) => (_UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = wasmExports['UnlockRelationForExtension'])(a0, a1);
+var _LockPage = Module['_LockPage'] = (a0, a1, a2) => (_LockPage = Module['_LockPage'] = wasmExports['LockPage'])(a0, a1, a2);
+var _UnlockPage = Module['_UnlockPage'] = (a0, a1, a2) => (_UnlockPage = Module['_UnlockPage'] = wasmExports['UnlockPage'])(a0, a1, a2);
+var _ShmemInitHash = Module['_ShmemInitHash'] = (a0, a1, a2, a3, a4) => (_ShmemInitHash = Module['_ShmemInitHash'] = wasmExports['ShmemInitHash'])(a0, a1, a2, a3, a4);
+var _ShmemInitStruct = Module['_ShmemInitStruct'] = (a0, a1, a2) => (_ShmemInitStruct = Module['_ShmemInitStruct'] = wasmExports['ShmemInitStruct'])(a0, a1, a2);
+var ___wasm_setjmp_test = Module['___wasm_setjmp_test'] = (a0, a1) => (___wasm_setjmp_test = Module['___wasm_setjmp_test'] = wasmExports['__wasm_setjmp_test'])(a0, a1);
+var ___wasm_setjmp = Module['___wasm_setjmp'] = (a0, a1, a2) => (___wasm_setjmp = Module['___wasm_setjmp'] = wasmExports['__wasm_setjmp'])(a0, a1, a2);
+var _pg_re_throw = Module['_pg_re_throw'] = () => (_pg_re_throw = Module['_pg_re_throw'] = wasmExports['pg_re_throw'])();
+var _emscripten_longjmp = Module['_emscripten_longjmp'] = (a0, a1) => (_emscripten_longjmp = Module['_emscripten_longjmp'] = wasmExports['emscripten_longjmp'])(a0, a1);
+var _hash_estimate_size = Module['_hash_estimate_size'] = (a0, a1) => (_hash_estimate_size = Module['_hash_estimate_size'] = wasmExports['hash_estimate_size'])(a0, a1);
+var _ConditionVariableInit = Module['_ConditionVariableInit'] = (a0) => (_ConditionVariableInit = Module['_ConditionVariableInit'] = wasmExports['ConditionVariableInit'])(a0);
+var _ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = () => (_ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = wasmExports['ConditionVariableCancelSleep'])();
+var _ConditionVariableSleep = Module['_ConditionVariableSleep'] = (a0, a1) => (_ConditionVariableSleep = Module['_ConditionVariableSleep'] = wasmExports['ConditionVariableSleep'])(a0, a1);
+var _ConditionVariableSignal = Module['_ConditionVariableSignal'] = (a0) => (_ConditionVariableSignal = Module['_ConditionVariableSignal'] = wasmExports['ConditionVariableSignal'])(a0);
+var _resetStringInfo = Module['_resetStringInfo'] = (a0) => (_resetStringInfo = Module['_resetStringInfo'] = wasmExports['resetStringInfo'])(a0);
+var _appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = (a0, a1, a2) => (_appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = wasmExports['appendBinaryStringInfo'])(a0, a1, a2);
+var _pg_prng_double = Module['_pg_prng_double'] = (a0) => (_pg_prng_double = Module['_pg_prng_double'] = wasmExports['pg_prng_double'])(a0);
+var _on_shmem_exit = Module['_on_shmem_exit'] = (a0, a1) => (_on_shmem_exit = Module['_on_shmem_exit'] = wasmExports['on_shmem_exit'])(a0, a1);
+var _getpid = Module['_getpid'] = () => (_getpid = Module['_getpid'] = wasmExports['getpid'])();
+var _GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = () => (_GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = wasmExports['GetCurrentTimestamp'])();
+var _pqsignal = Module['_pqsignal'] = (a0, a1) => (_pqsignal = Module['_pqsignal'] = wasmExports['pqsignal'])(a0, a1);
+var _InitMaterializedSRF = Module['_InitMaterializedSRF'] = (a0, a1) => (_InitMaterializedSRF = Module['_InitMaterializedSRF'] = wasmExports['InitMaterializedSRF'])(a0, a1);
+var _tuplestore_putvalues = Module['_tuplestore_putvalues'] = (a0, a1, a2, a3) => (_tuplestore_putvalues = Module['_tuplestore_putvalues'] = wasmExports['tuplestore_putvalues'])(a0, a1, a2, a3);
+var _GetCurrentTransactionId = Module['_GetCurrentTransactionId'] = () => (_GetCurrentTransactionId = Module['_GetCurrentTransactionId'] = wasmExports['GetCurrentTransactionId'])();
+var _pg_prng_uint32 = Module['_pg_prng_uint32'] = (a0) => (_pg_prng_uint32 = Module['_pg_prng_uint32'] = wasmExports['pg_prng_uint32'])(a0);
+var _shm_toc_allocate = Module['_shm_toc_allocate'] = (a0, a1) => (_shm_toc_allocate = Module['_shm_toc_allocate'] = wasmExports['shm_toc_allocate'])(a0, a1);
+var _shm_toc_insert = Module['_shm_toc_insert'] = (a0, a1, a2) => (_shm_toc_insert = Module['_shm_toc_insert'] = wasmExports['shm_toc_insert'])(a0, a1, a2);
+var _shm_toc_lookup = Module['_shm_toc_lookup'] = (a0, a1, a2) => (_shm_toc_lookup = Module['_shm_toc_lookup'] = wasmExports['shm_toc_lookup'])(a0, a1, a2);
+var _RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = (a0) => (_RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = wasmExports['RequestAddinShmemSpace'])(a0);
+var _fstat = Module['_fstat'] = (a0, a1) => (_fstat = Module['_fstat'] = wasmExports['fstat'])(a0, a1);
+var _GetAccessStrategy = Module['_GetAccessStrategy'] = (a0) => (_GetAccessStrategy = Module['_GetAccessStrategy'] = wasmExports['GetAccessStrategy'])(a0);
+var _FreeAccessStrategy = Module['_FreeAccessStrategy'] = (a0) => (_FreeAccessStrategy = Module['_FreeAccessStrategy'] = wasmExports['FreeAccessStrategy'])(a0);
+var _ReadBuffer = Module['_ReadBuffer'] = (a0, a1) => (_ReadBuffer = Module['_ReadBuffer'] = wasmExports['ReadBuffer'])(a0, a1);
+var _pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = (a0) => (_pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = wasmExports['pgstat_assoc_relation'])(a0);
+var _LockBufferForCleanup = Module['_LockBufferForCleanup'] = (a0) => (_LockBufferForCleanup = Module['_LockBufferForCleanup'] = wasmExports['LockBufferForCleanup'])(a0);
+var _BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = (a0) => (_BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = wasmExports['BufferGetBlockNumber'])(a0);
+var _calloc = Module['_calloc'] = (a0, a1) => (_calloc = Module['_calloc'] = wasmExports['calloc'])(a0, a1);
+var _ldexp = Module['_ldexp'] = (a0, a1) => (_ldexp = Module['_ldexp'] = wasmExports['ldexp'])(a0, a1);
+var _log = Module['_log'] = (a0) => (_log = Module['_log'] = wasmExports['log'])(a0);
+var _pairingheap_allocate = Module['_pairingheap_allocate'] = (a0, a1) => (_pairingheap_allocate = Module['_pairingheap_allocate'] = wasmExports['pairingheap_allocate'])(a0, a1);
+var _pairingheap_free = Module['_pairingheap_free'] = (a0) => (_pairingheap_free = Module['_pairingheap_free'] = wasmExports['pairingheap_free'])(a0);
+var _pairingheap_add = Module['_pairingheap_add'] = (a0, a1) => (_pairingheap_add = Module['_pairingheap_add'] = wasmExports['pairingheap_add'])(a0, a1);
+var _pairingheap_first = Module['_pairingheap_first'] = (a0) => (_pairingheap_first = Module['_pairingheap_first'] = wasmExports['pairingheap_first'])(a0);
+var _pairingheap_remove_first = Module['_pairingheap_remove_first'] = (a0) => (_pairingheap_remove_first = Module['_pairingheap_remove_first'] = wasmExports['pairingheap_remove_first'])(a0);
+var _DatumGetEOHP = Module['_DatumGetEOHP'] = (a0) => (_DatumGetEOHP = Module['_DatumGetEOHP'] = wasmExports['DatumGetEOHP'])(a0);
+var _EOH_get_flat_size = Module['_EOH_get_flat_size'] = (a0) => (_EOH_get_flat_size = Module['_EOH_get_flat_size'] = wasmExports['EOH_get_flat_size'])(a0);
+var _EOH_flatten_into = Module['_EOH_flatten_into'] = (a0, a1, a2) => (_EOH_flatten_into = Module['_EOH_flatten_into'] = wasmExports['EOH_flatten_into'])(a0, a1, a2);
+var _DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = (a0) => (_DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = wasmExports['DecrTupleDescRefCount'])(a0);
+var _heap_deform_tuple = Module['_heap_deform_tuple'] = (a0, a1, a2, a3) => (_heap_deform_tuple = Module['_heap_deform_tuple'] = wasmExports['heap_deform_tuple'])(a0, a1, a2, a3);
+var _TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = (a0, a1, a2) => (_TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = wasmExports['TupleDescInitEntryCollation'])(a0, a1, a2);
+var _lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = (a0, a1) => (_lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = wasmExports['lookup_rowtype_tupdesc'])(a0, a1);
+var _ExecInitExpr = Module['_ExecInitExpr'] = (a0, a1) => (_ExecInitExpr = Module['_ExecInitExpr'] = wasmExports['ExecInitExpr'])(a0, a1);
+var _tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = (a0, a1, a2) => (_tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = wasmExports['tuplestore_begin_heap'])(a0, a1, a2);
+var _get_typlenbyval = Module['_get_typlenbyval'] = (a0, a1, a2) => (_get_typlenbyval = Module['_get_typlenbyval'] = wasmExports['get_typlenbyval'])(a0, a1, a2);
+var _datumCopy = Module['_datumCopy'] = (a0, a1, a2) => (_datumCopy = Module['_datumCopy'] = wasmExports['datumCopy'])(a0, a1, a2);
+var _MemoryContextGetParent = Module['_MemoryContextGetParent'] = (a0) => (_MemoryContextGetParent = Module['_MemoryContextGetParent'] = wasmExports['MemoryContextGetParent'])(a0);
+var _DeleteExpandedObject = Module['_DeleteExpandedObject'] = (a0) => (_DeleteExpandedObject = Module['_DeleteExpandedObject'] = wasmExports['DeleteExpandedObject'])(a0);
+var _MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = (a0) => (_MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = wasmExports['MakeExpandedObjectReadOnlyInternal'])(a0);
+var _WinGetPartitionLocalMemory = Module['_WinGetPartitionLocalMemory'] = (a0, a1) => (_WinGetPartitionLocalMemory = Module['_WinGetPartitionLocalMemory'] = wasmExports['WinGetPartitionLocalMemory'])(a0, a1);
+var _WinGetCurrentPosition = Module['_WinGetCurrentPosition'] = (a0) => (_WinGetCurrentPosition = Module['_WinGetCurrentPosition'] = wasmExports['WinGetCurrentPosition'])(a0);
+var _WinGetPartitionRowCount = Module['_WinGetPartitionRowCount'] = (a0) => (_WinGetPartitionRowCount = Module['_WinGetPartitionRowCount'] = wasmExports['WinGetPartitionRowCount'])(a0);
+var _WinGetFuncArgInPartition = Module['_WinGetFuncArgInPartition'] = (a0, a1, a2, a3, a4, a5, a6) => (_WinGetFuncArgInPartition = Module['_WinGetFuncArgInPartition'] = wasmExports['WinGetFuncArgInPartition'])(a0, a1, a2, a3, a4, a5, a6);
+var _WinGetFuncArgCurrent = Module['_WinGetFuncArgCurrent'] = (a0, a1, a2) => (_WinGetFuncArgCurrent = Module['_WinGetFuncArgCurrent'] = wasmExports['WinGetFuncArgCurrent'])(a0, a1, a2);
+var _CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = (a0) => (_CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = wasmExports['CreateTupleDescCopy'])(a0);
+var _SPI_connect = Module['_SPI_connect'] = () => (_SPI_connect = Module['_SPI_connect'] = wasmExports['SPI_connect'])();
+var _SPI_connect_ext = Module['_SPI_connect_ext'] = (a0) => (_SPI_connect_ext = Module['_SPI_connect_ext'] = wasmExports['SPI_connect_ext'])(a0);
+var _SPI_finish = Module['_SPI_finish'] = () => (_SPI_finish = Module['_SPI_finish'] = wasmExports['SPI_finish'])();
+var _SPI_commit = Module['_SPI_commit'] = () => (_SPI_commit = Module['_SPI_commit'] = wasmExports['SPI_commit'])();
+var _CopyErrorData = Module['_CopyErrorData'] = () => (_CopyErrorData = Module['_CopyErrorData'] = wasmExports['CopyErrorData'])();
+var _FlushErrorState = Module['_FlushErrorState'] = () => (_FlushErrorState = Module['_FlushErrorState'] = wasmExports['FlushErrorState'])();
+var _ReThrowError = Module['_ReThrowError'] = (a0) => (_ReThrowError = Module['_ReThrowError'] = wasmExports['ReThrowError'])(a0);
+var _SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = () => (_SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = wasmExports['SPI_commit_and_chain'])();
+var _SPI_rollback = Module['_SPI_rollback'] = () => (_SPI_rollback = Module['_SPI_rollback'] = wasmExports['SPI_rollback'])();
+var _SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = () => (_SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = wasmExports['SPI_rollback_and_chain'])();
+var _SPI_execute = Module['_SPI_execute'] = (a0, a1, a2) => (_SPI_execute = Module['_SPI_execute'] = wasmExports['SPI_execute'])(a0, a1, a2);
+var _raw_parser = Module['_raw_parser'] = (a0, a1) => (_raw_parser = Module['_raw_parser'] = wasmExports['raw_parser'])(a0, a1);
+var _GetCommandTagName = Module['_GetCommandTagName'] = (a0) => (_GetCommandTagName = Module['_GetCommandTagName'] = wasmExports['GetCommandTagName'])(a0);
+var _EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = () => (_EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = wasmExports['EnsurePortalSnapshotExists'])();
+var _CreateDestReceiver = Module['_CreateDestReceiver'] = (a0) => (_CreateDestReceiver = Module['_CreateDestReceiver'] = wasmExports['CreateDestReceiver'])(a0);
+var _SPI_freetuptable = Module['_SPI_freetuptable'] = (a0) => (_SPI_freetuptable = Module['_SPI_freetuptable'] = wasmExports['SPI_freetuptable'])(a0);
+var _ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = (a0, a1) => (_ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = wasmExports['ReleaseCachedPlan'])(a0, a1);
+var _SPI_exec = Module['_SPI_exec'] = (a0, a1) => (_SPI_exec = Module['_SPI_exec'] = wasmExports['SPI_exec'])(a0, a1);
+var _SPI_execute_extended = Module['_SPI_execute_extended'] = (a0, a1) => (_SPI_execute_extended = Module['_SPI_execute_extended'] = wasmExports['SPI_execute_extended'])(a0, a1);
+var _SPI_execute_plan = Module['_SPI_execute_plan'] = (a0, a1, a2, a3, a4) => (_SPI_execute_plan = Module['_SPI_execute_plan'] = wasmExports['SPI_execute_plan'])(a0, a1, a2, a3, a4);
+var _makeParamList = Module['_makeParamList'] = (a0) => (_makeParamList = Module['_makeParamList'] = wasmExports['makeParamList'])(a0);
+var _SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = (a0, a1) => (_SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = wasmExports['SPI_execute_plan_extended'])(a0, a1);
+var _SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = wasmExports['SPI_execute_plan_with_paramlist'])(a0, a1, a2, a3);
+var _SPI_execute_with_args = Module['_SPI_execute_with_args'] = (a0, a1, a2, a3, a4, a5, a6) => (_SPI_execute_with_args = Module['_SPI_execute_with_args'] = wasmExports['SPI_execute_with_args'])(a0, a1, a2, a3, a4, a5, a6);
+var _SPI_prepare = Module['_SPI_prepare'] = (a0, a1, a2) => (_SPI_prepare = Module['_SPI_prepare'] = wasmExports['SPI_prepare'])(a0, a1, a2);
+var _SPI_prepare_extended = Module['_SPI_prepare_extended'] = (a0, a1) => (_SPI_prepare_extended = Module['_SPI_prepare_extended'] = wasmExports['SPI_prepare_extended'])(a0, a1);
+var _SPI_keepplan = Module['_SPI_keepplan'] = (a0) => (_SPI_keepplan = Module['_SPI_keepplan'] = wasmExports['SPI_keepplan'])(a0);
+var _MemoryContextSetParent = Module['_MemoryContextSetParent'] = (a0, a1) => (_MemoryContextSetParent = Module['_MemoryContextSetParent'] = wasmExports['MemoryContextSetParent'])(a0, a1);
+var _SPI_freeplan = Module['_SPI_freeplan'] = (a0) => (_SPI_freeplan = Module['_SPI_freeplan'] = wasmExports['SPI_freeplan'])(a0);
+var _SPI_copytuple = Module['_SPI_copytuple'] = (a0) => (_SPI_copytuple = Module['_SPI_copytuple'] = wasmExports['SPI_copytuple'])(a0);
+var _SPI_returntuple = Module['_SPI_returntuple'] = (a0, a1) => (_SPI_returntuple = Module['_SPI_returntuple'] = wasmExports['SPI_returntuple'])(a0, a1);
+var _SPI_modifytuple = Module['_SPI_modifytuple'] = (a0, a1, a2, a3, a4, a5) => (_SPI_modifytuple = Module['_SPI_modifytuple'] = wasmExports['SPI_modifytuple'])(a0, a1, a2, a3, a4, a5);
+var _SPI_fnumber = Module['_SPI_fnumber'] = (a0, a1) => (_SPI_fnumber = Module['_SPI_fnumber'] = wasmExports['SPI_fnumber'])(a0, a1);
+var _SPI_getvalue = Module['_SPI_getvalue'] = (a0, a1, a2) => (_SPI_getvalue = Module['_SPI_getvalue'] = wasmExports['SPI_getvalue'])(a0, a1, a2);
+var _getTypeOutputInfo = Module['_getTypeOutputInfo'] = (a0, a1, a2) => (_getTypeOutputInfo = Module['_getTypeOutputInfo'] = wasmExports['getTypeOutputInfo'])(a0, a1, a2);
+var _OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = (a0, a1) => (_OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = wasmExports['OidOutputFunctionCall'])(a0, a1);
+var _SPI_getbinval = Module['_SPI_getbinval'] = (a0, a1, a2, a3) => (_SPI_getbinval = Module['_SPI_getbinval'] = wasmExports['SPI_getbinval'])(a0, a1, a2, a3);
+var _SPI_gettype = Module['_SPI_gettype'] = (a0, a1) => (_SPI_gettype = Module['_SPI_gettype'] = wasmExports['SPI_gettype'])(a0, a1);
+var _SPI_palloc = Module['_SPI_palloc'] = (a0) => (_SPI_palloc = Module['_SPI_palloc'] = wasmExports['SPI_palloc'])(a0);
+var _SPI_datumTransfer = Module['_SPI_datumTransfer'] = (a0, a1, a2) => (_SPI_datumTransfer = Module['_SPI_datumTransfer'] = wasmExports['SPI_datumTransfer'])(a0, a1, a2);
+var _datumTransfer = Module['_datumTransfer'] = (a0, a1, a2) => (_datumTransfer = Module['_datumTransfer'] = wasmExports['datumTransfer'])(a0, a1, a2);
+var _MemoryContextStrdup = Module['_MemoryContextStrdup'] = (a0, a1) => (_MemoryContextStrdup = Module['_MemoryContextStrdup'] = wasmExports['MemoryContextStrdup'])(a0, a1);
+var _SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = wasmExports['SPI_cursor_open_with_paramlist'])(a0, a1, a2, a3);
+var _SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = (a0, a1, a2) => (_SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = wasmExports['SPI_cursor_parse_open'])(a0, a1, a2);
+var _SPI_cursor_find = Module['_SPI_cursor_find'] = (a0) => (_SPI_cursor_find = Module['_SPI_cursor_find'] = wasmExports['SPI_cursor_find'])(a0);
+var _SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = (a0, a1, a2) => (_SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = wasmExports['SPI_cursor_fetch'])(a0, a1, a2);
+var _SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = (a0, a1, a2) => (_SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = wasmExports['SPI_scroll_cursor_fetch'])(a0, a1, a2);
+var _SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = (a0, a1, a2) => (_SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = wasmExports['SPI_scroll_cursor_move'])(a0, a1, a2);
+var _SPI_cursor_close = Module['_SPI_cursor_close'] = (a0) => (_SPI_cursor_close = Module['_SPI_cursor_close'] = wasmExports['SPI_cursor_close'])(a0);
+var _SPI_result_code_string = Module['_SPI_result_code_string'] = (a0) => (_SPI_result_code_string = Module['_SPI_result_code_string'] = wasmExports['SPI_result_code_string'])(a0);
+var _SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = (a0) => (_SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = wasmExports['SPI_plan_get_plan_sources'])(a0);
+var _SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = (a0) => (_SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = wasmExports['SPI_plan_get_cached_plan'])(a0);
+var _SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = (a0) => (_SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = wasmExports['SPI_register_trigger_data'])(a0);
+var _tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = (a0) => (_tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = wasmExports['tuplestore_tuple_count'])(a0);
+var _bms_next_member = Module['_bms_next_member'] = (a0, a1) => (_bms_next_member = Module['_bms_next_member'] = wasmExports['bms_next_member'])(a0, a1);
+var _ExprEvalPushStep = Module['_ExprEvalPushStep'] = (a0, a1) => (_ExprEvalPushStep = Module['_ExprEvalPushStep'] = wasmExports['ExprEvalPushStep'])(a0, a1);
+var _get_typlen = Module['_get_typlen'] = (a0) => (_get_typlen = Module['_get_typlen'] = wasmExports['get_typlen'])(a0);
+var _get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = (a0, a1, a2, a3) => (_get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = wasmExports['get_typlenbyvalalign'])(a0, a1, a2, a3);
+var _lookup_type_cache = Module['_lookup_type_cache'] = (a0, a1) => (_lookup_type_cache = Module['_lookup_type_cache'] = wasmExports['lookup_type_cache'])(a0, a1);
+var _ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = (a0, a1) => (_ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = wasmExports['ExecInitExprWithParams'])(a0, a1);
+var _type_is_rowtype = Module['_type_is_rowtype'] = (a0) => (_type_is_rowtype = Module['_type_is_rowtype'] = wasmExports['type_is_rowtype'])(a0);
+var _tuplestore_puttuple = Module['_tuplestore_puttuple'] = (a0, a1) => (_tuplestore_puttuple = Module['_tuplestore_puttuple'] = wasmExports['tuplestore_puttuple'])(a0, a1);
+var _InstrAlloc = Module['_InstrAlloc'] = (a0, a1, a2) => (_InstrAlloc = Module['_InstrAlloc'] = wasmExports['InstrAlloc'])(a0, a1, a2);
+var _CreateExprContext = Module['_CreateExprContext'] = (a0) => (_CreateExprContext = Module['_CreateExprContext'] = wasmExports['CreateExprContext'])(a0);
+var _tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = (a0, a1) => (_tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = wasmExports['tuplesort_puttupleslot'])(a0, a1);
+var _ArrayGetNItems = Module['_ArrayGetNItems'] = (a0, a1) => (_ArrayGetNItems = Module['_ArrayGetNItems'] = wasmExports['ArrayGetNItems'])(a0, a1);
+var _expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = (a0) => (_expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = wasmExports['expanded_record_fetch_tupdesc'])(a0);
+var _expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = (a0, a1, a2) => (_expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = wasmExports['expanded_record_fetch_field'])(a0, a1, a2);
+var _execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = (a0, a1) => (_execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = wasmExports['execute_attr_map_tuple'])(a0, a1);
+var _MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = (a0, a1, a2) => (_MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = wasmExports['MemoryContextAllocExtended'])(a0, a1, a2);
+var _LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = (a0) => (_LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = wasmExports['LaunchParallelWorkers'])(a0);
+var _tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = (a0, a1, a2, a3, a4) => (_tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = wasmExports['tuplesort_gettupleslot'])(a0, a1, a2, a3, a4);
+var _tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = wasmExports['tuplesort_begin_heap'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _tuplesort_reset = Module['_tuplesort_reset'] = (a0) => (_tuplesort_reset = Module['_tuplesort_reset'] = wasmExports['tuplesort_reset'])(a0);
+var _table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = (a0, a1) => (_table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = wasmExports['table_parallelscan_estimate'])(a0, a1);
+var _table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = (a0, a1, a2) => (_table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = wasmExports['table_parallelscan_initialize'])(a0, a1, a2);
+var _table_beginscan_parallel = Module['_table_beginscan_parallel'] = (a0, a1) => (_table_beginscan_parallel = Module['_table_beginscan_parallel'] = wasmExports['table_beginscan_parallel'])(a0, a1);
+var _BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = (a0, a1, a2) => (_BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = wasmExports['BufferUsageAccumDiff'])(a0, a1, a2);
+var _WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = (a0, a1, a2) => (_WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = wasmExports['WalUsageAccumDiff'])(a0, a1, a2);
+var _InstrEndLoop = Module['_InstrEndLoop'] = (a0) => (_InstrEndLoop = Module['_InstrEndLoop'] = wasmExports['InstrEndLoop'])(a0);
+var _AggCheckCallContext = Module['_AggCheckCallContext'] = (a0, a1) => (_AggCheckCallContext = Module['_AggCheckCallContext'] = wasmExports['AggCheckCallContext'])(a0, a1);
+var _MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = (a0, a1) => (_MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = wasmExports['MemoryContextMemAllocated'])(a0, a1);
+var _standard_ExecutorStart = Module['_standard_ExecutorStart'] = (a0, a1) => (_standard_ExecutorStart = Module['_standard_ExecutorStart'] = wasmExports['standard_ExecutorStart'])(a0, a1);
+var _standard_ExecutorRun = Module['_standard_ExecutorRun'] = (a0, a1, a2, a3) => (_standard_ExecutorRun = Module['_standard_ExecutorRun'] = wasmExports['standard_ExecutorRun'])(a0, a1, a2, a3);
+var _EnterParallelMode = Module['_EnterParallelMode'] = () => (_EnterParallelMode = Module['_EnterParallelMode'] = wasmExports['EnterParallelMode'])();
+var _ExitParallelMode = Module['_ExitParallelMode'] = () => (_ExitParallelMode = Module['_ExitParallelMode'] = wasmExports['ExitParallelMode'])();
+var _standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = (a0) => (_standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = wasmExports['standard_ExecutorFinish'])(a0);
+var _standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = (a0) => (_standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = wasmExports['standard_ExecutorEnd'])(a0);
+var _get_call_expr_argtype = Module['_get_call_expr_argtype'] = (a0, a1) => (_get_call_expr_argtype = Module['_get_call_expr_argtype'] = wasmExports['get_call_expr_argtype'])(a0, a1);
+var _get_typcollation = Module['_get_typcollation'] = (a0) => (_get_typcollation = Module['_get_typcollation'] = wasmExports['get_typcollation'])(a0);
+var _MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = (a0, a1) => (_MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = wasmExports['MemoryContextSetIdentifier'])(a0, a1);
+var _DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = (a0, a1, a2) => (_DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = wasmExports['DirectFunctionCall1Coll'])(a0, a1, a2);
+var _convert_tuples_by_position = Module['_convert_tuples_by_position'] = (a0, a1, a2) => (_convert_tuples_by_position = Module['_convert_tuples_by_position'] = wasmExports['convert_tuples_by_position'])(a0, a1, a2);
+var _SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = (a0, a1, a2, a3, a4, a5) => (_SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = wasmExports['SetTuplestoreDestReceiverParams'])(a0, a1, a2, a3, a4, a5);
+var _detoast_external_attr = Module['_detoast_external_attr'] = (a0) => (_detoast_external_attr = Module['_detoast_external_attr'] = wasmExports['detoast_external_attr'])(a0);
+var _CreateParallelContext = Module['_CreateParallelContext'] = (a0, a1, a2) => (_CreateParallelContext = Module['_CreateParallelContext'] = wasmExports['CreateParallelContext'])(a0, a1, a2);
+var _InitializeParallelDSM = Module['_InitializeParallelDSM'] = (a0) => (_InitializeParallelDSM = Module['_InitializeParallelDSM'] = wasmExports['InitializeParallelDSM'])(a0);
+var _WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = (a0) => (_WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = wasmExports['WaitForParallelWorkersToFinish'])(a0);
+var _DestroyParallelContext = Module['_DestroyParallelContext'] = (a0) => (_DestroyParallelContext = Module['_DestroyParallelContext'] = wasmExports['DestroyParallelContext'])(a0);
+var _pgstat_report_activity = Module['_pgstat_report_activity'] = (a0, a1) => (_pgstat_report_activity = Module['_pgstat_report_activity'] = wasmExports['pgstat_report_activity'])(a0, a1);
+var _FreeExprContext = Module['_FreeExprContext'] = (a0, a1) => (_FreeExprContext = Module['_FreeExprContext'] = wasmExports['FreeExprContext'])(a0, a1);
+var _GetAttributeByNum = Module['_GetAttributeByNum'] = (a0, a1, a2) => (_GetAttributeByNum = Module['_GetAttributeByNum'] = wasmExports['GetAttributeByNum'])(a0, a1, a2);
+var _typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = (a0, a1, a2, a3) => (_typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = wasmExports['typenameTypeIdAndMod'])(a0, a1, a2, a3);
+var _find_coercion_pathway = Module['_find_coercion_pathway'] = (a0, a1, a2, a3) => (_find_coercion_pathway = Module['_find_coercion_pathway'] = wasmExports['find_coercion_pathway'])(a0, a1, a2, a3);
+var _LookupFuncName = Module['_LookupFuncName'] = (a0, a1, a2, a3) => (_LookupFuncName = Module['_LookupFuncName'] = wasmExports['LookupFuncName'])(a0, a1, a2, a3);
+var _makeFuncExpr = Module['_makeFuncExpr'] = (a0, a1, a2, a3, a4, a5) => (_makeFuncExpr = Module['_makeFuncExpr'] = wasmExports['makeFuncExpr'])(a0, a1, a2, a3, a4, a5);
+var _scanner_isspace = Module['_scanner_isspace'] = (a0) => (_scanner_isspace = Module['_scanner_isspace'] = wasmExports['scanner_isspace'])(a0);
+var _scanner_init = Module['_scanner_init'] = (a0, a1, a2, a3) => (_scanner_init = Module['_scanner_init'] = wasmExports['scanner_init'])(a0, a1, a2, a3);
+var _scanner_finish = Module['_scanner_finish'] = (a0) => (_scanner_finish = Module['_scanner_finish'] = wasmExports['scanner_finish'])(a0);
+var _core_yylex = Module['_core_yylex'] = (a0, a1, a2) => (_core_yylex = Module['_core_yylex'] = wasmExports['core_yylex'])(a0, a1, a2);
+var _get_commutator = Module['_get_commutator'] = (a0) => (_get_commutator = Module['_get_commutator'] = wasmExports['get_commutator'])(a0);
+var _makeTypeName = Module['_makeTypeName'] = (a0) => (_makeTypeName = Module['_makeTypeName'] = wasmExports['makeTypeName'])(a0);
+var _getc = Module['_getc'] = (a0) => (_getc = Module['_getc'] = wasmExports['getc'])(a0);
+var _ferror = Module['_ferror'] = (a0) => (_ferror = Module['_ferror'] = wasmExports['ferror'])(a0);
+var _fread = Module['_fread'] = (a0, a1, a2, a3) => (_fread = Module['_fread'] = wasmExports['fread'])(a0, a1, a2, a3);
+var _clearerr = Module['_clearerr'] = (a0) => (_clearerr = Module['_clearerr'] = wasmExports['clearerr'])(a0);
+var _numeric_in = Module['_numeric_in'] = (a0) => (_numeric_in = Module['_numeric_in'] = wasmExports['numeric_in'])(a0);
+var _abort = Module['_abort'] = () => (_abort = Module['_abort'] = wasmExports['abort'])();
+var _enlargeStringInfo = Module['_enlargeStringInfo'] = (a0, a1) => (_enlargeStringInfo = Module['_enlargeStringInfo'] = wasmExports['enlargeStringInfo'])(a0, a1);
+var _pq_getmsgint = Module['_pq_getmsgint'] = (a0, a1) => (_pq_getmsgint = Module['_pq_getmsgint'] = wasmExports['pq_getmsgint'])(a0, a1);
 var _fsync_pgdata = Module['_fsync_pgdata'] = (a0, a1) => (_fsync_pgdata = Module['_fsync_pgdata'] = wasmExports['fsync_pgdata'])(a0, a1);
 var _get_restricted_token = Module['_get_restricted_token'] = () => (_get_restricted_token = Module['_get_restricted_token'] = wasmExports['get_restricted_token'])();
 var _pg_malloc = Module['_pg_malloc'] = (a0) => (_pg_malloc = Module['_pg_malloc'] = wasmExports['pg_malloc'])(a0);
@@ -9378,6 +10005,8 @@ var _pg_strdup = Module['_pg_strdup'] = (a0) => (_pg_strdup = Module['_pg_strdup
 var _simple_prompt = Module['_simple_prompt'] = (a0, a1) => (_simple_prompt = Module['_simple_prompt'] = wasmExports['simple_prompt'])(a0, a1);
 var _interactive_file = Module['_interactive_file'] = () => (_interactive_file = Module['_interactive_file'] = wasmExports['interactive_file'])();
 var _interactive_one = Module['_interactive_one'] = () => (_interactive_one = Module['_interactive_one'] = wasmExports['interactive_one'])();
+var _fseek = Module['_fseek'] = (a0, a1, a2) => (_fseek = Module['_fseek'] = wasmExports['fseek'])(a0, a1, a2);
+var _ftell = Module['_ftell'] = (a0) => (_ftell = Module['_ftell'] = wasmExports['ftell'])(a0);
 var _pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = (a0, a1) => (_pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = wasmExports['pq_recvbuf_fill'])(a0, a1);
 var _pg_repl_raf = Module['_pg_repl_raf'] = () => (_pg_repl_raf = Module['_pg_repl_raf'] = wasmExports['pg_repl_raf'])();
 var _pg_initdb_start = Module['_pg_initdb_start'] = () => (_pg_initdb_start = Module['_pg_initdb_start'] = wasmExports['pg_initdb_start'])();
@@ -9385,32 +10014,999 @@ var _pg_shutdown = Module['_pg_shutdown'] = () => (_pg_shutdown = Module['_pg_sh
 var _pg_isready = Module['_pg_isready'] = () => (_pg_isready = Module['_pg_isready'] = wasmExports['pg_isready'])();
 var _interactive_write = Module['_interactive_write'] = (a0) => (_interactive_write = Module['_interactive_write'] = wasmExports['interactive_write'])(a0);
 var _interactive_read = Module['_interactive_read'] = () => (_interactive_read = Module['_interactive_read'] = wasmExports['interactive_read'])();
+var _appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = (a0, a1, a2) => (_appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = wasmExports['appendStringInfoStringQuoted'])(a0, a1, a2);
+var _standard_ProcessUtility = Module['_standard_ProcessUtility'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_standard_ProcessUtility = Module['_standard_ProcessUtility'] = wasmExports['standard_ProcessUtility'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = (a0) => (_MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = wasmExports['MemoryContextDeleteChildren'])(a0);
+var _make_opclause = Module['_make_opclause'] = (a0, a1, a2, a3, a4, a5, a6) => (_make_opclause = Module['_make_opclause'] = wasmExports['make_opclause'])(a0, a1, a2, a3, a4, a5, a6);
+var _BlockSampler_Init = Module['_BlockSampler_Init'] = (a0, a1, a2, a3) => (_BlockSampler_Init = Module['_BlockSampler_Init'] = wasmExports['BlockSampler_Init'])(a0, a1, a2, a3);
+var _reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = (a0, a1) => (_reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = wasmExports['reservoir_init_selection_state'])(a0, a1);
+var _BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = (a0) => (_BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = wasmExports['BlockSampler_HasMore'])(a0);
+var _BlockSampler_Next = Module['_BlockSampler_Next'] = (a0) => (_BlockSampler_Next = Module['_BlockSampler_Next'] = wasmExports['BlockSampler_Next'])(a0);
+var _reservoir_get_next_S = Module['_reservoir_get_next_S'] = (a0, a1, a2) => (_reservoir_get_next_S = Module['_reservoir_get_next_S'] = wasmExports['reservoir_get_next_S'])(a0, a1, a2);
+var _sampler_random_fract = Module['_sampler_random_fract'] = (a0) => (_sampler_random_fract = Module['_sampler_random_fract'] = wasmExports['sampler_random_fract'])(a0);
+var _std_typanalyze = Module['_std_typanalyze'] = (a0) => (_std_typanalyze = Module['_std_typanalyze'] = wasmExports['std_typanalyze'])(a0);
+var _toast_raw_datum_size = Module['_toast_raw_datum_size'] = (a0) => (_toast_raw_datum_size = Module['_toast_raw_datum_size'] = wasmExports['toast_raw_datum_size'])(a0);
+var _namein = Module['_namein'] = (a0) => (_namein = Module['_namein'] = wasmExports['namein'])(a0);
+var _atof = Module['_atof'] = (a0) => (_atof = Module['_atof'] = wasmExports['atof'])(a0);
+var _makeStringInfo = Module['_makeStringInfo'] = () => (_makeStringInfo = Module['_makeStringInfo'] = wasmExports['makeStringInfo'])();
+var _symlink = Module['_symlink'] = (a0, a1) => (_symlink = Module['_symlink'] = wasmExports['symlink'])(a0, a1);
+var _strtod = Module['_strtod'] = (a0, a1) => (_strtod = Module['_strtod'] = wasmExports['strtod'])(a0, a1);
+var _appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = (a0, a1) => (_appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = wasmExports['appendStringInfoSpaces'])(a0, a1);
+var _escape_json = Module['_escape_json'] = (a0, a1) => (_escape_json = Module['_escape_json'] = wasmExports['escape_json'])(a0, a1);
+var _get_func_namespace = Module['_get_func_namespace'] = (a0) => (_get_func_namespace = Module['_get_func_namespace'] = wasmExports['get_func_namespace'])(a0);
+var _fwrite = Module['_fwrite'] = (a0, a1, a2, a3) => (_fwrite = Module['_fwrite'] = wasmExports['fwrite'])(a0, a1, a2, a3);
+var _contain_mutable_functions = Module['_contain_mutable_functions'] = (a0) => (_contain_mutable_functions = Module['_contain_mutable_functions'] = wasmExports['contain_mutable_functions'])(a0);
+var _strrchr = Module['_strrchr'] = (a0, a1) => (_strrchr = Module['_strrchr'] = wasmExports['strrchr'])(a0, a1);
+var _iprintf = Module['_iprintf'] = (a0, a1) => (_iprintf = Module['_iprintf'] = wasmExports['iprintf'])(a0, a1);
+var _datumIsEqual = Module['_datumIsEqual'] = (a0, a1, a2, a3) => (_datumIsEqual = Module['_datumIsEqual'] = wasmExports['datumIsEqual'])(a0, a1, a2, a3);
+var _get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = (a0, a1) => (_get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = wasmExports['get_fn_expr_argtype'])(a0, a1);
 var _pg_initdb = Module['_pg_initdb'] = () => (_pg_initdb = Module['_pg_initdb'] = wasmExports['pg_initdb'])();
+var _chdir = Module['_chdir'] = (a0) => (_chdir = Module['_chdir'] = wasmExports['chdir'])(a0);
 var _pg_initdb_main = Module['_pg_initdb_main'] = () => (_pg_initdb_main = Module['_pg_initdb_main'] = wasmExports['pg_initdb_main'])();
+var _remove = Module['_remove'] = (a0) => (_remove = Module['_remove'] = wasmExports['remove'])(a0);
+var _fdopen = Module['_fdopen'] = (a0, a1) => (_fdopen = Module['_fdopen'] = wasmExports['fdopen'])(a0, a1);
 var ___cxa_throw = Module['___cxa_throw'] = (a0, a1, a2) => (___cxa_throw = Module['___cxa_throw'] = wasmExports['__cxa_throw'])(a0, a1, a2);
 var _main_repl = Module['_main_repl'] = (a0) => (_main_repl = Module['_main_repl'] = wasmExports['main_repl'])(a0);
-var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
 var _setenv = Module['_setenv'] = (a0, a1, a2) => (_setenv = Module['_setenv'] = wasmExports['setenv'])(a0, a1, a2);
+var _pq_sendfloat4 = Module['_pq_sendfloat4'] = (a0, a1) => (_pq_sendfloat4 = Module['_pq_sendfloat4'] = wasmExports['pq_sendfloat4'])(a0, a1);
+var _pq_begintypsend = Module['_pq_begintypsend'] = (a0) => (_pq_begintypsend = Module['_pq_begintypsend'] = wasmExports['pq_begintypsend'])(a0);
+var _pq_endtypsend = Module['_pq_endtypsend'] = (a0) => (_pq_endtypsend = Module['_pq_endtypsend'] = wasmExports['pq_endtypsend'])(a0);
+var _pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = (a0) => (_pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = wasmExports['pq_getmsgfloat4'])(a0);
+var _unpack_sql_state = Module['_unpack_sql_state'] = (a0) => (_unpack_sql_state = Module['_unpack_sql_state'] = wasmExports['unpack_sql_state'])(a0);
+var _err_generic_string = Module['_err_generic_string'] = (a0, a1) => (_err_generic_string = Module['_err_generic_string'] = wasmExports['err_generic_string'])(a0, a1);
+var _GetErrorContextStack = Module['_GetErrorContextStack'] = () => (_GetErrorContextStack = Module['_GetErrorContextStack'] = wasmExports['GetErrorContextStack'])();
+var _time = Module['_time'] = (a0) => (_time = Module['_time'] = wasmExports['time'])(a0);
+var _nocache_index_getattr = Module['_nocache_index_getattr'] = (a0, a1, a2) => (_nocache_index_getattr = Module['_nocache_index_getattr'] = wasmExports['nocache_index_getattr'])(a0, a1, a2);
+var _GenerationContextCreate = Module['_GenerationContextCreate'] = (a0, a1, a2, a3, a4) => (_GenerationContextCreate = Module['_GenerationContextCreate'] = wasmExports['GenerationContextCreate'])(a0, a1, a2, a3, a4);
+var _tuplesort_estimate_shared = Module['_tuplesort_estimate_shared'] = (a0) => (_tuplesort_estimate_shared = Module['_tuplesort_estimate_shared'] = wasmExports['tuplesort_estimate_shared'])(a0);
+var _tuplesort_initialize_shared = Module['_tuplesort_initialize_shared'] = (a0, a1, a2) => (_tuplesort_initialize_shared = Module['_tuplesort_initialize_shared'] = wasmExports['tuplesort_initialize_shared'])(a0, a1, a2);
+var _tuplesort_attach_shared = Module['_tuplesort_attach_shared'] = (a0, a1) => (_tuplesort_attach_shared = Module['_tuplesort_attach_shared'] = wasmExports['tuplesort_attach_shared'])(a0, a1);
+var _textout = Module['_textout'] = (a0) => (_textout = Module['_textout'] = wasmExports['textout'])(a0);
+var _numeric_float4 = Module['_numeric_float4'] = (a0) => (_numeric_float4 = Module['_numeric_float4'] = wasmExports['numeric_float4'])(a0);
+var _regclassin = Module['_regclassin'] = (a0) => (_regclassin = Module['_regclassin'] = wasmExports['regclassin'])(a0);
+var _jsonb_in = Module['_jsonb_in'] = (a0) => (_jsonb_in = Module['_jsonb_in'] = wasmExports['jsonb_in'])(a0);
+var _get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = (a0, a1, a2) => (_get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = wasmExports['get_tablespace_page_costs'])(a0, a1, a2);
+var _MemoryContextRegisterResetCallback = Module['_MemoryContextRegisterResetCallback'] = (a0, a1) => (_MemoryContextRegisterResetCallback = Module['_MemoryContextRegisterResetCallback'] = wasmExports['MemoryContextRegisterResetCallback'])(a0, a1);
+var _RelationIdGetRelation = Module['_RelationIdGetRelation'] = (a0) => (_RelationIdGetRelation = Module['_RelationIdGetRelation'] = wasmExports['RelationIdGetRelation'])(a0);
+var _RelationClose = Module['_RelationClose'] = (a0) => (_RelationClose = Module['_RelationClose'] = wasmExports['RelationClose'])(a0);
+var _hash_seq_term = Module['_hash_seq_term'] = (a0) => (_hash_seq_term = Module['_hash_seq_term'] = wasmExports['hash_seq_term'])(a0);
+var _index_getprocid = Module['_index_getprocid'] = (a0, a1, a2) => (_index_getprocid = Module['_index_getprocid'] = wasmExports['index_getprocid'])(a0, a1, a2);
+var _get_rel_type_id = Module['_get_rel_type_id'] = (a0) => (_get_rel_type_id = Module['_get_rel_type_id'] = wasmExports['get_rel_type_id'])(a0);
+var _get_typbyval = Module['_get_typbyval'] = (a0) => (_get_typbyval = Module['_get_typbyval'] = wasmExports['get_typbyval'])(a0);
+var _get_typsubscript = Module['_get_typsubscript'] = (a0, a1) => (_get_typsubscript = Module['_get_typsubscript'] = wasmExports['get_typsubscript'])(a0, a1);
+var _CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = (a0, a1, a2) => (_CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = wasmExports['CachedPlanAllowsSimpleValidityCheck'])(a0, a1, a2);
+var _CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = (a0, a1, a2) => (_CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = wasmExports['CachedPlanIsSimplyValid'])(a0, a1, a2);
+var _GetCachedExpression = Module['_GetCachedExpression'] = (a0) => (_GetCachedExpression = Module['_GetCachedExpression'] = wasmExports['GetCachedExpression'])(a0);
+var _FreeCachedExpression = Module['_FreeCachedExpression'] = (a0) => (_FreeCachedExpression = Module['_FreeCachedExpression'] = wasmExports['FreeCachedExpression'])(a0);
+var _strtoull = Module['_strtoull'] = (a0, a1, a2) => (_strtoull = Module['_strtoull'] = wasmExports['strtoull'])(a0, a1, a2);
+var _pg_ltoa = Module['_pg_ltoa'] = (a0, a1) => (_pg_ltoa = Module['_pg_ltoa'] = wasmExports['pg_ltoa'])(a0, a1);
+var ___multi3 = Module['___multi3'] = (a0, a1, a2, a3, a4) => (___multi3 = Module['___multi3'] = wasmExports['__multi3'])(a0, a1, a2, a3, a4);
+var _exp = Module['_exp'] = (a0) => (_exp = Module['_exp'] = wasmExports['exp'])(a0);
+var _strncpy = Module['_strncpy'] = (a0, a1, a2) => (_strncpy = Module['_strncpy'] = wasmExports['strncpy'])(a0, a1, a2);
+var _pg_detoast_datum_slice = Module['_pg_detoast_datum_slice'] = (a0, a1, a2) => (_pg_detoast_datum_slice = Module['_pg_detoast_datum_slice'] = wasmExports['pg_detoast_datum_slice'])(a0, a1, a2);
+var _get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = (a0) => (_get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = wasmExports['get_fn_expr_rettype'])(a0);
+var _log10 = Module['_log10'] = (a0) => (_log10 = Module['_log10'] = wasmExports['log10'])(a0);
+var _ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = (a0, a1) => (_ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = wasmExports['ArrayGetIntegerTypmods'])(a0, a1);
+var ___divti3 = Module['___divti3'] = (a0, a1, a2, a3, a4) => (___divti3 = Module['___divti3'] = wasmExports['__divti3'])(a0, a1, a2, a3, a4);
+var _setlocale = Module['_setlocale'] = (a0, a1) => (_setlocale = Module['_setlocale'] = wasmExports['setlocale'])(a0, a1);
+var _localeconv = Module['_localeconv'] = () => (_localeconv = Module['_localeconv'] = wasmExports['localeconv'])();
+var _localtime = Module['_localtime'] = (a0) => (_localtime = Module['_localtime'] = wasmExports['localtime'])(a0);
+var _newlocale = Module['_newlocale'] = (a0, a1, a2) => (_newlocale = Module['_newlocale'] = wasmExports['newlocale'])(a0, a1, a2);
+var _strcoll_l = Module['_strcoll_l'] = (a0, a1, a2) => (_strcoll_l = Module['_strcoll_l'] = wasmExports['strcoll_l'])(a0, a1, a2);
+var _uselocale = Module['_uselocale'] = (a0) => (_uselocale = Module['_uselocale'] = wasmExports['uselocale'])(a0);
+var _TransferExpandedObject = Module['_TransferExpandedObject'] = (a0, a1) => (_TransferExpandedObject = Module['_TransferExpandedObject'] = wasmExports['TransferExpandedObject'])(a0, a1);
+var _readlink = Module['_readlink'] = (a0, a1, a2) => (_readlink = Module['_readlink'] = wasmExports['readlink'])(a0, a1, a2);
+var _make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = (a0, a1, a2) => (_make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = wasmExports['make_expanded_record_from_typeid'])(a0, a1, a2);
+var _make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = (a0, a1) => (_make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = wasmExports['make_expanded_record_from_tupdesc'])(a0, a1);
+var _make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = (a0, a1) => (_make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = wasmExports['make_expanded_record_from_exprecord'])(a0, a1);
+var _expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = (a0, a1, a2, a3) => (_expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = wasmExports['expanded_record_set_tuple'])(a0, a1, a2, a3);
+var _domain_check = Module['_domain_check'] = (a0, a1, a2, a3, a4) => (_domain_check = Module['_domain_check'] = wasmExports['domain_check'])(a0, a1, a2, a3, a4);
+var _expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = (a0) => (_expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = wasmExports['expanded_record_get_tuple'])(a0);
+var _deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = (a0) => (_deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = wasmExports['deconstruct_expanded_record'])(a0);
+var _expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = (a0, a1, a2) => (_expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = wasmExports['expanded_record_lookup_field'])(a0, a1, a2);
+var _expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = (a0, a1, a2, a3, a4, a5) => (_expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = wasmExports['expanded_record_set_field_internal'])(a0, a1, a2, a3, a4, a5);
+var _expanded_record_set_fields = Module['_expanded_record_set_fields'] = (a0, a1, a2, a3) => (_expanded_record_set_fields = Module['_expanded_record_set_fields'] = wasmExports['expanded_record_set_fields'])(a0, a1, a2, a3);
+var _array_contains_nulls = Module['_array_contains_nulls'] = (a0) => (_array_contains_nulls = Module['_array_contains_nulls'] = wasmExports['array_contains_nulls'])(a0);
+var _array_create_iterator = Module['_array_create_iterator'] = (a0, a1, a2) => (_array_create_iterator = Module['_array_create_iterator'] = wasmExports['array_create_iterator'])(a0, a1, a2);
+var _array_iterate = Module['_array_iterate'] = (a0, a1, a2) => (_array_iterate = Module['_array_iterate'] = wasmExports['array_iterate'])(a0, a1, a2);
+var _array_free_iterator = Module['_array_free_iterator'] = (a0) => (_array_free_iterator = Module['_array_free_iterator'] = wasmExports['array_free_iterator'])(a0);
+var _float_overflow_error = Module['_float_overflow_error'] = () => (_float_overflow_error = Module['_float_overflow_error'] = wasmExports['float_overflow_error'])();
+var _float_underflow_error = Module['_float_underflow_error'] = () => (_float_underflow_error = Module['_float_underflow_error'] = wasmExports['float_underflow_error'])();
+var _cos = Module['_cos'] = (a0) => (_cos = Module['_cos'] = wasmExports['cos'])(a0);
+var _sin = Module['_sin'] = (a0) => (_sin = Module['_sin'] = wasmExports['sin'])(a0);
+var _strtof = Module['_strtof'] = (a0, a1) => (_strtof = Module['_strtof'] = wasmExports['strtof'])(a0, a1);
+var _float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = (a0, a1) => (_float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = wasmExports['float_to_shortest_decimal_buf'])(a0, a1);
+var _cbrt = Module['_cbrt'] = (a0) => (_cbrt = Module['_cbrt'] = wasmExports['cbrt'])(a0);
+var _pow = Module['_pow'] = (a0, a1) => (_pow = Module['_pow'] = wasmExports['pow'])(a0, a1);
+var _acos = Module['_acos'] = (a0) => (_acos = Module['_acos'] = wasmExports['acos'])(a0);
+var _asin = Module['_asin'] = (a0) => (_asin = Module['_asin'] = wasmExports['asin'])(a0);
+var _atan = Module['_atan'] = (a0) => (_atan = Module['_atan'] = wasmExports['atan'])(a0);
+var _atan2 = Module['_atan2'] = (a0, a1) => (_atan2 = Module['_atan2'] = wasmExports['atan2'])(a0, a1);
+var _tan = Module['_tan'] = (a0) => (_tan = Module['_tan'] = wasmExports['tan'])(a0);
+var _fmod = Module['_fmod'] = (a0, a1) => (_fmod = Module['_fmod'] = wasmExports['fmod'])(a0, a1);
+var _sinh = Module['_sinh'] = (a0) => (_sinh = Module['_sinh'] = wasmExports['sinh'])(a0);
+var _cosh = Module['_cosh'] = (a0) => (_cosh = Module['_cosh'] = wasmExports['cosh'])(a0);
+var _asinh = Module['_asinh'] = (a0) => (_asinh = Module['_asinh'] = wasmExports['asinh'])(a0);
+var _atanh = Module['_atanh'] = (a0) => (_atanh = Module['_atanh'] = wasmExports['atanh'])(a0);
+var _ParseDateTime = Module['_ParseDateTime'] = (a0, a1, a2, a3, a4, a5, a6) => (_ParseDateTime = Module['_ParseDateTime'] = wasmExports['ParseDateTime'])(a0, a1, a2, a3, a4, a5, a6);
+var _DecodeDateTime = Module['_DecodeDateTime'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_DecodeDateTime = Module['_DecodeDateTime'] = wasmExports['DecodeDateTime'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _tm2timestamp = Module['_tm2timestamp'] = (a0, a1, a2, a3) => (_tm2timestamp = Module['_tm2timestamp'] = wasmExports['tm2timestamp'])(a0, a1, a2, a3);
+var _j2date = Module['_j2date'] = (a0, a1, a2, a3) => (_j2date = Module['_j2date'] = wasmExports['j2date'])(a0, a1, a2, a3);
+var _EncodeDateTime = Module['_EncodeDateTime'] = (a0, a1, a2, a3, a4, a5, a6) => (_EncodeDateTime = Module['_EncodeDateTime'] = wasmExports['EncodeDateTime'])(a0, a1, a2, a3, a4, a5, a6);
+var _EncodeSpecialTimestamp = Module['_EncodeSpecialTimestamp'] = (a0, a1) => (_EncodeSpecialTimestamp = Module['_EncodeSpecialTimestamp'] = wasmExports['EncodeSpecialTimestamp'])(a0, a1);
+var _timestamp2tm = Module['_timestamp2tm'] = (a0, a1, a2, a3, a4, a5) => (_timestamp2tm = Module['_timestamp2tm'] = wasmExports['timestamp2tm'])(a0, a1, a2, a3, a4, a5);
+var _EncodeTimeOnly = Module['_EncodeTimeOnly'] = (a0, a1, a2, a3, a4, a5) => (_EncodeTimeOnly = Module['_EncodeTimeOnly'] = wasmExports['EncodeTimeOnly'])(a0, a1, a2, a3, a4, a5);
+var _EncodeSpecialDate = Module['_EncodeSpecialDate'] = (a0, a1) => (_EncodeSpecialDate = Module['_EncodeSpecialDate'] = wasmExports['EncodeSpecialDate'])(a0, a1);
+var _EncodeDateOnly = Module['_EncodeDateOnly'] = (a0, a1, a2) => (_EncodeDateOnly = Module['_EncodeDateOnly'] = wasmExports['EncodeDateOnly'])(a0, a1, a2);
+var _IsValidJsonNumber = Module['_IsValidJsonNumber'] = (a0, a1) => (_IsValidJsonNumber = Module['_IsValidJsonNumber'] = wasmExports['IsValidJsonNumber'])(a0, a1);
+var _expand_array = Module['_expand_array'] = (a0, a1, a2) => (_expand_array = Module['_expand_array'] = wasmExports['expand_array'])(a0, a1, a2);
+var _tolower_l = Module['_tolower_l'] = (a0, a1) => (_tolower_l = Module['_tolower_l'] = wasmExports['tolower_l'])(a0, a1);
+var _sscanf = Module['_sscanf'] = (a0, a1, a2) => (_sscanf = Module['_sscanf'] = wasmExports['sscanf'])(a0, a1, a2);
+var _towlower_l = Module['_towlower_l'] = (a0, a1) => (_towlower_l = Module['_towlower_l'] = wasmExports['towlower_l'])(a0, a1);
+var _towupper_l = Module['_towupper_l'] = (a0, a1) => (_towupper_l = Module['_towupper_l'] = wasmExports['towupper_l'])(a0, a1);
+var _toupper_l = Module['_toupper_l'] = (a0, a1) => (_toupper_l = Module['_toupper_l'] = wasmExports['toupper_l'])(a0, a1);
+var _strtoll = Module['_strtoll'] = (a0, a1, a2) => (_strtoll = Module['_strtoll'] = wasmExports['strtoll'])(a0, a1, a2);
+var _fseeko = Module['_fseeko'] = (a0, a1, a2) => (_fseeko = Module['_fseeko'] = wasmExports['fseeko'])(a0, a1, a2);
+var _DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = (a0, a1, a2, a3, a4, a5, a6) => (_DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = wasmExports['DirectFunctionCall5Coll'])(a0, a1, a2, a3, a4, a5, a6);
+var _genericcostestimate = Module['_genericcostestimate'] = (a0, a1, a2, a3) => (_genericcostestimate = Module['_genericcostestimate'] = wasmExports['genericcostestimate'])(a0, a1, a2, a3);
+var _find_option = Module['_find_option'] = (a0, a1, a2, a3) => (_find_option = Module['_find_option'] = wasmExports['find_option'])(a0, a1, a2, a3);
+var _DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = wasmExports['DefineCustomBoolVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) => (_DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = wasmExports['DefineCustomIntVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
+var _DefineCustomStringVariable = Module['_DefineCustomStringVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_DefineCustomStringVariable = Module['_DefineCustomStringVariable'] = wasmExports['DefineCustomStringVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) => (_DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = wasmExports['DefineCustomEnumVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+var _MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = (a0) => (_MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = wasmExports['MarkGUCPrefixReserved'])(a0);
+var _fputc = Module['_fputc'] = (a0, a1) => (_fputc = Module['_fputc'] = wasmExports['fputc'])(a0, a1);
+var _ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = (a0, a1) => (_ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = wasmExports['ResourceOwnerCreate'])(a0, a1);
+var _ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = (a0) => (_ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = wasmExports['ResourceOwnerDelete'])(a0);
+var _PinPortal = Module['_PinPortal'] = (a0) => (_PinPortal = Module['_PinPortal'] = wasmExports['PinPortal'])(a0);
+var _UnpinPortal = Module['_UnpinPortal'] = (a0) => (_UnpinPortal = Module['_UnpinPortal'] = wasmExports['UnpinPortal'])(a0);
+var _GetMemoryChunkContext = Module['_GetMemoryChunkContext'] = (a0) => (_GetMemoryChunkContext = Module['_GetMemoryChunkContext'] = wasmExports['GetMemoryChunkContext'])(a0);
+var _palloc_extended = Module['_palloc_extended'] = (a0, a1) => (_palloc_extended = Module['_palloc_extended'] = wasmExports['palloc_extended'])(a0, a1);
+var _CallerFInfoFunctionCall1 = Module['_CallerFInfoFunctionCall1'] = (a0, a1, a2, a3) => (_CallerFInfoFunctionCall1 = Module['_CallerFInfoFunctionCall1'] = wasmExports['CallerFInfoFunctionCall1'])(a0, a1, a2, a3);
+var _CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = (a0, a1, a2, a3, a4) => (_CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = wasmExports['CallerFInfoFunctionCall2'])(a0, a1, a2, a3, a4);
+var _FunctionCall0Coll = Module['_FunctionCall0Coll'] = (a0, a1) => (_FunctionCall0Coll = Module['_FunctionCall0Coll'] = wasmExports['FunctionCall0Coll'])(a0, a1);
+var _dlsym = Module['_dlsym'] = (a0, a1) => (_dlsym = Module['_dlsym'] = wasmExports['dlsym'])(a0, a1);
+var _dlopen = Module['_dlopen'] = (a0, a1) => (_dlopen = Module['_dlopen'] = wasmExports['dlopen'])(a0, a1);
+var _dlerror = Module['_dlerror'] = () => (_dlerror = Module['_dlerror'] = wasmExports['dlerror'])();
+var _dlclose = Module['_dlclose'] = (a0) => (_dlclose = Module['_dlclose'] = wasmExports['dlclose'])(a0);
+var _find_rendezvous_variable = Module['_find_rendezvous_variable'] = (a0) => (_find_rendezvous_variable = Module['_find_rendezvous_variable'] = wasmExports['find_rendezvous_variable'])(a0);
+var _resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = (a0, a1, a2, a3) => (_resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = wasmExports['resolve_polymorphic_argtypes'])(a0, a1, a2, a3);
+var _RelationNameGetTupleDesc = Module['_RelationNameGetTupleDesc'] = (a0) => (_RelationNameGetTupleDesc = Module['_RelationNameGetTupleDesc'] = wasmExports['RelationNameGetTupleDesc'])(a0);
+var _ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = (a0) => (_ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = wasmExports['ResourceOwnerReleaseAllPlanCacheRefs'])(a0);
+var _pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = (a0, a1, a2, a3) => (_pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = wasmExports['pg_do_encoding_conversion'])(a0, a1, a2, a3);
+var _pg_bindtextdomain = Module['_pg_bindtextdomain'] = (a0) => (_pg_bindtextdomain = Module['_pg_bindtextdomain'] = wasmExports['pg_bindtextdomain'])(a0);
+var _BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = (a0) => (_BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = wasmExports['BeginInternalSubTransaction'])(a0);
+var _RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = () => (_RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = wasmExports['RollbackAndReleaseCurrentSubTransaction'])();
+var _index_form_tuple = Module['_index_form_tuple'] = (a0, a1, a2) => (_index_form_tuple = Module['_index_form_tuple'] = wasmExports['index_form_tuple'])(a0, a1, a2);
+var _RelationGetIndexScan = Module['_RelationGetIndexScan'] = (a0, a1, a2) => (_RelationGetIndexScan = Module['_RelationGetIndexScan'] = wasmExports['RelationGetIndexScan'])(a0, a1, a2);
+var _index_getprocinfo = Module['_index_getprocinfo'] = (a0, a1, a2) => (_index_getprocinfo = Module['_index_getprocinfo'] = wasmExports['index_getprocinfo'])(a0, a1, a2);
+var _build_reloptions = Module['_build_reloptions'] = (a0, a1, a2, a3, a4, a5) => (_build_reloptions = Module['_build_reloptions'] = wasmExports['build_reloptions'])(a0, a1, a2, a3, a4, a5);
+var _WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = (a0) => (_WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = wasmExports['WaitForParallelWorkersToAttach'])(a0);
+var _add_reloption_kind = Module['_add_reloption_kind'] = () => (_add_reloption_kind = Module['_add_reloption_kind'] = wasmExports['add_reloption_kind'])();
+var _add_int_reloption = Module['_add_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_int_reloption = Module['_add_int_reloption'] = wasmExports['add_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
+var _RegisterXactCallback = Module['_RegisterXactCallback'] = (a0, a1) => (_RegisterXactCallback = Module['_RegisterXactCallback'] = wasmExports['RegisterXactCallback'])(a0, a1);
+var _UnregisterXactCallback = Module['_UnregisterXactCallback'] = (a0, a1) => (_UnregisterXactCallback = Module['_UnregisterXactCallback'] = wasmExports['UnregisterXactCallback'])(a0, a1);
+var _RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = (a0, a1) => (_RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = wasmExports['RegisterSubXactCallback'])(a0, a1);
+var _ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = () => (_ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = wasmExports['ReleaseCurrentSubTransaction'])();
+var _GenericXLogStart = Module['_GenericXLogStart'] = (a0) => (_GenericXLogStart = Module['_GenericXLogStart'] = wasmExports['GenericXLogStart'])(a0);
+var _GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = (a0, a1, a2) => (_GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = wasmExports['GenericXLogRegisterBuffer'])(a0, a1, a2);
+var _GenericXLogFinish = Module['_GenericXLogFinish'] = (a0) => (_GenericXLogFinish = Module['_GenericXLogFinish'] = wasmExports['GenericXLogFinish'])(a0);
+var _GenericXLogAbort = Module['_GenericXLogAbort'] = (a0) => (_GenericXLogAbort = Module['_GenericXLogAbort'] = wasmExports['GenericXLogAbort'])(a0);
+var _is_pseudo_constant_for_index = Module['_is_pseudo_constant_for_index'] = (a0, a1, a2) => (_is_pseudo_constant_for_index = Module['_is_pseudo_constant_for_index'] = wasmExports['is_pseudo_constant_for_index'])(a0, a1, a2);
+var _standard_planner = Module['_standard_planner'] = (a0, a1, a2, a3) => (_standard_planner = Module['_standard_planner'] = wasmExports['standard_planner'])(a0, a1, a2, a3);
+var _CleanQuerytext = Module['_CleanQuerytext'] = (a0, a1, a2) => (_CleanQuerytext = Module['_CleanQuerytext'] = wasmExports['CleanQuerytext'])(a0, a1, a2);
+var _EnableQueryId = Module['_EnableQueryId'] = () => (_EnableQueryId = Module['_EnableQueryId'] = wasmExports['EnableQueryId'])();
+var _iswprint_l = Module['_iswprint_l'] = (a0, a1) => (_iswprint_l = Module['_iswprint_l'] = wasmExports['iswprint_l'])(a0, a1);
+var _iswdigit_l = Module['_iswdigit_l'] = (a0, a1) => (_iswdigit_l = Module['_iswdigit_l'] = wasmExports['iswdigit_l'])(a0, a1);
+var _isdigit_l = Module['_isdigit_l'] = (a0, a1) => (_isdigit_l = Module['_isdigit_l'] = wasmExports['isdigit_l'])(a0, a1);
+var _iswlower_l = Module['_iswlower_l'] = (a0, a1) => (_iswlower_l = Module['_iswlower_l'] = wasmExports['iswlower_l'])(a0, a1);
+var _iswupper_l = Module['_iswupper_l'] = (a0, a1) => (_iswupper_l = Module['_iswupper_l'] = wasmExports['iswupper_l'])(a0, a1);
+var _iswalpha_l = Module['_iswalpha_l'] = (a0, a1) => (_iswalpha_l = Module['_iswalpha_l'] = wasmExports['iswalpha_l'])(a0, a1);
+var _iswpunct_l = Module['_iswpunct_l'] = (a0, a1) => (_iswpunct_l = Module['_iswpunct_l'] = wasmExports['iswpunct_l'])(a0, a1);
+var _iswspace_l = Module['_iswspace_l'] = (a0, a1) => (_iswspace_l = Module['_iswspace_l'] = wasmExports['iswspace_l'])(a0, a1);
+var _toupper = Module['_toupper'] = (a0) => (_toupper = Module['_toupper'] = wasmExports['toupper'])(a0);
+var _fputs = Module['_fputs'] = (a0, a1) => (_fputs = Module['_fputs'] = wasmExports['fputs'])(a0, a1);
+var ___lshrti3 = Module['___lshrti3'] = (a0, a1, a2, a3) => (___lshrti3 = Module['___lshrti3'] = wasmExports['__lshrti3'])(a0, a1, a2, a3);
+var _realpath = Module['_realpath'] = (a0, a1) => (_realpath = Module['_realpath'] = wasmExports['realpath'])(a0, a1);
+var _float_to_shortest_decimal_bufn = Module['_float_to_shortest_decimal_bufn'] = (a0, a1) => (_float_to_shortest_decimal_bufn = Module['_float_to_shortest_decimal_bufn'] = wasmExports['float_to_shortest_decimal_bufn'])(a0, a1);
+var _getcwd = Module['_getcwd'] = (a0, a1) => (_getcwd = Module['_getcwd'] = wasmExports['getcwd'])(a0, a1);
+var _nanosleep = Module['_nanosleep'] = (a0, a1) => (_nanosleep = Module['_nanosleep'] = wasmExports['nanosleep'])(a0, a1);
+var _snprintf = Module['_snprintf'] = (a0, a1, a2, a3) => (_snprintf = Module['_snprintf'] = wasmExports['snprintf'])(a0, a1, a2, a3);
+var _strerror_r = Module['_strerror_r'] = (a0, a1, a2) => (_strerror_r = Module['_strerror_r'] = wasmExports['strerror_r'])(a0, a1, a2);
+var _pthread_mutex_lock = Module['_pthread_mutex_lock'] = (a0) => (_pthread_mutex_lock = Module['_pthread_mutex_lock'] = wasmExports['pthread_mutex_lock'])(a0);
+var _pthread_mutex_unlock = Module['_pthread_mutex_unlock'] = (a0) => (_pthread_mutex_unlock = Module['_pthread_mutex_unlock'] = wasmExports['pthread_mutex_unlock'])(a0);
+var _strncat = Module['_strncat'] = (a0, a1, a2) => (_strncat = Module['_strncat'] = wasmExports['strncat'])(a0, a1, a2);
+var _sysconf = Module['_sysconf'] = (a0) => (_sysconf = Module['_sysconf'] = wasmExports['sysconf'])(a0);
+var ___cxa_atexit = Module['___cxa_atexit'] = (a0, a1, a2) => (___cxa_atexit = Module['___cxa_atexit'] = wasmExports['__cxa_atexit'])(a0, a1, a2);
+var ___ctype_get_mb_cur_max = Module['___ctype_get_mb_cur_max'] = () => (___ctype_get_mb_cur_max = Module['___ctype_get_mb_cur_max'] = wasmExports['__ctype_get_mb_cur_max'])();
+var ___ctype_tolower_loc = Module['___ctype_tolower_loc'] = () => (___ctype_tolower_loc = Module['___ctype_tolower_loc'] = wasmExports['__ctype_tolower_loc'])();
+var ___ctype_toupper_loc = Module['___ctype_toupper_loc'] = () => (___ctype_toupper_loc = Module['___ctype_toupper_loc'] = wasmExports['__ctype_toupper_loc'])();
+var _acosl = Module['_acosl'] = (a0, a1, a2) => (_acosl = Module['_acosl'] = wasmExports['acosl'])(a0, a1, a2);
+var _aligned_alloc = Module['_aligned_alloc'] = (a0, a1) => (_aligned_alloc = Module['_aligned_alloc'] = wasmExports['aligned_alloc'])(a0, a1);
+var _atan2l = Module['_atan2l'] = (a0, a1, a2, a3, a4) => (_atan2l = Module['_atan2l'] = wasmExports['atan2l'])(a0, a1, a2, a3, a4);
+var _btowc = Module['_btowc'] = (a0) => (_btowc = Module['_btowc'] = wasmExports['btowc'])(a0);
+var _scalbn = Module['_scalbn'] = (a0, a1) => (_scalbn = Module['_scalbn'] = wasmExports['scalbn'])(a0, a1);
+var _cosl = Module['_cosl'] = (a0, a1, a2) => (_cosl = Module['_cosl'] = wasmExports['cosl'])(a0, a1, a2);
+var _dladdr = Module['_dladdr'] = (a0, a1) => (_dladdr = Module['_dladdr'] = wasmExports['dladdr'])(a0, a1);
+var _vsnprintf = Module['_vsnprintf'] = (a0, a1, a2, a3) => (_vsnprintf = Module['_vsnprintf'] = wasmExports['vsnprintf'])(a0, a1, a2, a3);
 var ___dl_seterr = (a0, a1) => (___dl_seterr = wasmExports['__dl_seterr'])(a0, a1);
+var _fchmod = Module['_fchmod'] = (a0, a1) => (_fchmod = Module['_fchmod'] = wasmExports['fchmod'])(a0, a1);
+var _fchmodat = Module['_fchmodat'] = (a0, a1, a2, a3) => (_fchmodat = Module['_fchmodat'] = wasmExports['fchmodat'])(a0, a1, a2, a3);
+var _fdopendir = Module['_fdopendir'] = (a0) => (_fdopendir = Module['_fdopendir'] = wasmExports['fdopendir'])(a0);
+var _fmax = Module['_fmax'] = (a0, a1) => (_fmax = Module['_fmax'] = wasmExports['fmax'])(a0, a1);
+var _fmin = Module['_fmin'] = (a0, a1) => (_fmin = Module['_fmin'] = wasmExports['fmin'])(a0, a1);
+var _fprintf = Module['_fprintf'] = (a0, a1, a2) => (_fprintf = Module['_fprintf'] = wasmExports['fprintf'])(a0, a1, a2);
+var _vfprintf = Module['_vfprintf'] = (a0, a1, a2) => (_vfprintf = Module['_vfprintf'] = wasmExports['vfprintf'])(a0, a1, a2);
+var ___small_fprintf = Module['___small_fprintf'] = (a0, a1, a2) => (___small_fprintf = Module['___small_fprintf'] = wasmExports['__small_fprintf'])(a0, a1, a2);
+var _fputwc = Module['_fputwc'] = (a0, a1) => (_fputwc = Module['_fputwc'] = wasmExports['fputwc'])(a0, a1);
+var _freelocale = Module['_freelocale'] = (a0) => (_freelocale = Module['_freelocale'] = wasmExports['freelocale'])(a0);
+var _ftello = Module['_ftello'] = (a0) => (_ftello = Module['_ftello'] = wasmExports['ftello'])(a0);
+var _mbtowc = Module['_mbtowc'] = (a0, a1, a2) => (_mbtowc = Module['_mbtowc'] = wasmExports['mbtowc'])(a0, a1, a2);
+var _getwc = Module['_getwc'] = (a0) => (_getwc = Module['_getwc'] = wasmExports['getwc'])(a0);
 var _htonl = (a0) => (_htonl = wasmExports['htonl'])(a0);
 var _htons = (a0) => (_htons = wasmExports['htons'])(a0);
+var _hypot = Module['_hypot'] = (a0, a1) => (_hypot = Module['_hypot'] = wasmExports['hypot'])(a0, a1);
+var _iconv_open = Module['_iconv_open'] = (a0, a1) => (_iconv_open = Module['_iconv_open'] = wasmExports['iconv_open'])(a0, a1);
+var _iconv = Module['_iconv'] = (a0, a1, a2, a3, a4) => (_iconv = Module['_iconv'] = wasmExports['iconv'])(a0, a1, a2, a3, a4);
+var _iconv_close = Module['_iconv_close'] = (a0) => (_iconv_close = Module['_iconv_close'] = wasmExports['iconv_close'])(a0);
+var _isalpha = Module['_isalpha'] = (a0) => (_isalpha = Module['_isalpha'] = wasmExports['isalpha'])(a0);
+var _isgraph = Module['_isgraph'] = (a0) => (_isgraph = Module['_isgraph'] = wasmExports['isgraph'])(a0);
+var _isspace = Module['_isspace'] = (a0) => (_isspace = Module['_isspace'] = wasmExports['isspace'])(a0);
+var _iswblank_l = Module['_iswblank_l'] = (a0, a1) => (_iswblank_l = Module['_iswblank_l'] = wasmExports['iswblank_l'])(a0, a1);
+var _iswcntrl_l = Module['_iswcntrl_l'] = (a0, a1) => (_iswcntrl_l = Module['_iswcntrl_l'] = wasmExports['iswcntrl_l'])(a0, a1);
+var _iswxdigit_l = Module['_iswxdigit_l'] = (a0, a1) => (_iswxdigit_l = Module['_iswxdigit_l'] = wasmExports['iswxdigit_l'])(a0, a1);
+var _isxdigit_l = Module['_isxdigit_l'] = (a0, a1) => (_isxdigit_l = Module['_isxdigit_l'] = wasmExports['isxdigit_l'])(a0, a1);
+var _pthread_mutex_init = Module['_pthread_mutex_init'] = (a0, a1) => (_pthread_mutex_init = Module['_pthread_mutex_init'] = wasmExports['pthread_mutex_init'])(a0, a1);
+var _pthread_mutex_destroy = Module['_pthread_mutex_destroy'] = (a0) => (_pthread_mutex_destroy = Module['_pthread_mutex_destroy'] = wasmExports['pthread_mutex_destroy'])(a0);
+var _pthread_getspecific = Module['_pthread_getspecific'] = (a0) => (_pthread_getspecific = Module['_pthread_getspecific'] = wasmExports['pthread_getspecific'])(a0);
+var _pthread_setspecific = Module['_pthread_setspecific'] = (a0, a1) => (_pthread_setspecific = Module['_pthread_setspecific'] = wasmExports['pthread_setspecific'])(a0, a1);
+var _pthread_cond_wait = Module['_pthread_cond_wait'] = (a0, a1) => (_pthread_cond_wait = Module['_pthread_cond_wait'] = wasmExports['pthread_cond_wait'])(a0, a1);
+var _pthread_cond_signal = Module['_pthread_cond_signal'] = (a0) => (_pthread_cond_signal = Module['_pthread_cond_signal'] = wasmExports['pthread_cond_signal'])(a0);
+var _pthread_cond_broadcast = Module['_pthread_cond_broadcast'] = (a0) => (_pthread_cond_broadcast = Module['_pthread_cond_broadcast'] = wasmExports['pthread_cond_broadcast'])(a0);
+var _pthread_cond_destroy = Module['_pthread_cond_destroy'] = (a0) => (_pthread_cond_destroy = Module['_pthread_cond_destroy'] = wasmExports['pthread_cond_destroy'])(a0);
+var _pthread_atfork = Module['_pthread_atfork'] = (a0, a1, a2) => (_pthread_atfork = Module['_pthread_atfork'] = wasmExports['pthread_atfork'])(a0, a1, a2);
+var _pthread_mutexattr_init = Module['_pthread_mutexattr_init'] = (a0) => (_pthread_mutexattr_init = Module['_pthread_mutexattr_init'] = wasmExports['pthread_mutexattr_init'])(a0);
+var _pthread_mutexattr_settype = Module['_pthread_mutexattr_settype'] = (a0, a1) => (_pthread_mutexattr_settype = Module['_pthread_mutexattr_settype'] = wasmExports['pthread_mutexattr_settype'])(a0, a1);
+var _pthread_mutexattr_destroy = Module['_pthread_mutexattr_destroy'] = (a0) => (_pthread_mutexattr_destroy = Module['_pthread_mutexattr_destroy'] = wasmExports['pthread_mutexattr_destroy'])(a0);
+var _pthread_mutex_trylock = Module['_pthread_mutex_trylock'] = (a0) => (_pthread_mutex_trylock = Module['_pthread_mutex_trylock'] = wasmExports['pthread_mutex_trylock'])(a0);
+var _pthread_join = Module['_pthread_join'] = (a0, a1) => (_pthread_join = Module['_pthread_join'] = wasmExports['pthread_join'])(a0, a1);
+var _pthread_key_create = Module['_pthread_key_create'] = (a0, a1) => (_pthread_key_create = Module['_pthread_key_create'] = wasmExports['pthread_key_create'])(a0, a1);
+var _pthread_cond_timedwait = Module['_pthread_cond_timedwait'] = (a0, a1, a2) => (_pthread_cond_timedwait = Module['_pthread_cond_timedwait'] = wasmExports['pthread_cond_timedwait'])(a0, a1, a2);
+var _pthread_detach = Module['_pthread_detach'] = (a0) => (_pthread_detach = Module['_pthread_detach'] = wasmExports['pthread_detach'])(a0);
+var _link = Module['_link'] = (a0, a1) => (_link = Module['_link'] = wasmExports['link'])(a0, a1);
+var _llround = Module['_llround'] = (a0) => (_llround = Module['_llround'] = wasmExports['llround'])(a0);
+var _logb = Module['_logb'] = (a0) => (_logb = Module['_logb'] = wasmExports['logb'])(a0);
+var _lround = Module['_lround'] = (a0) => (_lround = Module['_lround'] = wasmExports['lround'])(a0);
+var _mbrlen = Module['_mbrlen'] = (a0, a1, a2) => (_mbrlen = Module['_mbrlen'] = wasmExports['mbrlen'])(a0, a1, a2);
+var _mbrtowc = Module['_mbrtowc'] = (a0, a1, a2, a3) => (_mbrtowc = Module['_mbrtowc'] = wasmExports['mbrtowc'])(a0, a1, a2, a3);
+var _mbsnrtowcs = Module['_mbsnrtowcs'] = (a0, a1, a2, a3, a4) => (_mbsnrtowcs = Module['_mbsnrtowcs'] = wasmExports['mbsnrtowcs'])(a0, a1, a2, a3, a4);
+var _mbsrtowcs = Module['_mbsrtowcs'] = (a0, a1, a2, a3) => (_mbsrtowcs = Module['_mbsrtowcs'] = wasmExports['mbsrtowcs'])(a0, a1, a2, a3);
 var _emscripten_builtin_memalign = (a0, a1) => (_emscripten_builtin_memalign = wasmExports['emscripten_builtin_memalign'])(a0, a1);
+var _modf = Module['_modf'] = (a0, a1) => (_modf = Module['_modf'] = wasmExports['modf'])(a0, a1);
+var _nan = Module['_nan'] = (a0) => (_nan = Module['_nan'] = wasmExports['nan'])(a0);
+var _nextafterf = Module['_nextafterf'] = (a0, a1) => (_nextafterf = Module['_nextafterf'] = wasmExports['nextafterf'])(a0, a1);
 var _ntohs = (a0) => (_ntohs = wasmExports['ntohs'])(a0);
+var _openat = Module['_openat'] = (a0, a1, a2, a3) => (_openat = Module['_openat'] = wasmExports['openat'])(a0, a1, a2, a3);
+var _pathconf = Module['_pathconf'] = (a0, a1) => (_pathconf = Module['_pathconf'] = wasmExports['pathconf'])(a0, a1);
+var _strerror = Module['_strerror'] = (a0) => (_strerror = Module['_strerror'] = wasmExports['strerror'])(a0);
+var ___small_printf = Module['___small_printf'] = (a0, a1) => (___small_printf = Module['___small_printf'] = wasmExports['__small_printf'])(a0, a1);
+var _pthread_self = Module['_pthread_self'] = () => (_pthread_self = Module['_pthread_self'] = wasmExports['pthread_self'])();
+var _putchar = Module['_putchar'] = (a0) => (_putchar = Module['_putchar'] = wasmExports['putchar'])(a0);
+var _qsort = Module['_qsort'] = (a0, a1, a2, a3) => (_qsort = Module['_qsort'] = wasmExports['qsort'])(a0, a1, a2, a3);
+var _remainder = Module['_remainder'] = (a0, a1) => (_remainder = Module['_remainder'] = wasmExports['remainder'])(a0, a1);
+var _remquo = Module['_remquo'] = (a0, a1, a2) => (_remquo = Module['_remquo'] = wasmExports['remquo'])(a0, a1, a2);
+var _round = Module['_round'] = (a0) => (_round = Module['_round'] = wasmExports['round'])(a0);
+var _roundf = Module['_roundf'] = (a0) => (_roundf = Module['_roundf'] = wasmExports['roundf'])(a0);
 var __emscripten_timeout = (a0, a1) => (__emscripten_timeout = wasmExports['_emscripten_timeout'])(a0, a1);
+var _sinl = Module['_sinl'] = (a0, a1, a2) => (_sinl = Module['_sinl'] = wasmExports['sinl'])(a0, a1, a2);
+var _siprintf = Module['_siprintf'] = (a0, a1, a2) => (_siprintf = Module['_siprintf'] = wasmExports['siprintf'])(a0, a1, a2);
+var _sqrtl = Module['_sqrtl'] = (a0, a1, a2) => (_sqrtl = Module['_sqrtl'] = wasmExports['sqrtl'])(a0, a1, a2);
+var _vsscanf = Module['_vsscanf'] = (a0, a1, a2) => (_vsscanf = Module['_vsscanf'] = wasmExports['vsscanf'])(a0, a1, a2);
+var _statvfs = Module['_statvfs'] = (a0, a1) => (_statvfs = Module['_statvfs'] = wasmExports['statvfs'])(a0, a1);
+var _strcasecmp = Module['_strcasecmp'] = (a0, a1) => (_strcasecmp = Module['_strcasecmp'] = wasmExports['strcasecmp'])(a0, a1);
+var _strftime_l = Module['_strftime_l'] = (a0, a1, a2, a3, a4) => (_strftime_l = Module['_strftime_l'] = wasmExports['strftime_l'])(a0, a1, a2, a3, a4);
+var _strncasecmp = Module['_strncasecmp'] = (a0, a1, a2) => (_strncasecmp = Module['_strncasecmp'] = wasmExports['strncasecmp'])(a0, a1, a2);
+var ___multf3 = Module['___multf3'] = (a0, a1, a2, a3, a4) => (___multf3 = Module['___multf3'] = wasmExports['__multf3'])(a0, a1, a2, a3, a4);
+var ___addtf3 = Module['___addtf3'] = (a0, a1, a2, a3, a4) => (___addtf3 = Module['___addtf3'] = wasmExports['__addtf3'])(a0, a1, a2, a3, a4);
+var ___extenddftf2 = Module['___extenddftf2'] = (a0, a1) => (___extenddftf2 = Module['___extenddftf2'] = wasmExports['__extenddftf2'])(a0, a1);
+var ___divtf3 = Module['___divtf3'] = (a0, a1, a2, a3, a4) => (___divtf3 = Module['___divtf3'] = wasmExports['__divtf3'])(a0, a1, a2, a3, a4);
+var ___trunctfdf2 = Module['___trunctfdf2'] = (a0, a1) => (___trunctfdf2 = Module['___trunctfdf2'] = wasmExports['__trunctfdf2'])(a0, a1);
+var _strtold = Module['_strtold'] = (a0, a1, a2) => (_strtold = Module['_strtold'] = wasmExports['strtold'])(a0, a1, a2);
+var _strtof_l = Module['_strtof_l'] = (a0, a1, a2) => (_strtof_l = Module['_strtof_l'] = wasmExports['strtof_l'])(a0, a1, a2);
+var _strtod_l = Module['_strtod_l'] = (a0, a1, a2) => (_strtod_l = Module['_strtod_l'] = wasmExports['strtod_l'])(a0, a1, a2);
+var _strtold_l = Module['_strtold_l'] = (a0, a1, a2, a3) => (_strtold_l = Module['_strtold_l'] = wasmExports['strtold_l'])(a0, a1, a2, a3);
+var _strtoull_l = Module['_strtoull_l'] = (a0, a1, a2, a3) => (_strtoull_l = Module['_strtoull_l'] = wasmExports['strtoull_l'])(a0, a1, a2, a3);
+var _strtoll_l = Module['_strtoll_l'] = (a0, a1, a2, a3) => (_strtoll_l = Module['_strtoll_l'] = wasmExports['strtoll_l'])(a0, a1, a2, a3);
+var _strxfrm_l = Module['_strxfrm_l'] = (a0, a1, a2, a3) => (_strxfrm_l = Module['_strxfrm_l'] = wasmExports['strxfrm_l'])(a0, a1, a2, a3);
+var _swprintf = Module['_swprintf'] = (a0, a1, a2, a3) => (_swprintf = Module['_swprintf'] = wasmExports['swprintf'])(a0, a1, a2, a3);
+var _ungetc = Module['_ungetc'] = (a0, a1) => (_ungetc = Module['_ungetc'] = wasmExports['ungetc'])(a0, a1);
+var _ungetwc = Module['_ungetwc'] = (a0, a1) => (_ungetwc = Module['_ungetwc'] = wasmExports['ungetwc'])(a0, a1);
+var _unlinkat = Module['_unlinkat'] = (a0, a1, a2) => (_unlinkat = Module['_unlinkat'] = wasmExports['unlinkat'])(a0, a1, a2);
+var _usleep = Module['_usleep'] = (a0) => (_usleep = Module['_usleep'] = wasmExports['usleep'])(a0);
+var _utimensat = Module['_utimensat'] = (a0, a1, a2, a3) => (_utimensat = Module['_utimensat'] = wasmExports['utimensat'])(a0, a1, a2, a3);
+var _vasprintf = Module['_vasprintf'] = (a0, a1, a2) => (_vasprintf = Module['_vasprintf'] = wasmExports['vasprintf'])(a0, a1, a2);
+var _wcrtomb = Module['_wcrtomb'] = (a0, a1, a2) => (_wcrtomb = Module['_wcrtomb'] = wasmExports['wcrtomb'])(a0, a1, a2);
+var _wcslen = Module['_wcslen'] = (a0) => (_wcslen = Module['_wcslen'] = wasmExports['wcslen'])(a0);
+var _wcscoll_l = Module['_wcscoll_l'] = (a0, a1, a2) => (_wcscoll_l = Module['_wcscoll_l'] = wasmExports['wcscoll_l'])(a0, a1, a2);
+var _wcsnrtombs = Module['_wcsnrtombs'] = (a0, a1, a2, a3, a4) => (_wcsnrtombs = Module['_wcsnrtombs'] = wasmExports['wcsnrtombs'])(a0, a1, a2, a3, a4);
+var _wcstof = Module['_wcstof'] = (a0, a1) => (_wcstof = Module['_wcstof'] = wasmExports['wcstof'])(a0, a1);
+var _wcstod = Module['_wcstod'] = (a0, a1) => (_wcstod = Module['_wcstod'] = wasmExports['wcstod'])(a0, a1);
+var _wcstold = Module['_wcstold'] = (a0, a1, a2) => (_wcstold = Module['_wcstold'] = wasmExports['wcstold'])(a0, a1, a2);
+var _wcstoull = Module['_wcstoull'] = (a0, a1, a2) => (_wcstoull = Module['_wcstoull'] = wasmExports['wcstoull'])(a0, a1, a2);
+var _wcstoll = Module['_wcstoll'] = (a0, a1, a2) => (_wcstoll = Module['_wcstoll'] = wasmExports['wcstoll'])(a0, a1, a2);
+var _wcstoul = Module['_wcstoul'] = (a0, a1, a2) => (_wcstoul = Module['_wcstoul'] = wasmExports['wcstoul'])(a0, a1, a2);
+var _wcstol = Module['_wcstol'] = (a0, a1, a2) => (_wcstol = Module['_wcstol'] = wasmExports['wcstol'])(a0, a1, a2);
+var _wcsxfrm_l = Module['_wcsxfrm_l'] = (a0, a1, a2, a3) => (_wcsxfrm_l = Module['_wcsxfrm_l'] = wasmExports['wcsxfrm_l'])(a0, a1, a2, a3);
+var _wctob = Module['_wctob'] = (a0) => (_wctob = Module['_wctob'] = wasmExports['wctob'])(a0);
+var _wmemchr = Module['_wmemchr'] = (a0, a1, a2) => (_wmemchr = Module['_wmemchr'] = wasmExports['wmemchr'])(a0, a1, a2);
+var _wmemcmp = Module['_wmemcmp'] = (a0, a1, a2) => (_wmemcmp = Module['_wmemcmp'] = wasmExports['wmemcmp'])(a0, a1, a2);
+var ___lttf2 = Module['___lttf2'] = (a0, a1, a2, a3) => (___lttf2 = Module['___lttf2'] = wasmExports['__lttf2'])(a0, a1, a2, a3);
 var _setThrew = (a0, a1) => (_setThrew = wasmExports['setThrew'])(a0, a1);
+var __emscripten_tempret_set = (a0) => (__emscripten_tempret_set = wasmExports['_emscripten_tempret_set'])(a0);
+var __emscripten_tempret_get = () => (__emscripten_tempret_get = wasmExports['_emscripten_tempret_get'])();
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
+var __ZNSt3__26chronoeqB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_EEbRKNS0_8durationIT_T0_EERKNS4_IT1_T2_EE = Module['__ZNSt3__26chronoeqB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_EEbRKNS0_8durationIT_T0_EERKNS4_IT1_T2_EE'] = (a0, a1) => (__ZNSt3__26chronoeqB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_EEbRKNS0_8durationIT_T0_EERKNS4_IT1_T2_EE = Module['__ZNSt3__26chronoeqB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_EEbRKNS0_8durationIT_T0_EERKNS4_IT1_T2_EE'] = wasmExports['_ZNSt3__26chronoeqB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_EEbRKNS0_8durationIT_T0_EERKNS4_IT1_T2_EE'])(a0, a1);
+var __ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_Q20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS5_T0_EERKNS9_IS6_T2_EE = Module['__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_Q20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS5_T0_EERKNS9_IS6_T2_EE'] = (a0, a1) => (__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_Q20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS5_T0_EERKNS9_IS6_T2_EE = Module['__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_Q20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS5_T0_EERKNS9_IS6_T2_EE'] = wasmExports['_ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExS3_Q20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS5_T0_EERKNS9_IS6_T2_EE'])(a0, a1);
+var __ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE = Module['__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE'] = (a0, a1) => (__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE = Module['__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE'] = wasmExports['_ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE'])(a0, a1);
+var __ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE = Module['__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE'] = (a0, a1) => (__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE = Module['__ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE'] = wasmExports['_ZNSt3__26chronossB8nn180100IxNS_5ratioILx1ELx1000000000EEExNS2_ILx1ELx1000000EEEQ20three_way_comparableINS_11common_typeIJT_T1_EE4typeEEEEDaRKNS0_8durationIS6_T0_EERKNSA_IS7_T2_EE'])(a0, a1);
+var __ZNSt3__210unique_ptrIA_NS_24__barrier_algorithm_base9__state_tENS_14default_deleteIS3_EEEaSB8nn180100EOS6_ = Module['__ZNSt3__210unique_ptrIA_NS_24__barrier_algorithm_base9__state_tENS_14default_deleteIS3_EEEaSB8nn180100EOS6_'] = (a0, a1) => (__ZNSt3__210unique_ptrIA_NS_24__barrier_algorithm_base9__state_tENS_14default_deleteIS3_EEEaSB8nn180100EOS6_ = Module['__ZNSt3__210unique_ptrIA_NS_24__barrier_algorithm_base9__state_tENS_14default_deleteIS3_EEEaSB8nn180100EOS6_'] = wasmExports['_ZNSt3__210unique_ptrIA_NS_24__barrier_algorithm_base9__state_tENS_14default_deleteIS3_EEEaSB8nn180100EOS6_'])(a0, a1);
+var __ZNSt3__210shared_ptrINS_4__fs10filesystem12__dir_streamEEaSB8nn180100EOS4_ = Module['__ZNSt3__210shared_ptrINS_4__fs10filesystem12__dir_streamEEaSB8nn180100EOS4_'] = (a0, a1) => (__ZNSt3__210shared_ptrINS_4__fs10filesystem12__dir_streamEEaSB8nn180100EOS4_ = Module['__ZNSt3__210shared_ptrINS_4__fs10filesystem12__dir_streamEEaSB8nn180100EOS4_'] = wasmExports['_ZNSt3__210shared_ptrINS_4__fs10filesystem12__dir_streamEEaSB8nn180100EOS4_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbNS_17basic_string_viewIT_T0_EENS_13type_identityIS6_E4typeE = Module['__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbNS_17basic_string_viewIT_T0_EENS_13type_identityIS6_E4typeE'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbNS_17basic_string_viewIT_T0_EENS_13type_identityIS6_E4typeE = Module['__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbNS_17basic_string_viewIT_T0_EENS_13type_identityIS6_E4typeE'] = wasmExports['_ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbNS_17basic_string_viewIT_T0_EENS_13type_identityIS6_E4typeE'])(a0, a1);
+var __ZNSt3__210shared_ptrINS_4__fs10filesystem28recursive_directory_iterator12__shared_impEEaSB8nn180100EOS5_ = Module['__ZNSt3__210shared_ptrINS_4__fs10filesystem28recursive_directory_iterator12__shared_impEEaSB8nn180100EOS5_'] = (a0, a1) => (__ZNSt3__210shared_ptrINS_4__fs10filesystem28recursive_directory_iterator12__shared_impEEaSB8nn180100EOS5_ = Module['__ZNSt3__210shared_ptrINS_4__fs10filesystem28recursive_directory_iterator12__shared_impEEaSB8nn180100EOS5_'] = wasmExports['_ZNSt3__210shared_ptrINS_4__fs10filesystem28recursive_directory_iterator12__shared_impEEaSB8nn180100EOS5_'])(a0, a1);
+var __ZNSt3__24__fs10filesystem4pathaSB8nn180100EOS2_ = Module['__ZNSt3__24__fs10filesystem4pathaSB8nn180100EOS2_'] = (a0, a1) => (__ZNSt3__24__fs10filesystem4pathaSB8nn180100EOS2_ = Module['__ZNSt3__24__fs10filesystem4pathaSB8nn180100EOS2_'] = wasmExports['_ZNSt3__24__fs10filesystem4pathaSB8nn180100EOS2_'])(a0, a1);
+var __ZNSt3__24__fs10filesystem4pathdVB8nn180100ERKS2_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100ERKS2_'] = (a0, a1) => (__ZNSt3__24__fs10filesystem4pathdVB8nn180100ERKS2_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100ERKS2_'] = wasmExports['_ZNSt3__24__fs10filesystem4pathdVB8nn180100ERKS2_'])(a0, a1);
+var __ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EOS5_ = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EOS5_'] = (a0, a1) => (__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EOS5_ = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EOS5_'] = wasmExports['_ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EOS5_'])(a0, a1);
+var __ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSERKS5_ = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSERKS5_'] = (a0, a1) => (__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSERKS5_ = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSERKS5_'] = wasmExports['_ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSERKS5_'])(a0, a1);
+var __ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100Ec = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100Ec'] = (a0, a1) => (__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100Ec = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100Ec'] = wasmExports['_ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100Ec'])(a0, a1);
+var __ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100ERKS5_ = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100ERKS5_'] = (a0, a1) => (__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100ERKS5_ = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100ERKS5_'] = wasmExports['_ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100ERKS5_'])(a0, a1);
+var __ZNSt3__2neB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_ = Module['__ZNSt3__2neB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_'] = (a0, a1) => (__ZNSt3__2neB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_ = Module['__ZNSt3__2neB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_'] = wasmExports['_ZNSt3__2neB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_ = Module['__ZNSt3__2eqB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_ = Module['__ZNSt3__2eqB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_'] = wasmExports['_ZNSt3__2eqB8nn180100ERKNS_16__deque_iteratorINS_4__fs10filesystem12__dir_streamEPS3_RS3_PS4_lLl0EEES9_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100ERKNS_15error_conditionES2_ = Module['__ZNSt3__2eqB8nn180100ERKNS_15error_conditionES2_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100ERKNS_15error_conditionES2_ = Module['__ZNSt3__2eqB8nn180100ERKNS_15error_conditionES2_'] = wasmExports['_ZNSt3__2eqB8nn180100ERKNS_15error_conditionES2_'])(a0, a1);
+var __ZNKSt3__214error_categoryeqB8nn180100ERKS0_ = Module['__ZNKSt3__214error_categoryeqB8nn180100ERKS0_'] = (a0, a1) => (__ZNKSt3__214error_categoryeqB8nn180100ERKS0_ = Module['__ZNKSt3__214error_categoryeqB8nn180100ERKS0_'] = wasmExports['_ZNKSt3__214error_categoryeqB8nn180100ERKS0_'])(a0, a1);
+var __ZSteqB8nn180100RKSt13exception_ptrS1_ = Module['__ZSteqB8nn180100RKSt13exception_ptrS1_'] = (a0, a1) => (__ZSteqB8nn180100RKSt13exception_ptrS1_ = Module['__ZSteqB8nn180100RKSt13exception_ptrS1_'] = wasmExports['_ZSteqB8nn180100RKSt13exception_ptrS1_'])(a0, a1);
+var __ZStneB8nn180100RKSt13exception_ptrS1_ = Module['__ZStneB8nn180100RKSt13exception_ptrS1_'] = (a0, a1) => (__ZStneB8nn180100RKSt13exception_ptrS1_ = Module['__ZStneB8nn180100RKSt13exception_ptrS1_'] = wasmExports['_ZStneB8nn180100RKSt13exception_ptrS1_'])(a0, a1);
+var __ZNSt3__220__check_for_overflowB8nn180100ILm4EEENS_9enable_ifIXeqT_Li4EEvE4typeEm = Module['__ZNSt3__220__check_for_overflowB8nn180100ILm4EEENS_9enable_ifIXeqT_Li4EEvE4typeEm'] = (a0) => (__ZNSt3__220__check_for_overflowB8nn180100ILm4EEENS_9enable_ifIXeqT_Li4EEvE4typeEm = Module['__ZNSt3__220__check_for_overflowB8nn180100ILm4EEENS_9enable_ifIXeqT_Li4EEvE4typeEm'] = wasmExports['_ZNSt3__220__check_for_overflowB8nn180100ILm4EEENS_9enable_ifIXeqT_Li4EEvE4typeEm'])(a0);
+var __ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_ = Module['__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_ = Module['__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_'] = wasmExports['_ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100I11__mbstate_tEEbRKNS_4fposIT_EES6_ = Module['__ZNSt3__2eqB8nn180100I11__mbstate_tEEbRKNS_4fposIT_EES6_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100I11__mbstate_tEEbRKNS_4fposIT_EES6_ = Module['__ZNSt3__2eqB8nn180100I11__mbstate_tEEbRKNS_4fposIT_EES6_'] = wasmExports['_ZNSt3__2eqB8nn180100I11__mbstate_tEEbRKNS_4fposIT_EES6_'])(a0, a1);
+var __ZNSt3__219ostreambuf_iteratorIcNS_11char_traitsIcEEEaSB8nn180100Ec = Module['__ZNSt3__219ostreambuf_iteratorIcNS_11char_traitsIcEEEaSB8nn180100Ec'] = (a0, a1) => (__ZNSt3__219ostreambuf_iteratorIcNS_11char_traitsIcEEEaSB8nn180100Ec = Module['__ZNSt3__219ostreambuf_iteratorIcNS_11char_traitsIcEEEaSB8nn180100Ec'] = wasmExports['_ZNSt3__219ostreambuf_iteratorIcNS_11char_traitsIcEEEaSB8nn180100Ec'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IwNS_11char_traitsIwEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_ = Module['__ZNSt3__2eqB8nn180100IwNS_11char_traitsIwEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IwNS_11char_traitsIwEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_ = Module['__ZNSt3__2eqB8nn180100IwNS_11char_traitsIwEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_'] = wasmExports['_ZNSt3__2eqB8nn180100IwNS_11char_traitsIwEEEEbRKNS_19istreambuf_iteratorIT_T0_EES8_'])(a0, a1);
+var __ZNSt3__219ostreambuf_iteratorIwNS_11char_traitsIwEEEaSB8nn180100Ew = Module['__ZNSt3__219ostreambuf_iteratorIwNS_11char_traitsIwEEEaSB8nn180100Ew'] = (a0, a1) => (__ZNSt3__219ostreambuf_iteratorIwNS_11char_traitsIwEEEaSB8nn180100Ew = Module['__ZNSt3__219ostreambuf_iteratorIwNS_11char_traitsIwEEEaSB8nn180100Ew'] = wasmExports['_ZNSt3__219ostreambuf_iteratorIwNS_11char_traitsIwEEEaSB8nn180100Ew'])(a0, a1);
+var __ZNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEOS5_ = Module['__ZNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEOS5_'] = (a0, a1) => (__ZNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEOS5_ = Module['__ZNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEOS5_'] = wasmExports['_ZNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEOS5_'])(a0, a1);
+var __ZNSt3__214basic_iostreamIcNS_11char_traitsIcEEEaSEOS3_ = Module['__ZNSt3__214basic_iostreamIcNS_11char_traitsIcEEEaSEOS3_'] = (a0, a1) => (__ZNSt3__214basic_iostreamIcNS_11char_traitsIcEEEaSEOS3_ = Module['__ZNSt3__214basic_iostreamIcNS_11char_traitsIcEEEaSEOS3_'] = wasmExports['_ZNSt3__214basic_iostreamIcNS_11char_traitsIcEEEaSEOS3_'])(a0, a1);
+var __ZNSt3__213basic_ostreamIcNS_11char_traitsIcEEEaSEOS3_ = Module['__ZNSt3__213basic_ostreamIcNS_11char_traitsIcEEEaSEOS3_'] = (a0, a1) => (__ZNSt3__213basic_ostreamIcNS_11char_traitsIcEEEaSEOS3_ = Module['__ZNSt3__213basic_ostreamIcNS_11char_traitsIcEEEaSEOS3_'] = wasmExports['_ZNSt3__213basic_ostreamIcNS_11char_traitsIcEEEaSEOS3_'])(a0, a1);
+var __ZNSt3__213basic_istreamIcNS_11char_traitsIcEEEaSEOS3_ = Module['__ZNSt3__213basic_istreamIcNS_11char_traitsIcEEEaSEOS3_'] = (a0, a1) => (__ZNSt3__213basic_istreamIcNS_11char_traitsIcEEEaSEOS3_ = Module['__ZNSt3__213basic_istreamIcNS_11char_traitsIcEEEaSEOS3_'] = wasmExports['_ZNSt3__213basic_istreamIcNS_11char_traitsIcEEEaSEOS3_'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2neB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2neB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_'] = wasmExports['_ZNSt3__2neB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2eqB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2eqB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_'] = wasmExports['_ZNSt3__2eqB8nn180100IPcEEbRKNS_11__wrap_iterIT_EES6_'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2neB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2neB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_'] = wasmExports['_ZNSt3__2neB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2eqB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_ = Module['__ZNSt3__2eqB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_'] = wasmExports['_ZNSt3__2eqB8nn180100IPwEEbRKNS_11__wrap_iterIT_EES6_'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2neB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2neB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = wasmExports['_ZNSt3__2neB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2eqB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2eqB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = wasmExports['_ZNSt3__2eqB8nn180100IPKcPcEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'])(a0, a1);
+var __ZNSt3__210unique_ptrIcPFvPvEEaSB8nn180100EOS4_ = Module['__ZNSt3__210unique_ptrIcPFvPvEEaSB8nn180100EOS4_'] = (a0, a1) => (__ZNSt3__210unique_ptrIcPFvPvEEaSB8nn180100EOS4_ = Module['__ZNSt3__210unique_ptrIcPFvPvEEaSB8nn180100EOS4_'] = wasmExports['_ZNSt3__210unique_ptrIcPFvPvEEaSB8nn180100EOS4_'])(a0, a1);
+var __ZNSt3__210unique_ptrIjPFvPvEEaSB8nn180100EOS4_ = Module['__ZNSt3__210unique_ptrIjPFvPvEEaSB8nn180100EOS4_'] = (a0, a1) => (__ZNSt3__210unique_ptrIjPFvPvEEaSB8nn180100EOS4_ = Module['__ZNSt3__210unique_ptrIjPFvPvEEaSB8nn180100EOS4_'] = wasmExports['_ZNSt3__210unique_ptrIjPFvPvEEaSB8nn180100EOS4_'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2neB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2neB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = wasmExports['_ZNSt3__2neB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'])(a0, a1);
+var __ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EOS5_ = Module['__ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EOS5_'] = (a0, a1) => (__ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EOS5_ = Module['__ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EOS5_'] = wasmExports['_ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EOS5_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2eqB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE = Module['__ZNSt3__2eqB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'] = wasmExports['_ZNSt3__2eqB8nn180100IPKwPwEEbRKNS_11__wrap_iterIT_EERKNS4_IT0_EE'])(a0, a1);
+var __ZNSt3__210unique_ptrIwPFvPvEEaSB8nn180100EOS4_ = Module['__ZNSt3__210unique_ptrIwPFvPvEEaSB8nn180100EOS4_'] = (a0, a1) => (__ZNSt3__210unique_ptrIwPFvPvEEaSB8nn180100EOS4_ = Module['__ZNSt3__210unique_ptrIwPFvPvEEaSB8nn180100EOS4_'] = wasmExports['_ZNSt3__210unique_ptrIwPFvPvEEaSB8nn180100EOS4_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IcPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn = Module['__ZNSt3__2eqB8nn180100IcPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IcPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn = Module['__ZNSt3__2eqB8nn180100IcPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn'] = wasmExports['_ZNSt3__2eqB8nn180100IcPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IwPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn = Module['__ZNSt3__2eqB8nn180100IwPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IwPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn = Module['__ZNSt3__2eqB8nn180100IwPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn'] = wasmExports['_ZNSt3__2eqB8nn180100IwPFvPvEEEbRKNS_10unique_ptrIT_T0_EEDn'])(a0, a1);
+var __ZNSt3__211__wrap_iterIPKcEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPKcEpLB8nn180100El'] = (a0, a1) => (__ZNSt3__211__wrap_iterIPKcEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPKcEpLB8nn180100El'] = wasmExports['_ZNSt3__211__wrap_iterIPKcEpLB8nn180100El'])(a0, a1);
+var __ZNSt3__211__wrap_iterIPKwEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPKwEpLB8nn180100El'] = (a0, a1) => (__ZNSt3__211__wrap_iterIPKwEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPKwEpLB8nn180100El'] = wasmExports['_ZNSt3__211__wrap_iterIPKwEpLB8nn180100El'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEENS_9allocatorIcEEEEbRKNS_12basic_stringIT_T0_T1_EEPKS6_ = Module['__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEENS_9allocatorIcEEEEbRKNS_12basic_stringIT_T0_T1_EEPKS6_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEENS_9allocatorIcEEEEbRKNS_12basic_stringIT_T0_T1_EEPKS6_ = Module['__ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEENS_9allocatorIcEEEEbRKNS_12basic_stringIT_T0_T1_EEPKS6_'] = wasmExports['_ZNSt3__2eqB8nn180100IcNS_11char_traitsIcEENS_9allocatorIcEEEEbRKNS_12basic_stringIT_T0_T1_EEPKS6_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100INS_9allocatorIcEEEEbRKNS_12basic_stringIcNS_11char_traitsIcEET_EES9_ = Module['__ZNSt3__2eqB8nn180100INS_9allocatorIcEEEEbRKNS_12basic_stringIcNS_11char_traitsIcEET_EES9_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100INS_9allocatorIcEEEEbRKNS_12basic_stringIcNS_11char_traitsIcEET_EES9_ = Module['__ZNSt3__2eqB8nn180100INS_9allocatorIcEEEEbRKNS_12basic_stringIcNS_11char_traitsIcEET_EES9_'] = wasmExports['_ZNSt3__2eqB8nn180100INS_9allocatorIcEEEEbRKNS_12basic_stringIcNS_11char_traitsIcEET_EES9_'])(a0, a1);
+var __ZNSt3__26vectorIPNS_6locale5facetENS_15__sso_allocatorIS3_Lm30EEEEaSB8nn180100ERKS6_ = Module['__ZNSt3__26vectorIPNS_6locale5facetENS_15__sso_allocatorIS3_Lm30EEEEaSB8nn180100ERKS6_'] = (a0, a1) => (__ZNSt3__26vectorIPNS_6locale5facetENS_15__sso_allocatorIS3_Lm30EEEEaSB8nn180100ERKS6_ = Module['__ZNSt3__26vectorIPNS_6locale5facetENS_15__sso_allocatorIS3_Lm30EEEEaSB8nn180100ERKS6_'] = wasmExports['_ZNSt3__26vectorIPNS_6locale5facetENS_15__sso_allocatorIS3_Lm30EEEEaSB8nn180100ERKS6_'])(a0, a1);
+var __ZNSt3__26localeaSERKS0_ = Module['__ZNSt3__26localeaSERKS0_'] = (a0, a1) => (__ZNSt3__26localeaSERKS0_ = Module['__ZNSt3__26localeaSERKS0_'] = wasmExports['_ZNSt3__26localeaSERKS0_'])(a0, a1);
+var __ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EPKc = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EPKc'] = (a0, a1) => (__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EPKc = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EPKc'] = wasmExports['_ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSB8nn180100EPKc'])(a0, a1);
+var __ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EPKw = Module['__ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EPKw'] = (a0, a1) => (__ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EPKw = Module['__ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EPKw'] = wasmExports['_ZNSt3__212basic_stringIwNS_11char_traitsIwEENS_9allocatorIwEEEaSB8nn180100EPKw'])(a0, a1);
+var __ZNSt3__211__wrap_iterIPcEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPcEpLB8nn180100El'] = (a0, a1) => (__ZNSt3__211__wrap_iterIPcEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPcEpLB8nn180100El'] = wasmExports['_ZNSt3__211__wrap_iterIPcEpLB8nn180100El'])(a0, a1);
+var __ZNSt3__211__wrap_iterIPwEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPwEpLB8nn180100El'] = (a0, a1) => (__ZNSt3__211__wrap_iterIPwEpLB8nn180100El = Module['__ZNSt3__211__wrap_iterIPwEpLB8nn180100El'] = wasmExports['_ZNSt3__211__wrap_iterIPwEpLB8nn180100El'])(a0, a1);
+var __ZNSt3__2eqB8nn180100ENS_11__thread_idES0_ = Module['__ZNSt3__2eqB8nn180100ENS_11__thread_idES0_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100ENS_11__thread_idES0_ = Module['__ZNSt3__2eqB8nn180100ENS_11__thread_idES0_'] = wasmExports['_ZNSt3__2eqB8nn180100ENS_11__thread_idES0_'])(a0, a1);
+var __Z22__throw_bad_alloc_shimv = Module['__Z22__throw_bad_alloc_shimv'] = () => (__Z22__throw_bad_alloc_shimv = Module['__Z22__throw_bad_alloc_shimv'] = wasmExports['_Z22__throw_bad_alloc_shimv'])();
+var __ZNSt3__24__fs10filesystemneB8nn180100ERKNS1_18directory_iteratorES4_ = Module['__ZNSt3__24__fs10filesystemneB8nn180100ERKNS1_18directory_iteratorES4_'] = (a0, a1) => (__ZNSt3__24__fs10filesystemneB8nn180100ERKNS1_18directory_iteratorES4_ = Module['__ZNSt3__24__fs10filesystemneB8nn180100ERKNS1_18directory_iteratorES4_'] = wasmExports['_ZNSt3__24__fs10filesystemneB8nn180100ERKNS1_18directory_iteratorES4_'])(a0, a1);
+var __ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_18directory_iteratorES4_ = Module['__ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_18directory_iteratorES4_'] = (a0, a1) => (__ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_18directory_iteratorES4_ = Module['__ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_18directory_iteratorES4_'] = wasmExports['_ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_18directory_iteratorES4_'])(a0, a1);
+var __ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_4pathES4_ = Module['__ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_4pathES4_'] = (a0, a1) => (__ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_4pathES4_ = Module['__ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_4pathES4_'] = wasmExports['_ZNSt3__24__fs10filesystemeqB8nn180100ERKNS1_4pathES4_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100INS_4__fs10filesystem12__dir_streamES3_EEbRKNS_10shared_ptrIT_EERKNS4_IT0_EE = Module['__ZNSt3__2eqB8nn180100INS_4__fs10filesystem12__dir_streamES3_EEbRKNS_10shared_ptrIT_EERKNS4_IT0_EE'] = (a0, a1) => (__ZNSt3__2eqB8nn180100INS_4__fs10filesystem12__dir_streamES3_EEbRKNS_10shared_ptrIT_EERKNS4_IT0_EE = Module['__ZNSt3__2eqB8nn180100INS_4__fs10filesystem12__dir_streamES3_EEbRKNS_10shared_ptrIT_EERKNS4_IT0_EE'] = wasmExports['_ZNSt3__2eqB8nn180100INS_4__fs10filesystem12__dir_streamES3_EEbRKNS_10shared_ptrIT_EERKNS4_IT0_EE'])(a0, a1);
+var __ZNSt3__24__fs10filesystemaNB8nn180100ERNS1_5permsES2_ = Module['__ZNSt3__24__fs10filesystemaNB8nn180100ERNS1_5permsES2_'] = (a0, a1) => (__ZNSt3__24__fs10filesystemaNB8nn180100ERNS1_5permsES2_ = Module['__ZNSt3__24__fs10filesystemaNB8nn180100ERNS1_5permsES2_'] = wasmExports['_ZNSt3__24__fs10filesystemaNB8nn180100ERNS1_5permsES2_'])(a0, a1);
+var __ZNSt3__24__fs10filesystemoRB8nn180100ERNS1_5permsES2_ = Module['__ZNSt3__24__fs10filesystemoRB8nn180100ERNS1_5permsES2_'] = (a0, a1) => (__ZNSt3__24__fs10filesystemoRB8nn180100ERNS1_5permsES2_ = Module['__ZNSt3__24__fs10filesystemoRB8nn180100ERNS1_5permsES2_'] = wasmExports['_ZNSt3__24__fs10filesystemoRB8nn180100ERNS1_5permsES2_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100ERKNS_10error_codeERKNS_15error_conditionE = Module['__ZNSt3__2eqB8nn180100ERKNS_10error_codeERKNS_15error_conditionE'] = (a0, a1) => (__ZNSt3__2eqB8nn180100ERKNS_10error_codeERKNS_15error_conditionE = Module['__ZNSt3__2eqB8nn180100ERKNS_10error_codeERKNS_15error_conditionE'] = wasmExports['_ZNSt3__2eqB8nn180100ERKNS_10error_codeERKNS_15error_conditionE'])(a0, a1);
+var __ZNSt3__24__fs10filesystem4pathdVB8nn180100INS_17basic_string_viewIcNS_11char_traitsIcEEEEEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS9_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100INS_17basic_string_viewIcNS_11char_traitsIcEEEEEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS9_'] = (a0, a1) => (__ZNSt3__24__fs10filesystem4pathdVB8nn180100INS_17basic_string_viewIcNS_11char_traitsIcEEEEEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS9_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100INS_17basic_string_viewIcNS_11char_traitsIcEEEEEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS9_'] = wasmExports['_ZNSt3__24__fs10filesystem4pathdVB8nn180100INS_17basic_string_viewIcNS_11char_traitsIcEEEEEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS9_'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_ = Module['__ZNSt3__2neB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_ = Module['__ZNSt3__2neB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_'] = wasmExports['_ZNSt3__2neB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_ = Module['__ZNSt3__2eqB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_ = Module['__ZNSt3__2eqB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_'] = wasmExports['_ZNSt3__2eqB8nn180100IPNS_17basic_string_viewIcNS_11char_traitsIcEEEEEEbRKNS_11__wrap_iterIT_EESA_'])(a0, a1);
+var __ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100EPKc = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100EPKc'] = (a0, a1) => (__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100EPKc = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100EPKc'] = wasmExports['_ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEpLB8nn180100EPKc'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_ = Module['__ZNSt3__2neB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_ = Module['__ZNSt3__2neB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_'] = wasmExports['_ZNSt3__2neB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_'])(a0, a1);
+var __ZNSt3__24__fs10filesystem4pathdVB8nn180100IA1_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100IA1_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_'] = (a0, a1) => (__ZNSt3__24__fs10filesystem4pathdVB8nn180100IA1_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100IA1_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_'] = wasmExports['_ZNSt3__24__fs10filesystem4pathdVB8nn180100IA1_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_ = Module['__ZNSt3__2eqB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_ = Module['__ZNSt3__2eqB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_'] = wasmExports['_ZNSt3__2eqB8nn180100IPNS_4pairINS_17basic_string_viewIcNS_11char_traitsIcEEEENS_4__fs10filesystem12PathPartKindEEEEEbRKNS_11__wrap_iterIT_EESF_'])(a0, a1);
+var __ZNSt3__24__fs10filesystem4pathdVB8nn180100IA3_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100IA3_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_'] = (a0, a1) => (__ZNSt3__24__fs10filesystem4pathdVB8nn180100IA3_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_ = Module['__ZNSt3__24__fs10filesystem4pathdVB8nn180100IA3_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_'] = wasmExports['_ZNSt3__24__fs10filesystem4pathdVB8nn180100IA3_cEENS_9enable_ifIXsr13__is_pathableIT_EE5valueERS2_E4typeERKS6_'])(a0, a1);
+var __ZNSt3__218__libcpp_refstringaSERKS0_ = Module['__ZNSt3__218__libcpp_refstringaSERKS0_'] = (a0, a1) => (__ZNSt3__218__libcpp_refstringaSERKS0_ = Module['__ZNSt3__218__libcpp_refstringaSERKS0_'] = wasmExports['_ZNSt3__218__libcpp_refstringaSERKS0_'])(a0, a1);
+var __ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEc = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEc'] = (a0, a1) => (__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEc = Module['__ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEc'] = wasmExports['_ZNSt3__212basic_stringIcNS_11char_traitsIcEENS_9allocatorIcEEEaSEc'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_ = Module['__ZNSt3__2neB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_ = Module['__ZNSt3__2neB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_'] = wasmExports['_ZNSt3__2neB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_'])(a0, a1);
+var __ZNSt3__2neB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_ = Module['__ZNSt3__2neB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_'] = (a0, a1) => (__ZNSt3__2neB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_ = Module['__ZNSt3__2neB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_'] = wasmExports['_ZNSt3__2neB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_ = Module['__ZNSt3__2eqB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_ = Module['__ZNSt3__2eqB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_'] = wasmExports['_ZNSt3__2eqB8nn180100IPNS_4pairIPNS_18condition_variableEPNS_5mutexEEEEEbRKNS_11__wrap_iterIT_EESC_'])(a0, a1);
+var __ZNSt3__2eqB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_ = Module['__ZNSt3__2eqB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_'] = (a0, a1) => (__ZNSt3__2eqB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_ = Module['__ZNSt3__2eqB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_'] = wasmExports['_ZNSt3__2eqB8nn180100IPPNS_17__assoc_sub_stateEEEbRKNS_11__wrap_iterIT_EES8_'])(a0, a1);
+var ___cxa_bad_typeid = Module['___cxa_bad_typeid'] = () => (___cxa_bad_typeid = Module['___cxa_bad_typeid'] = wasmExports['__cxa_bad_typeid'])();
+var ___cxa_increment_exception_refcount = Module['___cxa_increment_exception_refcount'] = (a0) => (___cxa_increment_exception_refcount = Module['___cxa_increment_exception_refcount'] = wasmExports['__cxa_increment_exception_refcount'])(a0);
+var ___cxa_decrement_exception_refcount = Module['___cxa_decrement_exception_refcount'] = (a0) => (___cxa_decrement_exception_refcount = Module['___cxa_decrement_exception_refcount'] = wasmExports['__cxa_decrement_exception_refcount'])(a0);
+var ___cxa_allocate_exception = Module['___cxa_allocate_exception'] = (a0) => (___cxa_allocate_exception = Module['___cxa_allocate_exception'] = wasmExports['__cxa_allocate_exception'])(a0);
+var ___cxa_pure_virtual = Module['___cxa_pure_virtual'] = () => (___cxa_pure_virtual = Module['___cxa_pure_virtual'] = wasmExports['__cxa_pure_virtual'])();
+var ___dynamic_cast = Module['___dynamic_cast'] = (a0, a1, a2, a3) => (___dynamic_cast = Module['___dynamic_cast'] = wasmExports['__dynamic_cast'])(a0, a1, a2, a3);
 var ___cxa_is_pointer_type = (a0) => (___cxa_is_pointer_type = wasmExports['__cxa_is_pointer_type'])(a0);
-var _progname = Module['_progname'] = 68900180;
-var _single_mode_feed = Module['_single_mode_feed'] = 68900196;
-var _SOCKET_DATA = Module['_SOCKET_DATA'] = 68950200;
-var _SOCKET_FILE = Module['_SOCKET_FILE'] = 68950196;
-var _cma_rsize = Module['_cma_rsize'] = 68900392;
-var _cma_wsize = Module['_cma_wsize'] = 68900388;
-var _quote_all_identifiers = Module['_quote_all_identifiers'] = 68900185;
-var _IDB_STAGE = Module['_IDB_STAGE'] = 68950208;
-var _IDB_PIPE_FP = Module['_IDB_PIPE_FP'] = 68950204;
+var _ScanKeywords = Module['_ScanKeywords'] = 69162516;
+var _stderr = Module['_stderr'] = 69165376;
+var _stdout = Module['_stdout'] = 69165680;
+var _check_function_bodies = Module['_check_function_bodies'] = 69094685;
+var _error_context_stack = Module['_error_context_stack'] = 69194596;
+var _MyDatabaseId = Module['_MyDatabaseId'] = 69224424;
+var _ParallelWorkerNumber = Module['_ParallelWorkerNumber'] = 69158356;
+var _MyProc = Module['_MyProc'] = 69176660;
+var _CurrentMemoryContext = Module['_CurrentMemoryContext'] = 69224148;
+var _TopMemoryContext = Module['_TopMemoryContext'] = 69224152;
+var _GUC_check_errdetail_string = Module['_GUC_check_errdetail_string'] = 69205672;
+var _wal_level = Module['_wal_level'] = 69157908;
+var _InterruptPending = Module['_InterruptPending'] = 69224368;
+var _maintenance_work_mem = Module['_maintenance_work_mem'] = 69146176;
+var _TopTransactionContext = Module['_TopTransactionContext'] = 69224172;
+var _SnapshotAnyData = Module['_SnapshotAnyData'] = 69144256;
+var _IsUnderPostmaster = Module['_IsUnderPostmaster'] = 69224441;
+var _CurrentResourceOwner = Module['_CurrentResourceOwner'] = 69224236;
+var _TopTransactionResourceOwner = Module['_TopTransactionResourceOwner'] = 69224244;
+var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69183292;
+var _BufferBlocks = Module['_BufferBlocks'] = 69178032;
+var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69316912;
+var _pgBufferUsage = Module['_pgBufferUsage'] = 69184208;
+var _MainLWLockArray = Module['_MainLWLockArray'] = 69174724;
+var ___THREW__ = Module['___THREW__'] = 69330520;
+var ___threwValue = Module['___threwValue'] = 69330524;
+var _PG_exception_stack = Module['_PG_exception_stack'] = 69194600;
+var _debug_query_string = Module['_debug_query_string'] = 69185100;
+var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69178004;
+var _work_mem = Module['_work_mem'] = 69146160;
+var _TTSOpsMinimalTuple = Module['_TTSOpsMinimalTuple'] = 69032280;
+var _TTSOpsVirtual = Module['_TTSOpsVirtual'] = 69032184;
+var _SPI_processed = Module['_SPI_processed'] = 69183336;
+var _SPI_tuptable = Module['_SPI_tuptable'] = 69183344;
+var _SPI_result = Module['_SPI_result'] = 69183348;
+var _CacheMemoryContext = Module['_CacheMemoryContext'] = 69224164;
+var _pgWalUsage = Module['_pgWalUsage'] = 69184320;
+var _ExecutorStart_hook = Module['_ExecutorStart_hook'] = 69184344;
+var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69184348;
+var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69184352;
+var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69184356;
+var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69184364;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68282240;
+var _stdin = Module['_stdin'] = 69165528;
+var _progname = Module['_progname'] = 69184900;
+var _single_mode_feed = Module['_single_mode_feed'] = 69184916;
+var _SOCKET_DATA = Module['_SOCKET_DATA'] = 69234920;
+var _SOCKET_FILE = Module['_SOCKET_FILE'] = 69234916;
+var _cma_rsize = Module['_cma_rsize'] = 69185112;
+var _cma_wsize = Module['_cma_wsize'] = 69185108;
+var _quote_all_identifiers = Module['_quote_all_identifiers'] = 69184905;
+var _ProcessUtility_hook = Module['_ProcessUtility_hook'] = 69185300;
+var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 69146180;
+var _pg_number_of_ones = Module['_pg_number_of_ones'] = 68715856;
+var _process_shared_preload_libraries_in_progress = Module['_process_shared_preload_libraries_in_progress'] = 69224356;
+var _shmem_request_hook = Module['_shmem_request_hook'] = 69224360;
+var _planner_hook = Module['_planner_hook'] = 69231040;
+var _IDB_STAGE = Module['_IDB_STAGE'] = 69234928;
+var _IDB_PIPE_FP = Module['_IDB_PIPE_FP'] = 69234924;
+var __ZTISt12bad_any_cast = Module['__ZTISt12bad_any_cast'] = 69174132;
+var __ZTSSt12bad_any_cast = Module['__ZTSSt12bad_any_cast'] = 68880435;
+var __ZTINSt12experimental15fundamentals_v112bad_any_castE = Module['__ZTINSt12experimental15fundamentals_v112bad_any_castE'] = 69174144;
+var __ZTSNSt12experimental15fundamentals_v112bad_any_castE = Module['__ZTSNSt12experimental15fundamentals_v112bad_any_castE'] = 68880452;
+var __ZNSt3__26__itoa16_Charconv_digitsE = Module['__ZNSt3__26__itoa16_Charconv_digitsE'] = 68875488;
+var __ZNSt3__26__itoa10__pow10_32E = Module['__ZNSt3__26__itoa10__pow10_32E'] = 68748560;
+var __ZNSt3__26__itoa16__digits_base_10E = Module['__ZNSt3__26__itoa16__digits_base_10E'] = 68748608;
+var __ZNSt3__225_General_precision_tablesIfE16_Special_X_tableE = Module['__ZNSt3__225_General_precision_tablesIfE16_Special_X_tableE'] = 68875536;
+var __ZNSt3__225_General_precision_tablesIfE6_Max_PE = Module['__ZNSt3__225_General_precision_tablesIfE6_Max_PE'] = 68875968;
+var __ZNSt3__225_General_precision_tablesIfE17_Ordinary_X_tableE = Module['__ZNSt3__225_General_precision_tablesIfE17_Ordinary_X_tableE'] = 68875792;
+var __ZNSt3__225_General_precision_tablesIdE16_Special_X_tableE = Module['__ZNSt3__225_General_precision_tablesIdE16_Special_X_tableE'] = 68875984;
+var __ZNSt3__225_General_precision_tablesIdE6_Max_PE = Module['__ZNSt3__225_General_precision_tablesIdE6_Max_PE'] = 68880064;
+var __ZNSt3__225_General_precision_tablesIdE17_Ordinary_X_tableE = Module['__ZNSt3__225_General_precision_tablesIdE17_Ordinary_X_tableE'] = 68877552;
+var __ZNSt3__214__POW10_OFFSETE = Module['__ZNSt3__214__POW10_OFFSETE'] = 68788800;
+var __ZNSt3__213__POW10_SPLITE = Module['__ZNSt3__213__POW10_SPLITE'] = 68759424;
+var __ZNSt3__213__MIN_BLOCK_2E = Module['__ZNSt3__213__MIN_BLOCK_2E'] = 68788928;
+var __ZNSt3__216__POW10_OFFSET_2E = Module['__ZNSt3__216__POW10_OFFSET_2E'] = 68789008;
+var __ZNSt3__215__POW10_SPLIT_2E = Module['__ZNSt3__215__POW10_SPLIT_2E'] = 68789152;
+var __ZNSt3__223__DOUBLE_POW5_INV_SPLITE = Module['__ZNSt3__223__DOUBLE_POW5_INV_SPLITE'] = 68865088;
+var __ZNSt3__219__DOUBLE_POW5_SPLITE = Module['__ZNSt3__219__DOUBLE_POW5_SPLITE'] = 68869760;
+var __ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_64ENS_12chars_formatEdE11_Adjustment = Module['__ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_64ENS_12chars_formatEdE11_Adjustment'] = 68874976;
+var __ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_64ENS_12chars_formatEdE21_Max_shifted_mantissa = Module['__ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_64ENS_12chars_formatEdE21_Max_shifted_mantissa'] = 68875296;
+var __ZTVNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem12__dir_streamENS_9allocatorIS3_EEEE = Module['__ZTVNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem12__dir_streamENS_9allocatorIS3_EEEE'] = 69174020;
+var __ZTVNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem28recursive_directory_iterator12__shared_impENS_9allocatorIS4_EEEE = Module['__ZTVNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem28recursive_directory_iterator12__shared_impENS_9allocatorIS4_EEEE'] = 69174060;
+var __ZNSt3__26ranges5__cpo9iter_moveE = Module['__ZNSt3__26ranges5__cpo9iter_moveE'] = 68880406;
+var __ZTINSt3__220__shared_ptr_emplaceINS_4__fs10filesystem12__dir_streamENS_9allocatorIS3_EEEE = Module['__ZTINSt3__220__shared_ptr_emplaceINS_4__fs10filesystem12__dir_streamENS_9allocatorIS3_EEEE'] = 69174048;
+var __ZTSNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem12__dir_streamENS_9allocatorIS3_EEEE = Module['__ZTSNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem12__dir_streamENS_9allocatorIS3_EEEE'] = 68880202;
+var __ZTINSt3__220__shared_ptr_emplaceINS_4__fs10filesystem28recursive_directory_iterator12__shared_impENS_9allocatorIS4_EEEE = Module['__ZTINSt3__220__shared_ptr_emplaceINS_4__fs10filesystem28recursive_directory_iterator12__shared_impENS_9allocatorIS4_EEEE'] = 69174088;
+var __ZTSNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem28recursive_directory_iterator12__shared_impENS_9allocatorIS4_EEEE = Module['__ZTSNSt3__220__shared_ptr_emplaceINS_4__fs10filesystem28recursive_directory_iterator12__shared_impENS_9allocatorIS4_EEEE'] = 68880289;
+var __ZTINSt3__214error_categoryE = Module['__ZTINSt3__214error_categoryE'] = 69166444;
+var __ZTSNSt3__214error_categoryE = Module['__ZTSNSt3__214error_categoryE'] = 68748976;
+var __ZTVSt16nested_exception = Module['__ZTVSt16nested_exception'] = 69166600;
+var __ZTISt16nested_exception = Module['__ZTISt16nested_exception'] = 69166616;
+var __ZTSSt16nested_exception = Module['__ZTSSt16nested_exception'] = 68749116;
+var __ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_32ENS_12chars_formatEjjE11_Adjustment = Module['__ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_32ENS_12chars_formatEjjE11_Adjustment'] = 68864992;
+var __ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_32ENS_12chars_formatEjjE21_Max_shifted_mantissa = Module['__ZZNSt3__210__to_charsB8nn180100EPcS0_NS_21__floating_decimal_32ENS_12chars_formatEjjE21_Max_shifted_mantissa'] = 68865040;
+var __ZNSt3__222__FLOAT_POW5_INV_SPLITE = Module['__ZNSt3__222__FLOAT_POW5_INV_SPLITE'] = 68864352;
+var __ZNSt3__218__FLOAT_POW5_SPLITE = Module['__ZNSt3__218__FLOAT_POW5_SPLITE'] = 68864608;
+var __ZTVNSt3__24__fs10filesystem16filesystem_errorE = Module['__ZTVNSt3__24__fs10filesystem16filesystem_errorE'] = 69174224;
+var __ZTINSt3__24__fs10filesystem16filesystem_errorE = Module['__ZTINSt3__24__fs10filesystem16filesystem_errorE'] = 69174244;
+var __ZTSNSt3__24__fs10filesystem16filesystem_errorE = Module['__ZTSNSt3__24__fs10filesystem16filesystem_errorE'] = 69019979;
+var __ZTVNSt3__217bad_function_callE = Module['__ZTVNSt3__217bad_function_callE'] = 69174100;
+var __ZTINSt3__217bad_function_callE = Module['__ZTINSt3__217bad_function_callE'] = 69174120;
+var __ZTSNSt3__217bad_function_callE = Module['__ZTSNSt3__217bad_function_callE'] = 68880407;
+var __ZTVNSt3__212future_errorE = Module['__ZTVNSt3__212future_errorE'] = 69166752;
+var __ZTVNSt3__217__assoc_sub_stateE = Module['__ZTVNSt3__217__assoc_sub_stateE'] = 69166784;
+var __ZTVNSt3__223__future_error_categoryE = Module['__ZTVNSt3__223__future_error_categoryE'] = 69166716;
+var __ZTINSt3__223__future_error_categoryE = Module['__ZTINSt3__223__future_error_categoryE'] = 69166820;
+var __ZTINSt3__212future_errorE = Module['__ZTINSt3__212future_errorE'] = 69166772;
+var __ZTSNSt3__212future_errorE = Module['__ZTSNSt3__212future_errorE'] = 68749215;
+var __ZTINSt3__217__assoc_sub_stateE = Module['__ZTINSt3__217__assoc_sub_stateE'] = 69166808;
+var __ZTSNSt3__217__assoc_sub_stateE = Module['__ZTSNSt3__217__assoc_sub_stateE'] = 68749238;
+var __ZTSNSt3__223__future_error_categoryE = Module['__ZTSNSt3__223__future_error_categoryE'] = 68749266;
+var __ZTVNSt3__215basic_streambufIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__215basic_streambufIcNS_11char_traitsIcEEEE'] = 69171648;
+var __ZTTNSt3__213basic_istreamIcNS_11char_traitsIcEEEE = Module['__ZTTNSt3__213basic_istreamIcNS_11char_traitsIcEEEE'] = 69171752;
+var __ZTTNSt3__213basic_ostreamIcNS_11char_traitsIcEEEE = Module['__ZTTNSt3__213basic_ostreamIcNS_11char_traitsIcEEEE'] = 69171800;
+var __ZTTNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE = Module['__ZTTNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE'] = 69171868;
+var __ZTVNSt3__215basic_streambufIwNS_11char_traitsIwEEEE = Module['__ZTVNSt3__215basic_streambufIwNS_11char_traitsIwEEEE'] = 69171896;
+var __ZTTNSt3__213basic_istreamIwNS_11char_traitsIwEEEE = Module['__ZTTNSt3__213basic_istreamIwNS_11char_traitsIwEEEE'] = 69172000;
+var __ZTTNSt3__213basic_ostreamIwNS_11char_traitsIwEEEE = Module['__ZTTNSt3__213basic_ostreamIwNS_11char_traitsIwEEEE'] = 69172048;
+var __ZTVNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTVNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172056;
+var __ZTVNSt3__213basic_filebufIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__213basic_filebufIcNS_11char_traitsIcEEEE'] = 69172120;
+var __ZTTNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTTNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172536;
+var __ZTTNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTTNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172768;
+var __ZTTNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTTNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172876;
+var __ZTTNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE = Module['__ZTTNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE'] = 69172984;
+var __ZTTNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE = Module['__ZTTNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE'] = 69173092;
+var __ZTINSt3__215basic_streambufIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__215basic_streambufIcNS_11char_traitsIcEEEE'] = 69172212;
+var __ZTVNSt3__213basic_istreamIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__213basic_istreamIcNS_11char_traitsIcEEEE'] = 69171712;
+var __ZTINSt3__213basic_istreamIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__213basic_istreamIcNS_11char_traitsIcEEEE'] = 69172220;
+var __ZTVNSt3__213basic_ostreamIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__213basic_ostreamIcNS_11char_traitsIcEEEE'] = 69171760;
+var __ZTINSt3__213basic_ostreamIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__213basic_ostreamIcNS_11char_traitsIcEEEE'] = 69172244;
+var __ZTVNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE'] = 69171808;
+var __ZTINSt3__214basic_iostreamIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__214basic_iostreamIcNS_11char_traitsIcEEEE'] = 69172348;
+var __ZTCNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE0_NS_13basic_istreamIcS2_EE = Module['__ZTCNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE0_NS_13basic_istreamIcS2_EE'] = 69172268;
+var __ZTCNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE8_NS_13basic_ostreamIcS2_EE = Module['__ZTCNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE8_NS_13basic_ostreamIcS2_EE'] = 69172308;
+var __ZTINSt3__215basic_streambufIwNS_11char_traitsIwEEEE = Module['__ZTINSt3__215basic_streambufIwNS_11char_traitsIwEEEE'] = 69172408;
+var __ZTVNSt3__213basic_istreamIwNS_11char_traitsIwEEEE = Module['__ZTVNSt3__213basic_istreamIwNS_11char_traitsIwEEEE'] = 69171960;
+var __ZTINSt3__213basic_istreamIwNS_11char_traitsIwEEEE = Module['__ZTINSt3__213basic_istreamIwNS_11char_traitsIwEEEE'] = 69172416;
+var __ZTVNSt3__213basic_ostreamIwNS_11char_traitsIwEEEE = Module['__ZTVNSt3__213basic_ostreamIwNS_11char_traitsIwEEEE'] = 69172008;
+var __ZTINSt3__213basic_ostreamIwNS_11char_traitsIwEEEE = Module['__ZTINSt3__213basic_ostreamIwNS_11char_traitsIwEEEE'] = 69172440;
+var __ZTINSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTINSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172464;
+var __ZTINSt3__213basic_filebufIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__213basic_filebufIcNS_11char_traitsIcEEEE'] = 69173160;
+var __ZTVNSt3__29basic_iosIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__29basic_iosIcNS_11char_traitsIcEEEE'] = 69172184;
+var __ZTINSt3__29basic_iosIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__29basic_iosIcNS_11char_traitsIcEEEE'] = 69172200;
+var __ZTSNSt3__29basic_iosIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__29basic_iosIcNS_11char_traitsIcEEEE'] = 68758488;
+var __ZTSNSt3__215basic_streambufIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__215basic_streambufIcNS_11char_traitsIcEEEE'] = 68758530;
+var __ZTSNSt3__213basic_istreamIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__213basic_istreamIcNS_11char_traitsIcEEEE'] = 68758579;
+var __ZTSNSt3__213basic_ostreamIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__213basic_ostreamIcNS_11char_traitsIcEEEE'] = 68758626;
+var __ZTSNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__214basic_iostreamIcNS_11char_traitsIcEEEE'] = 68758673;
+var __ZTVNSt3__29basic_iosIwNS_11char_traitsIwEEEE = Module['__ZTVNSt3__29basic_iosIwNS_11char_traitsIwEEEE'] = 69172380;
+var __ZTINSt3__29basic_iosIwNS_11char_traitsIwEEEE = Module['__ZTINSt3__29basic_iosIwNS_11char_traitsIwEEEE'] = 69172396;
+var __ZTSNSt3__29basic_iosIwNS_11char_traitsIwEEEE = Module['__ZTSNSt3__29basic_iosIwNS_11char_traitsIwEEEE'] = 68758721;
+var __ZTSNSt3__215basic_streambufIwNS_11char_traitsIwEEEE = Module['__ZTSNSt3__215basic_streambufIwNS_11char_traitsIwEEEE'] = 68758763;
+var __ZTSNSt3__213basic_istreamIwNS_11char_traitsIwEEEE = Module['__ZTSNSt3__213basic_istreamIwNS_11char_traitsIwEEEE'] = 68758812;
+var __ZTSNSt3__213basic_ostreamIwNS_11char_traitsIwEEEE = Module['__ZTSNSt3__213basic_ostreamIwNS_11char_traitsIwEEEE'] = 68758859;
+var __ZTSNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTSNSt3__215basic_stringbufIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 68758906;
+var __ZTVNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTVNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172476;
+var __ZTINSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTINSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172716;
+var __ZTCNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_14basic_iostreamIcS2_EE = Module['__ZTCNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_14basic_iostreamIcS2_EE'] = 69172576;
+var __ZTCNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_13basic_istreamIcS2_EE = Module['__ZTCNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_13basic_istreamIcS2_EE'] = 69172636;
+var __ZTCNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE8_NS_13basic_ostreamIcS2_EE = Module['__ZTCNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE8_NS_13basic_ostreamIcS2_EE'] = 69172676;
+var __ZTSNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTSNSt3__218basic_stringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 68758972;
+var __ZTVNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTVNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172728;
+var __ZTINSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTINSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172824;
+var __ZTCNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_13basic_ostreamIcS2_EE = Module['__ZTCNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_13basic_ostreamIcS2_EE'] = 69172784;
+var __ZTSNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTSNSt3__219basic_ostringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 68759041;
+var __ZTVNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTVNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172836;
+var __ZTINSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTINSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 69172932;
+var __ZTCNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_13basic_istreamIcS2_EE = Module['__ZTCNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE0_NS_13basic_istreamIcS2_EE'] = 69172892;
+var __ZTSNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE = Module['__ZTSNSt3__219basic_istringstreamIcNS_11char_traitsIcEENS_9allocatorIcEEEE'] = 68759111;
+var __ZTVNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE'] = 69172944;
+var __ZTINSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE'] = 69173040;
+var __ZTCNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE0_NS_13basic_istreamIcS2_EE = Module['__ZTCNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE0_NS_13basic_istreamIcS2_EE'] = 69173000;
+var __ZTSNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__214basic_ifstreamIcNS_11char_traitsIcEEEE'] = 68759181;
+var __ZTVNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE = Module['__ZTVNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE'] = 69173052;
+var __ZTINSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE = Module['__ZTINSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE'] = 69173148;
+var __ZTCNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE0_NS_13basic_ostreamIcS2_EE = Module['__ZTCNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE0_NS_13basic_ostreamIcS2_EE'] = 69173108;
+var __ZTSNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__214basic_ofstreamIcNS_11char_traitsIcEEEE'] = 68759229;
+var __ZTSNSt3__213basic_filebufIcNS_11char_traitsIcEEEE = Module['__ZTSNSt3__213basic_filebufIcNS_11char_traitsIcEEEE'] = 68759277;
+var __ZTVNSt3__28ios_base7failureE = Module['__ZTVNSt3__28ios_base7failureE'] = 69171580;
+var __ZNSt3__28ios_base9__xindex_E = Module['__ZNSt3__28ios_base9__xindex_E'] = 69332508;
+var __ZTVNSt3__28ios_baseE = Module['__ZTVNSt3__28ios_baseE'] = 69171600;
+var __ZTVNSt3__219__iostream_categoryE = Module['__ZTVNSt3__219__iostream_categoryE'] = 69171544;
+var __ZTINSt3__219__iostream_categoryE = Module['__ZTINSt3__219__iostream_categoryE'] = 69171624;
+var __ZTINSt3__28ios_base7failureE = Module['__ZTINSt3__28ios_base7failureE'] = 69171636;
+var __ZTINSt3__28ios_baseE = Module['__ZTINSt3__28ios_baseE'] = 69171616;
+var __ZTSNSt3__28ios_baseE = Module['__ZTSNSt3__28ios_baseE'] = 68758414;
+var __ZTSNSt3__219__iostream_categoryE = Module['__ZTSNSt3__219__iostream_categoryE'] = 68758432;
+var __ZTSNSt3__28ios_base7failureE = Module['__ZTSNSt3__28ios_base7failureE'] = 68758462;
+var __ZNSt3__219__start_std_streamsE = Module['__ZNSt3__219__start_std_streamsE'] = 69333192;
+var __ZNSt3__23cinE = Module['__ZNSt3__23cinE'] = 69332512;
+var __ZNSt3__24coutE = Module['__ZNSt3__24coutE'] = 69332688;
+var __ZNSt3__24cerrE = Module['__ZNSt3__24cerrE'] = 69332856;
+var __ZNSt3__24clogE = Module['__ZNSt3__24clogE'] = 69333024;
+var __ZNSt3__24wcinE = Module['__ZNSt3__24wcinE'] = 69332600;
+var __ZNSt3__25wcoutE = Module['__ZNSt3__25wcoutE'] = 69332772;
+var __ZNSt3__25wcerrE = Module['__ZNSt3__25wcerrE'] = 69332940;
+var __ZNSt3__25wclogE = Module['__ZNSt3__25wclogE'] = 69333108;
+var __ZTVNSt3__210__stdinbufIcEE = Module['__ZTVNSt3__210__stdinbufIcEE'] = 69173172;
+var __ZTVNSt3__211__stdoutbufIcEE = Module['__ZTVNSt3__211__stdoutbufIcEE'] = 69173248;
+var __ZTVNSt3__210__stdinbufIwEE = Module['__ZTVNSt3__210__stdinbufIwEE'] = 69173324;
+var __ZTVNSt3__211__stdoutbufIwEE = Module['__ZTVNSt3__211__stdoutbufIwEE'] = 69173400;
+var __ZTINSt3__210__stdinbufIcEE = Module['__ZTINSt3__210__stdinbufIcEE'] = 69173236;
+var __ZTSNSt3__210__stdinbufIcEE = Module['__ZTSNSt3__210__stdinbufIcEE'] = 68759324;
+var __ZTINSt3__211__stdoutbufIcEE = Module['__ZTINSt3__211__stdoutbufIcEE'] = 69173312;
+var __ZTSNSt3__211__stdoutbufIcEE = Module['__ZTSNSt3__211__stdoutbufIcEE'] = 68759348;
+var __ZTINSt3__210__stdinbufIwEE = Module['__ZTINSt3__210__stdinbufIwEE'] = 69173388;
+var __ZTSNSt3__210__stdinbufIwEE = Module['__ZTSNSt3__210__stdinbufIwEE'] = 68759373;
+var __ZTINSt3__211__stdoutbufIwEE = Module['__ZTINSt3__211__stdoutbufIwEE'] = 69173464;
+var __ZTSNSt3__211__stdoutbufIwEE = Module['__ZTSNSt3__211__stdoutbufIwEE'] = 68759397;
+var __ZNSt3__25ctypeIcE2idE = Module['__ZNSt3__25ctypeIcE2idE'] = 69330964;
+var __ZNSt3__28numpunctIcE2idE = Module['__ZNSt3__28numpunctIcE2idE'] = 69331020;
+var __ZNSt3__214__num_get_base5__srcE = Module['__ZNSt3__214__num_get_base5__srcE'] = 68752624;
+var __ZNSt3__25ctypeIwE2idE = Module['__ZNSt3__25ctypeIwE2idE'] = 69330956;
+var __ZNSt3__28numpunctIwE2idE = Module['__ZNSt3__28numpunctIwE2idE'] = 69331028;
+var __ZNSt3__210moneypunctIcLb1EE2idE = Module['__ZNSt3__210moneypunctIcLb1EE2idE'] = 69330700;
+var __ZNSt3__210moneypunctIcLb0EE2idE = Module['__ZNSt3__210moneypunctIcLb0EE2idE'] = 69330692;
+var __ZNSt3__210moneypunctIwLb1EE2idE = Module['__ZNSt3__210moneypunctIwLb1EE2idE'] = 69330716;
+var __ZNSt3__210moneypunctIwLb0EE2idE = Module['__ZNSt3__210moneypunctIwLb0EE2idE'] = 69330708;
+var __ZTVNSt3__26locale5__impE = Module['__ZTVNSt3__26locale5__impE'] = 69167096;
+var __ZTVNSt3__26locale5facetE = Module['__ZTVNSt3__26locale5facetE'] = 69167584;
+var __ZNSt3__27collateIcE2idE = Module['__ZNSt3__27collateIcE2idE'] = 69330612;
+var __ZNSt3__27collateIwE2idE = Module['__ZNSt3__27collateIwE2idE'] = 69330620;
+var __ZNSt3__27codecvtIcc11__mbstate_tE2idE = Module['__ZNSt3__27codecvtIcc11__mbstate_tE2idE'] = 69330972;
+var __ZNSt3__27codecvtIwc11__mbstate_tE2idE = Module['__ZNSt3__27codecvtIwc11__mbstate_tE2idE'] = 69330980;
+var __ZNSt3__27codecvtIDsc11__mbstate_tE2idE = Module['__ZNSt3__27codecvtIDsc11__mbstate_tE2idE'] = 69330988;
+var __ZNSt3__27codecvtIDic11__mbstate_tE2idE = Module['__ZNSt3__27codecvtIDic11__mbstate_tE2idE'] = 69331004;
+var __ZNSt3__27codecvtIDsDu11__mbstate_tE2idE = Module['__ZNSt3__27codecvtIDsDu11__mbstate_tE2idE'] = 69330996;
+var __ZNSt3__27codecvtIDiDu11__mbstate_tE2idE = Module['__ZNSt3__27codecvtIDiDu11__mbstate_tE2idE'] = 69331012;
+var __ZNSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE = Module['__ZNSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE'] = 69330628;
+var __ZNSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE = Module['__ZNSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE'] = 69330636;
+var __ZNSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE = Module['__ZNSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE'] = 69330644;
+var __ZNSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE = Module['__ZNSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE'] = 69330652;
+var __ZNSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE = Module['__ZNSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE'] = 69330724;
+var __ZNSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE = Module['__ZNSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE'] = 69330732;
+var __ZNSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE = Module['__ZNSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE'] = 69330740;
+var __ZNSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE = Module['__ZNSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE'] = 69330748;
+var __ZNSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE = Module['__ZNSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE'] = 69330660;
+var __ZNSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE = Module['__ZNSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE'] = 69330668;
+var __ZNSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE = Module['__ZNSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEE2idE'] = 69330676;
+var __ZNSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE = Module['__ZNSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEE2idE'] = 69330684;
+var __ZNSt3__28messagesIcE2idE = Module['__ZNSt3__28messagesIcE2idE'] = 69330756;
+var __ZNSt3__28messagesIwE2idE = Module['__ZNSt3__28messagesIwE2idE'] = 69330764;
+var __ZTVNSt3__214codecvt_bynameIcc11__mbstate_tEE = Module['__ZTVNSt3__214codecvt_bynameIcc11__mbstate_tEE'] = 69170968;
+var __ZTVNSt3__214codecvt_bynameIwc11__mbstate_tEE = Module['__ZTVNSt3__214codecvt_bynameIwc11__mbstate_tEE'] = 69171028;
+var __ZTVNSt3__214codecvt_bynameIDsc11__mbstate_tEE = Module['__ZTVNSt3__214codecvt_bynameIDsc11__mbstate_tEE'] = 69171088;
+var __ZTVNSt3__214codecvt_bynameIDic11__mbstate_tEE = Module['__ZTVNSt3__214codecvt_bynameIDic11__mbstate_tEE'] = 69171148;
+var __ZTVNSt3__214codecvt_bynameIDsDu11__mbstate_tEE = Module['__ZTVNSt3__214codecvt_bynameIDsDu11__mbstate_tEE'] = 69171208;
+var __ZTVNSt3__214codecvt_bynameIDiDu11__mbstate_tEE = Module['__ZTVNSt3__214codecvt_bynameIDiDu11__mbstate_tEE'] = 69171268;
+var __ZTVNSt3__217moneypunct_bynameIcLb0EEE = Module['__ZTVNSt3__217moneypunct_bynameIcLb0EEE'] = 69170200;
+var __ZTVNSt3__217moneypunct_bynameIcLb1EEE = Module['__ZTVNSt3__217moneypunct_bynameIcLb1EEE'] = 69170268;
+var __ZTVNSt3__217moneypunct_bynameIwLb0EEE = Module['__ZTVNSt3__217moneypunct_bynameIwLb0EEE'] = 69170336;
+var __ZTVNSt3__217moneypunct_bynameIwLb1EEE = Module['__ZTVNSt3__217moneypunct_bynameIwLb1EEE'] = 69170404;
+var __ZTVNSt3__215time_get_bynameIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__215time_get_bynameIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169328;
+var __ZTVNSt3__215time_get_bynameIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__215time_get_bynameIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169492;
+var __ZTVNSt3__215time_put_bynameIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__215time_put_bynameIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169768;
+var __ZTVNSt3__215time_put_bynameIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__215time_put_bynameIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169804;
+var __ZTVNSt3__215messages_bynameIcEE = Module['__ZTVNSt3__215messages_bynameIcEE'] = 69170880;
+var __ZTVNSt3__215messages_bynameIwEE = Module['__ZTVNSt3__215messages_bynameIwEE'] = 69170924;
+var __ZNSt3__26locale5__imp19classic_locale_imp_E = Module['__ZNSt3__26locale5__imp19classic_locale_imp_E'] = 69330780;
+var __ZTVNSt3__214collate_bynameIcEE = Module['__ZTVNSt3__214collate_bynameIcEE'] = 69167116;
+var __ZTVNSt3__214collate_bynameIwEE = Module['__ZTVNSt3__214collate_bynameIwEE'] = 69167148;
+var __ZTVNSt3__25ctypeIcEE = Module['__ZTVNSt3__25ctypeIcEE'] = 69167180;
+var __ZTVNSt3__212ctype_bynameIcEE = Module['__ZTVNSt3__212ctype_bynameIcEE'] = 69167232;
+var __ZTVNSt3__212ctype_bynameIwEE = Module['__ZTVNSt3__212ctype_bynameIwEE'] = 69167284;
+var __ZTVNSt3__27codecvtIwc11__mbstate_tEE = Module['__ZTVNSt3__27codecvtIwc11__mbstate_tEE'] = 69167352;
+var __ZTVNSt3__28numpunctIcEE = Module['__ZTVNSt3__28numpunctIcEE'] = 69167400;
+var __ZTVNSt3__28numpunctIwEE = Module['__ZTVNSt3__28numpunctIwEE'] = 69167440;
+var __ZTVNSt3__215numpunct_bynameIcEE = Module['__ZTVNSt3__215numpunct_bynameIcEE'] = 69167480;
+var __ZTVNSt3__215numpunct_bynameIwEE = Module['__ZTVNSt3__215numpunct_bynameIwEE'] = 69167520;
+var __ZTVNSt3__215__time_get_tempIcEE = Module['__ZTVNSt3__215__time_get_tempIcEE'] = 69171400;
+var __ZTVNSt3__215__time_get_tempIwEE = Module['__ZTVNSt3__215__time_get_tempIwEE'] = 69171464;
+var __ZTVNSt3__27collateIcEE = Module['__ZTVNSt3__27collateIcEE'] = 69168520;
+var __ZTVNSt3__27collateIwEE = Module['__ZTVNSt3__27collateIwEE'] = 69168552;
+var __ZTVNSt3__25ctypeIwEE = Module['__ZTVNSt3__25ctypeIwEE'] = 69167616;
+var __ZTVNSt3__27codecvtIcc11__mbstate_tEE = Module['__ZTVNSt3__27codecvtIcc11__mbstate_tEE'] = 69167724;
+var __ZTVNSt3__27codecvtIDsc11__mbstate_tEE = Module['__ZTVNSt3__27codecvtIDsc11__mbstate_tEE'] = 69167812;
+var __ZTVNSt3__27codecvtIDic11__mbstate_tEE = Module['__ZTVNSt3__27codecvtIDic11__mbstate_tEE'] = 69167972;
+var __ZTVNSt3__27codecvtIDsDu11__mbstate_tEE = Module['__ZTVNSt3__27codecvtIDsDu11__mbstate_tEE'] = 69167892;
+var __ZTVNSt3__27codecvtIDiDu11__mbstate_tEE = Module['__ZTVNSt3__27codecvtIDiDu11__mbstate_tEE'] = 69168052;
+var __ZTVNSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69168584;
+var __ZTVNSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69168712;
+var __ZTVNSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69168832;
+var __ZTVNSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69168948;
+var __ZTVNSt3__210moneypunctIcLb0EEE = Module['__ZTVNSt3__210moneypunctIcLb0EEE'] = 69169840;
+var __ZTVNSt3__210moneypunctIcLb1EEE = Module['__ZTVNSt3__210moneypunctIcLb1EEE'] = 69169936;
+var __ZTVNSt3__210moneypunctIwLb0EEE = Module['__ZTVNSt3__210moneypunctIwLb0EEE'] = 69170024;
+var __ZTVNSt3__210moneypunctIwLb1EEE = Module['__ZTVNSt3__210moneypunctIwLb1EEE'] = 69170112;
+var __ZTVNSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69170472;
+var __ZTVNSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69170540;
+var __ZTVNSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69170608;
+var __ZTVNSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69170676;
+var __ZTVNSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169056;
+var __ZTVNSt3__220__time_get_c_storageIcEE = Module['__ZTVNSt3__220__time_get_c_storageIcEE'] = 69171328;
+var __ZTVNSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169196;
+var __ZTVNSt3__220__time_get_c_storageIwEE = Module['__ZTVNSt3__220__time_get_c_storageIwEE'] = 69171364;
+var __ZTVNSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTVNSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169648;
+var __ZTVNSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTVNSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169712;
+var __ZTVNSt3__28messagesIcEE = Module['__ZTVNSt3__28messagesIcEE'] = 69170744;
+var __ZTVNSt3__28messagesIwEE = Module['__ZTVNSt3__28messagesIwEE'] = 69170816;
+var __ZNSt3__26locale2id9__next_idE = Module['__ZNSt3__26locale2id9__next_idE'] = 69330952;
+var __ZTINSt3__26locale5__impE = Module['__ZTINSt3__26locale5__impE'] = 69168356;
+var __ZTINSt3__214collate_bynameIcEE = Module['__ZTINSt3__214collate_bynameIcEE'] = 69168380;
+var __ZTINSt3__214collate_bynameIwEE = Module['__ZTINSt3__214collate_bynameIwEE'] = 69168404;
+var __ZTINSt3__25ctypeIcEE = Module['__ZTINSt3__25ctypeIcEE'] = 69168416;
+var __ZTINSt3__212ctype_bynameIcEE = Module['__ZTINSt3__212ctype_bynameIcEE'] = 69168448;
+var __ZTINSt3__212ctype_bynameIwEE = Module['__ZTINSt3__212ctype_bynameIwEE'] = 69168460;
+var __ZTINSt3__27codecvtIwc11__mbstate_tEE = Module['__ZTINSt3__27codecvtIwc11__mbstate_tEE'] = 69168180;
+var __ZTINSt3__28numpunctIcEE = Module['__ZTINSt3__28numpunctIcEE'] = 69168472;
+var __ZTINSt3__28numpunctIwEE = Module['__ZTINSt3__28numpunctIwEE'] = 69168484;
+var __ZTINSt3__215numpunct_bynameIcEE = Module['__ZTINSt3__215numpunct_bynameIcEE'] = 69168496;
+var __ZTINSt3__215numpunct_bynameIwEE = Module['__ZTINSt3__215numpunct_bynameIwEE'] = 69168508;
+var __ZTINSt3__26locale5facetE = Module['__ZTINSt3__26locale5facetE'] = 69167604;
+var __ZTSNSt3__26locale5facetE = Module['__ZTSNSt3__26locale5facetE'] = 68754136;
+var __ZTINSt3__25ctypeIwEE = Module['__ZTINSt3__25ctypeIwEE'] = 69167692;
+var __ZTSNSt3__25ctypeIwEE = Module['__ZTSNSt3__25ctypeIwEE'] = 68754158;
+var __ZTSNSt3__210ctype_baseE = Module['__ZTSNSt3__210ctype_baseE'] = 68754176;
+var __ZTINSt3__210ctype_baseE = Module['__ZTINSt3__210ctype_baseE'] = 69167684;
+var __ZTINSt3__27codecvtIcc11__mbstate_tEE = Module['__ZTINSt3__27codecvtIcc11__mbstate_tEE'] = 69167780;
+var __ZTSNSt3__27codecvtIcc11__mbstate_tEE = Module['__ZTSNSt3__27codecvtIcc11__mbstate_tEE'] = 68754197;
+var __ZTSNSt3__212codecvt_baseE = Module['__ZTSNSt3__212codecvt_baseE'] = 68754231;
+var __ZTINSt3__212codecvt_baseE = Module['__ZTINSt3__212codecvt_baseE'] = 69167772;
+var __ZTINSt3__27codecvtIDsc11__mbstate_tEE = Module['__ZTINSt3__27codecvtIDsc11__mbstate_tEE'] = 69167860;
+var __ZTSNSt3__27codecvtIDsc11__mbstate_tEE = Module['__ZTSNSt3__27codecvtIDsc11__mbstate_tEE'] = 68754254;
+var __ZTINSt3__27codecvtIDsDu11__mbstate_tEE = Module['__ZTINSt3__27codecvtIDsDu11__mbstate_tEE'] = 69167940;
+var __ZTSNSt3__27codecvtIDsDu11__mbstate_tEE = Module['__ZTSNSt3__27codecvtIDsDu11__mbstate_tEE'] = 68754289;
+var __ZTINSt3__27codecvtIDic11__mbstate_tEE = Module['__ZTINSt3__27codecvtIDic11__mbstate_tEE'] = 69168020;
+var __ZTSNSt3__27codecvtIDic11__mbstate_tEE = Module['__ZTSNSt3__27codecvtIDic11__mbstate_tEE'] = 68754325;
+var __ZTINSt3__27codecvtIDiDu11__mbstate_tEE = Module['__ZTINSt3__27codecvtIDiDu11__mbstate_tEE'] = 69168100;
+var __ZTSNSt3__27codecvtIDiDu11__mbstate_tEE = Module['__ZTSNSt3__27codecvtIDiDu11__mbstate_tEE'] = 68754360;
+var __ZTINSt3__216__narrow_to_utf8ILm16EEE = Module['__ZTINSt3__216__narrow_to_utf8ILm16EEE'] = 69168132;
+var __ZTSNSt3__216__narrow_to_utf8ILm16EEE = Module['__ZTSNSt3__216__narrow_to_utf8ILm16EEE'] = 68754396;
+var __ZTINSt3__216__narrow_to_utf8ILm32EEE = Module['__ZTINSt3__216__narrow_to_utf8ILm32EEE'] = 69168144;
+var __ZTSNSt3__216__narrow_to_utf8ILm32EEE = Module['__ZTSNSt3__216__narrow_to_utf8ILm32EEE'] = 68754430;
+var __ZTINSt3__217__widen_from_utf8ILm16EEE = Module['__ZTINSt3__217__widen_from_utf8ILm16EEE'] = 69168156;
+var __ZTSNSt3__217__widen_from_utf8ILm16EEE = Module['__ZTSNSt3__217__widen_from_utf8ILm16EEE'] = 68754464;
+var __ZTINSt3__217__widen_from_utf8ILm32EEE = Module['__ZTINSt3__217__widen_from_utf8ILm32EEE'] = 69168168;
+var __ZTSNSt3__217__widen_from_utf8ILm32EEE = Module['__ZTSNSt3__217__widen_from_utf8ILm32EEE'] = 68754499;
+var __ZTINSt3__214__codecvt_utf8IwEE = Module['__ZTINSt3__214__codecvt_utf8IwEE'] = 69168212;
+var __ZTSNSt3__214__codecvt_utf8IwEE = Module['__ZTSNSt3__214__codecvt_utf8IwEE'] = 68754534;
+var __ZTSNSt3__27codecvtIwc11__mbstate_tEE = Module['__ZTSNSt3__27codecvtIwc11__mbstate_tEE'] = 68754562;
+var __ZTINSt3__214__codecvt_utf8IDsEE = Module['__ZTINSt3__214__codecvt_utf8IDsEE'] = 69168224;
+var __ZTSNSt3__214__codecvt_utf8IDsEE = Module['__ZTSNSt3__214__codecvt_utf8IDsEE'] = 68754596;
+var __ZTINSt3__214__codecvt_utf8IDiEE = Module['__ZTINSt3__214__codecvt_utf8IDiEE'] = 69168236;
+var __ZTSNSt3__214__codecvt_utf8IDiEE = Module['__ZTSNSt3__214__codecvt_utf8IDiEE'] = 68754625;
+var __ZTINSt3__215__codecvt_utf16IwLb0EEE = Module['__ZTINSt3__215__codecvt_utf16IwLb0EEE'] = 69168248;
+var __ZTSNSt3__215__codecvt_utf16IwLb0EEE = Module['__ZTSNSt3__215__codecvt_utf16IwLb0EEE'] = 68754654;
+var __ZTINSt3__215__codecvt_utf16IwLb1EEE = Module['__ZTINSt3__215__codecvt_utf16IwLb1EEE'] = 69168260;
+var __ZTSNSt3__215__codecvt_utf16IwLb1EEE = Module['__ZTSNSt3__215__codecvt_utf16IwLb1EEE'] = 68754687;
+var __ZTINSt3__215__codecvt_utf16IDsLb0EEE = Module['__ZTINSt3__215__codecvt_utf16IDsLb0EEE'] = 69168272;
+var __ZTSNSt3__215__codecvt_utf16IDsLb0EEE = Module['__ZTSNSt3__215__codecvt_utf16IDsLb0EEE'] = 68754720;
+var __ZTINSt3__215__codecvt_utf16IDsLb1EEE = Module['__ZTINSt3__215__codecvt_utf16IDsLb1EEE'] = 69168284;
+var __ZTSNSt3__215__codecvt_utf16IDsLb1EEE = Module['__ZTSNSt3__215__codecvt_utf16IDsLb1EEE'] = 68754754;
+var __ZTINSt3__215__codecvt_utf16IDiLb0EEE = Module['__ZTINSt3__215__codecvt_utf16IDiLb0EEE'] = 69168296;
+var __ZTSNSt3__215__codecvt_utf16IDiLb0EEE = Module['__ZTSNSt3__215__codecvt_utf16IDiLb0EEE'] = 68754788;
+var __ZTINSt3__215__codecvt_utf16IDiLb1EEE = Module['__ZTINSt3__215__codecvt_utf16IDiLb1EEE'] = 69168308;
+var __ZTSNSt3__215__codecvt_utf16IDiLb1EEE = Module['__ZTSNSt3__215__codecvt_utf16IDiLb1EEE'] = 68754822;
+var __ZTINSt3__220__codecvt_utf8_utf16IwEE = Module['__ZTINSt3__220__codecvt_utf8_utf16IwEE'] = 69168320;
+var __ZTSNSt3__220__codecvt_utf8_utf16IwEE = Module['__ZTSNSt3__220__codecvt_utf8_utf16IwEE'] = 68754856;
+var __ZTINSt3__220__codecvt_utf8_utf16IDiEE = Module['__ZTINSt3__220__codecvt_utf8_utf16IDiEE'] = 69168332;
+var __ZTSNSt3__220__codecvt_utf8_utf16IDiEE = Module['__ZTSNSt3__220__codecvt_utf8_utf16IDiEE'] = 68754890;
+var __ZTINSt3__220__codecvt_utf8_utf16IDsEE = Module['__ZTINSt3__220__codecvt_utf8_utf16IDsEE'] = 69168344;
+var __ZTSNSt3__220__codecvt_utf8_utf16IDsEE = Module['__ZTSNSt3__220__codecvt_utf8_utf16IDsEE'] = 68754925;
+var __ZTSNSt3__26locale5__impE = Module['__ZTSNSt3__26locale5__impE'] = 68754960;
+var __ZTSNSt3__214collate_bynameIcEE = Module['__ZTSNSt3__214collate_bynameIcEE'] = 68754982;
+var __ZTSNSt3__27collateIcEE = Module['__ZTSNSt3__27collateIcEE'] = 68755010;
+var __ZTINSt3__27collateIcEE = Module['__ZTINSt3__27collateIcEE'] = 69168368;
+var __ZTSNSt3__214collate_bynameIwEE = Module['__ZTSNSt3__214collate_bynameIwEE'] = 68755030;
+var __ZTSNSt3__27collateIwEE = Module['__ZTSNSt3__27collateIwEE'] = 68755058;
+var __ZTINSt3__27collateIwEE = Module['__ZTINSt3__27collateIwEE'] = 69168392;
+var __ZTSNSt3__25ctypeIcEE = Module['__ZTSNSt3__25ctypeIcEE'] = 68755078;
+var __ZTSNSt3__212ctype_bynameIcEE = Module['__ZTSNSt3__212ctype_bynameIcEE'] = 68755096;
+var __ZTSNSt3__212ctype_bynameIwEE = Module['__ZTSNSt3__212ctype_bynameIwEE'] = 68755122;
+var __ZTSNSt3__28numpunctIcEE = Module['__ZTSNSt3__28numpunctIcEE'] = 68755148;
+var __ZTSNSt3__28numpunctIwEE = Module['__ZTSNSt3__28numpunctIwEE'] = 68755169;
+var __ZTSNSt3__215numpunct_bynameIcEE = Module['__ZTSNSt3__215numpunct_bynameIcEE'] = 68755190;
+var __ZTSNSt3__215numpunct_bynameIwEE = Module['__ZTSNSt3__215numpunct_bynameIwEE'] = 68755219;
+var __ZTINSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69168680;
+var __ZTSNSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__27num_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68755248;
+var __ZTSNSt3__29__num_getIcEE = Module['__ZTSNSt3__29__num_getIcEE'] = 68755316;
+var __ZTSNSt3__214__num_get_baseE = Module['__ZTSNSt3__214__num_get_baseE'] = 68755338;
+var __ZTINSt3__214__num_get_baseE = Module['__ZTINSt3__214__num_get_baseE'] = 69168648;
+var __ZTINSt3__29__num_getIcEE = Module['__ZTINSt3__29__num_getIcEE'] = 69168656;
+var __ZTINSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69168800;
+var __ZTSNSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__27num_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68755363;
+var __ZTSNSt3__29__num_getIwEE = Module['__ZTSNSt3__29__num_getIwEE'] = 68755431;
+var __ZTINSt3__29__num_getIwEE = Module['__ZTINSt3__29__num_getIwEE'] = 69168776;
+var __ZTINSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69168916;
+var __ZTSNSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__27num_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68755453;
+var __ZTSNSt3__29__num_putIcEE = Module['__ZTSNSt3__29__num_putIcEE'] = 68755521;
+var __ZTSNSt3__214__num_put_baseE = Module['__ZTSNSt3__214__num_put_baseE'] = 68755543;
+var __ZTINSt3__214__num_put_baseE = Module['__ZTINSt3__214__num_put_baseE'] = 69168884;
+var __ZTINSt3__29__num_putIcEE = Module['__ZTINSt3__29__num_putIcEE'] = 69168892;
+var __ZTINSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169024;
+var __ZTSNSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__27num_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68755568;
+var __ZTSNSt3__29__num_putIwEE = Module['__ZTSNSt3__29__num_putIwEE'] = 68755636;
+var __ZTINSt3__29__num_putIwEE = Module['__ZTINSt3__29__num_putIwEE'] = 69169000;
+var __ZTINSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169156;
+var __ZTSNSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__28time_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68755658;
+var __ZTSNSt3__29time_baseE = Module['__ZTSNSt3__29time_baseE'] = 68755727;
+var __ZTINSt3__29time_baseE = Module['__ZTINSt3__29time_baseE'] = 69169140;
+var __ZTSNSt3__220__time_get_c_storageIcEE = Module['__ZTSNSt3__220__time_get_c_storageIcEE'] = 68755746;
+var __ZTINSt3__220__time_get_c_storageIcEE = Module['__ZTINSt3__220__time_get_c_storageIcEE'] = 69169148;
+var __ZTINSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169288;
+var __ZTSNSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__28time_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68755780;
+var __ZTSNSt3__220__time_get_c_storageIwEE = Module['__ZTSNSt3__220__time_get_c_storageIwEE'] = 68755849;
+var __ZTINSt3__220__time_get_c_storageIwEE = Module['__ZTINSt3__220__time_get_c_storageIwEE'] = 69169280;
+var __ZTINSt3__215time_get_bynameIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__215time_get_bynameIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169460;
+var __ZTSNSt3__215time_get_bynameIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__215time_get_bynameIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68755883;
+var __ZTSNSt3__218__time_get_storageIcEE = Module['__ZTSNSt3__218__time_get_storageIcEE'] = 68755960;
+var __ZTSNSt3__210__time_getE = Module['__ZTSNSt3__210__time_getE'] = 68755992;
+var __ZTINSt3__210__time_getE = Module['__ZTINSt3__210__time_getE'] = 69169440;
+var __ZTINSt3__218__time_get_storageIcEE = Module['__ZTINSt3__218__time_get_storageIcEE'] = 69169448;
+var __ZTINSt3__215time_get_bynameIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__215time_get_bynameIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169616;
+var __ZTSNSt3__215time_get_bynameIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__215time_get_bynameIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68756013;
+var __ZTSNSt3__218__time_get_storageIwEE = Module['__ZTSNSt3__218__time_get_storageIwEE'] = 68756090;
+var __ZTINSt3__218__time_get_storageIwEE = Module['__ZTINSt3__218__time_get_storageIwEE'] = 69169604;
+var __ZTINSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169680;
+var __ZTSNSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__28time_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68756122;
+var __ZTSNSt3__210__time_putE = Module['__ZTSNSt3__210__time_putE'] = 68756191;
+var __ZTINSt3__210__time_putE = Module['__ZTINSt3__210__time_putE'] = 69169672;
+var __ZTINSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169736;
+var __ZTSNSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__28time_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68756212;
+var __ZTINSt3__215time_put_bynameIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__215time_put_bynameIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69169792;
+var __ZTSNSt3__215time_put_bynameIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__215time_put_bynameIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68756281;
+var __ZTINSt3__215time_put_bynameIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__215time_put_bynameIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69169828;
+var __ZTSNSt3__215time_put_bynameIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__215time_put_bynameIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68756358;
+var __ZTINSt3__210moneypunctIcLb0EEE = Module['__ZTINSt3__210moneypunctIcLb0EEE'] = 69169904;
+var __ZTSNSt3__210moneypunctIcLb0EEE = Module['__ZTSNSt3__210moneypunctIcLb0EEE'] = 68756435;
+var __ZTSNSt3__210money_baseE = Module['__ZTSNSt3__210money_baseE'] = 68756463;
+var __ZTINSt3__210money_baseE = Module['__ZTINSt3__210money_baseE'] = 69169896;
+var __ZTINSt3__210moneypunctIcLb1EEE = Module['__ZTINSt3__210moneypunctIcLb1EEE'] = 69169992;
+var __ZTSNSt3__210moneypunctIcLb1EEE = Module['__ZTSNSt3__210moneypunctIcLb1EEE'] = 68756484;
+var __ZTINSt3__210moneypunctIwLb0EEE = Module['__ZTINSt3__210moneypunctIwLb0EEE'] = 69170080;
+var __ZTSNSt3__210moneypunctIwLb0EEE = Module['__ZTSNSt3__210moneypunctIwLb0EEE'] = 68756512;
+var __ZTINSt3__210moneypunctIwLb1EEE = Module['__ZTINSt3__210moneypunctIwLb1EEE'] = 69170168;
+var __ZTSNSt3__210moneypunctIwLb1EEE = Module['__ZTSNSt3__210moneypunctIwLb1EEE'] = 68756540;
+var __ZTINSt3__217moneypunct_bynameIcLb0EEE = Module['__ZTINSt3__217moneypunct_bynameIcLb0EEE'] = 69170256;
+var __ZTSNSt3__217moneypunct_bynameIcLb0EEE = Module['__ZTSNSt3__217moneypunct_bynameIcLb0EEE'] = 68756568;
+var __ZTINSt3__217moneypunct_bynameIcLb1EEE = Module['__ZTINSt3__217moneypunct_bynameIcLb1EEE'] = 69170324;
+var __ZTSNSt3__217moneypunct_bynameIcLb1EEE = Module['__ZTSNSt3__217moneypunct_bynameIcLb1EEE'] = 68756603;
+var __ZTINSt3__217moneypunct_bynameIwLb0EEE = Module['__ZTINSt3__217moneypunct_bynameIwLb0EEE'] = 69170392;
+var __ZTSNSt3__217moneypunct_bynameIwLb0EEE = Module['__ZTSNSt3__217moneypunct_bynameIwLb0EEE'] = 68756638;
+var __ZTINSt3__217moneypunct_bynameIwLb1EEE = Module['__ZTINSt3__217moneypunct_bynameIwLb1EEE'] = 69170460;
+var __ZTSNSt3__217moneypunct_bynameIwLb1EEE = Module['__ZTSNSt3__217moneypunct_bynameIwLb1EEE'] = 68756673;
+var __ZTINSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69170508;
+var __ZTSNSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__29money_getIcNS_19istreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68756708;
+var __ZTSNSt3__211__money_getIcEE = Module['__ZTSNSt3__211__money_getIcEE'] = 68756778;
+var __ZTINSt3__211__money_getIcEE = Module['__ZTINSt3__211__money_getIcEE'] = 69170500;
+var __ZTINSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69170576;
+var __ZTSNSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__29money_getIwNS_19istreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68756803;
+var __ZTSNSt3__211__money_getIwEE = Module['__ZTSNSt3__211__money_getIwEE'] = 68756873;
+var __ZTINSt3__211__money_getIwEE = Module['__ZTINSt3__211__money_getIwEE'] = 69170568;
+var __ZTINSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTINSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 69170644;
+var __ZTSNSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE = Module['__ZTSNSt3__29money_putIcNS_19ostreambuf_iteratorIcNS_11char_traitsIcEEEEEE'] = 68756898;
+var __ZTSNSt3__211__money_putIcEE = Module['__ZTSNSt3__211__money_putIcEE'] = 68756968;
+var __ZTINSt3__211__money_putIcEE = Module['__ZTINSt3__211__money_putIcEE'] = 69170636;
+var __ZTINSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTINSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 69170712;
+var __ZTSNSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE = Module['__ZTSNSt3__29money_putIwNS_19ostreambuf_iteratorIwNS_11char_traitsIwEEEEEE'] = 68756993;
+var __ZTSNSt3__211__money_putIwEE = Module['__ZTSNSt3__211__money_putIwEE'] = 68757063;
+var __ZTINSt3__211__money_putIwEE = Module['__ZTINSt3__211__money_putIwEE'] = 69170704;
+var __ZTINSt3__28messagesIcEE = Module['__ZTINSt3__28messagesIcEE'] = 69170784;
+var __ZTSNSt3__28messagesIcEE = Module['__ZTSNSt3__28messagesIcEE'] = 68757088;
+var __ZTSNSt3__213messages_baseE = Module['__ZTSNSt3__213messages_baseE'] = 68757109;
+var __ZTINSt3__213messages_baseE = Module['__ZTINSt3__213messages_baseE'] = 69170776;
+var __ZTINSt3__28messagesIwEE = Module['__ZTINSt3__28messagesIwEE'] = 69170848;
+var __ZTSNSt3__28messagesIwEE = Module['__ZTSNSt3__28messagesIwEE'] = 68757133;
+var __ZTINSt3__215messages_bynameIcEE = Module['__ZTINSt3__215messages_bynameIcEE'] = 69170912;
+var __ZTSNSt3__215messages_bynameIcEE = Module['__ZTSNSt3__215messages_bynameIcEE'] = 68757154;
+var __ZTINSt3__215messages_bynameIwEE = Module['__ZTINSt3__215messages_bynameIwEE'] = 69170956;
+var __ZTSNSt3__215messages_bynameIwEE = Module['__ZTSNSt3__215messages_bynameIwEE'] = 68757183;
+var __ZTINSt3__214codecvt_bynameIcc11__mbstate_tEE = Module['__ZTINSt3__214codecvt_bynameIcc11__mbstate_tEE'] = 69171016;
+var __ZTSNSt3__214codecvt_bynameIcc11__mbstate_tEE = Module['__ZTSNSt3__214codecvt_bynameIcc11__mbstate_tEE'] = 68757212;
+var __ZTINSt3__214codecvt_bynameIwc11__mbstate_tEE = Module['__ZTINSt3__214codecvt_bynameIwc11__mbstate_tEE'] = 69171076;
+var __ZTSNSt3__214codecvt_bynameIwc11__mbstate_tEE = Module['__ZTSNSt3__214codecvt_bynameIwc11__mbstate_tEE'] = 68757254;
+var __ZTINSt3__214codecvt_bynameIDsc11__mbstate_tEE = Module['__ZTINSt3__214codecvt_bynameIDsc11__mbstate_tEE'] = 69171136;
+var __ZTSNSt3__214codecvt_bynameIDsc11__mbstate_tEE = Module['__ZTSNSt3__214codecvt_bynameIDsc11__mbstate_tEE'] = 68757296;
+var __ZTINSt3__214codecvt_bynameIDic11__mbstate_tEE = Module['__ZTINSt3__214codecvt_bynameIDic11__mbstate_tEE'] = 69171196;
+var __ZTSNSt3__214codecvt_bynameIDic11__mbstate_tEE = Module['__ZTSNSt3__214codecvt_bynameIDic11__mbstate_tEE'] = 68757339;
+var __ZTINSt3__214codecvt_bynameIDsDu11__mbstate_tEE = Module['__ZTINSt3__214codecvt_bynameIDsDu11__mbstate_tEE'] = 69171256;
+var __ZTSNSt3__214codecvt_bynameIDsDu11__mbstate_tEE = Module['__ZTSNSt3__214codecvt_bynameIDsDu11__mbstate_tEE'] = 68757382;
+var __ZTINSt3__214codecvt_bynameIDiDu11__mbstate_tEE = Module['__ZTINSt3__214codecvt_bynameIDiDu11__mbstate_tEE'] = 69171316;
+var __ZTSNSt3__214codecvt_bynameIDiDu11__mbstate_tEE = Module['__ZTSNSt3__214codecvt_bynameIDiDu11__mbstate_tEE'] = 68757426;
+var __ZTINSt3__215__time_get_tempIcEE = Module['__ZTINSt3__215__time_get_tempIcEE'] = 69171452;
+var __ZTSNSt3__215__time_get_tempIcEE = Module['__ZTSNSt3__215__time_get_tempIcEE'] = 68758356;
+var __ZTINSt3__215__time_get_tempIwEE = Module['__ZTINSt3__215__time_get_tempIwEE'] = 69171532;
+var __ZTSNSt3__215__time_get_tempIwEE = Module['__ZTSNSt3__215__time_get_tempIwEE'] = 68758385;
+var __ZTVNSt3__214__shared_countE = Module['__ZTVNSt3__214__shared_countE'] = 69166624;
+var __ZTINSt3__214__shared_countE = Module['__ZTINSt3__214__shared_countE'] = 69166644;
+var __ZTSNSt3__214__shared_countE = Module['__ZTSNSt3__214__shared_countE'] = 68749137;
+var __ZTVNSt3__219__shared_weak_countE = Module['__ZTVNSt3__219__shared_weak_countE'] = 69166652;
+var __ZTINSt3__219__shared_weak_countE = Module['__ZTINSt3__219__shared_weak_countE'] = 69166680;
+var __ZTSNSt3__219__shared_weak_countE = Module['__ZTSNSt3__219__shared_weak_countE'] = 68749162;
+var __ZTINSt3__212bad_weak_ptrE = Module['__ZTINSt3__212bad_weak_ptrE'] = 69166704;
+var __ZTSNSt3__212bad_weak_ptrE = Module['__ZTSNSt3__212bad_weak_ptrE'] = 68749192;
+var __ZTVNSt3__23pmr28unsynchronized_pool_resourceE = Module['__ZTVNSt3__23pmr28unsynchronized_pool_resourceE'] = 69166908;
+var __ZTVNSt3__23pmr15memory_resourceE = Module['__ZTVNSt3__23pmr15memory_resourceE'] = 69166984;
+var __ZTVNSt3__23pmr25monotonic_buffer_resourceE = Module['__ZTVNSt3__23pmr25monotonic_buffer_resourceE'] = 69166936;
+var __ZTVNSt3__23pmr26synchronized_pool_resourceE = Module['__ZTVNSt3__23pmr26synchronized_pool_resourceE'] = 69167024;
+var __ZTVNSt3__23pmr32__new_delete_memory_resource_impE = Module['__ZTVNSt3__23pmr32__new_delete_memory_resource_impE'] = 69166852;
+var __ZTINSt3__23pmr32__new_delete_memory_resource_impE = Module['__ZTINSt3__23pmr32__new_delete_memory_resource_impE'] = 69167064;
+var __ZTVNSt3__23pmr26__null_memory_resource_impE = Module['__ZTVNSt3__23pmr26__null_memory_resource_impE'] = 69166880;
+var __ZTINSt3__23pmr26__null_memory_resource_impE = Module['__ZTINSt3__23pmr26__null_memory_resource_impE'] = 69167076;
+var __ZTINSt3__23pmr28unsynchronized_pool_resourceE = Module['__ZTINSt3__23pmr28unsynchronized_pool_resourceE'] = 69167012;
+var __ZTINSt3__23pmr25monotonic_buffer_resourceE = Module['__ZTINSt3__23pmr25monotonic_buffer_resourceE'] = 69166972;
+var __ZTSNSt3__23pmr25monotonic_buffer_resourceE = Module['__ZTSNSt3__23pmr25monotonic_buffer_resourceE'] = 68749300;
+var __ZTSNSt3__23pmr15memory_resourceE = Module['__ZTSNSt3__23pmr15memory_resourceE'] = 68749340;
+var __ZTINSt3__23pmr15memory_resourceE = Module['__ZTINSt3__23pmr15memory_resourceE'] = 69166964;
+var __ZTSNSt3__23pmr28unsynchronized_pool_resourceE = Module['__ZTSNSt3__23pmr28unsynchronized_pool_resourceE'] = 68749370;
+var __ZTINSt3__23pmr26synchronized_pool_resourceE = Module['__ZTINSt3__23pmr26synchronized_pool_resourceE'] = 69167052;
+var __ZTSNSt3__23pmr26synchronized_pool_resourceE = Module['__ZTSNSt3__23pmr26synchronized_pool_resourceE'] = 68749413;
+var __ZTSNSt3__23pmr32__new_delete_memory_resource_impE = Module['__ZTSNSt3__23pmr32__new_delete_memory_resource_impE'] = 68749454;
+var __ZTSNSt3__23pmr26__null_memory_resource_impE = Module['__ZTSNSt3__23pmr26__null_memory_resource_impE'] = 68749501;
+var __ZSt7nothrow = Module['__ZSt7nothrow'] = 68747516;
+var __ZTISt19bad_optional_access = Module['__ZTISt19bad_optional_access'] = 69174168;
+var __ZTSSt19bad_optional_access = Module['__ZTSSt19bad_optional_access'] = 69019893;
+var __ZTINSt12experimental19bad_optional_accessE = Module['__ZTINSt12experimental19bad_optional_accessE'] = 69174180;
+var __ZTSNSt12experimental19bad_optional_accessE = Module['__ZTSNSt12experimental19bad_optional_accessE'] = 69019917;
+var __ZNSt3__212__rs_default4__c_E = Module['__ZNSt3__212__rs_default4__c_E'] = 69333552;
+var __ZTVNSt3__211regex_errorE = Module['__ZTVNSt3__211regex_errorE'] = 69174192;
+var __ZTINSt3__211regex_errorE = Module['__ZTINSt3__211regex_errorE'] = 69174212;
+var __ZTSNSt3__211regex_errorE = Module['__ZTSNSt3__211regex_errorE'] = 69019957;
+var __ZNSt3__26__itoa10__pow10_64E = Module['__ZNSt3__26__itoa10__pow10_64E'] = 68748816;
+var __ZTVNSt3__212strstreambufE = Module['__ZTVNSt3__212strstreambufE'] = 69173476;
+var __ZTTNSt3__210istrstreamE = Module['__ZTTNSt3__210istrstreamE'] = 69173580;
+var __ZTTNSt3__210ostrstreamE = Module['__ZTTNSt3__210ostrstreamE'] = 69173636;
+var __ZTTNSt3__29strstreamE = Module['__ZTTNSt3__29strstreamE'] = 69173712;
+var __ZTINSt3__212strstreambufE = Module['__ZTINSt3__212strstreambufE'] = 69173752;
+var __ZTVNSt3__210istrstreamE = Module['__ZTVNSt3__210istrstreamE'] = 69173540;
+var __ZTINSt3__210istrstreamE = Module['__ZTINSt3__210istrstreamE'] = 69173804;
+var __ZTCNSt3__210istrstreamE0_NS_13basic_istreamIcNS_11char_traitsIcEEEE = Module['__ZTCNSt3__210istrstreamE0_NS_13basic_istreamIcNS_11char_traitsIcEEEE'] = 69173764;
+var __ZTVNSt3__210ostrstreamE = Module['__ZTVNSt3__210ostrstreamE'] = 69173596;
+var __ZTINSt3__210ostrstreamE = Module['__ZTINSt3__210ostrstreamE'] = 69173856;
+var __ZTCNSt3__210ostrstreamE0_NS_13basic_ostreamIcNS_11char_traitsIcEEEE = Module['__ZTCNSt3__210ostrstreamE0_NS_13basic_ostreamIcNS_11char_traitsIcEEEE'] = 69173816;
+var __ZTVNSt3__29strstreamE = Module['__ZTVNSt3__29strstreamE'] = 69173652;
+var __ZTINSt3__29strstreamE = Module['__ZTINSt3__29strstreamE'] = 69174008;
+var __ZTCNSt3__29strstreamE0_NS_14basic_iostreamIcNS_11char_traitsIcEEEE = Module['__ZTCNSt3__29strstreamE0_NS_14basic_iostreamIcNS_11char_traitsIcEEEE'] = 69173868;
+var __ZTCNSt3__29strstreamE0_NS_13basic_istreamIcNS_11char_traitsIcEEEE = Module['__ZTCNSt3__29strstreamE0_NS_13basic_istreamIcNS_11char_traitsIcEEEE'] = 69173928;
+var __ZTCNSt3__29strstreamE8_NS_13basic_ostreamIcNS_11char_traitsIcEEEE = Module['__ZTCNSt3__29strstreamE8_NS_13basic_ostreamIcNS_11char_traitsIcEEEE'] = 69173968;
+var __ZTSNSt3__212strstreambufE = Module['__ZTSNSt3__212strstreambufE'] = 68880068;
+var __ZTSNSt3__210istrstreamE = Module['__ZTSNSt3__210istrstreamE'] = 68880091;
+var __ZTSNSt3__210ostrstreamE = Module['__ZTSNSt3__210ostrstreamE'] = 68880112;
+var __ZTSNSt3__29strstreamE = Module['__ZTSNSt3__29strstreamE'] = 68880133;
+var __ZTVNSt3__212system_errorE = Module['__ZTVNSt3__212system_errorE'] = 69166532;
+var __ZTVNSt3__224__generic_error_categoryE = Module['__ZTVNSt3__224__generic_error_categoryE'] = 69166456;
+var __ZTINSt3__224__generic_error_categoryE = Module['__ZTINSt3__224__generic_error_categoryE'] = 69166564;
+var __ZTVNSt3__223__system_error_categoryE = Module['__ZTVNSt3__223__system_error_categoryE'] = 69166496;
+var __ZTINSt3__223__system_error_categoryE = Module['__ZTINSt3__223__system_error_categoryE'] = 69166576;
+var __ZTINSt3__212system_errorE = Module['__ZTINSt3__212system_errorE'] = 69166588;
+var __ZTINSt3__212__do_messageE = Module['__ZTINSt3__212__do_messageE'] = 69166552;
+var __ZTSNSt3__212__do_messageE = Module['__ZTSNSt3__212__do_messageE'] = 68749001;
+var __ZTSNSt3__224__generic_error_categoryE = Module['__ZTSNSt3__224__generic_error_categoryE'] = 68749024;
+var __ZTSNSt3__223__system_error_categoryE = Module['__ZTSNSt3__223__system_error_categoryE'] = 68749059;
+var __ZTSNSt3__212system_errorE = Module['__ZTSNSt3__212system_errorE'] = 68749093;
+var __ZTISt18bad_variant_access = Module['__ZTISt18bad_variant_access'] = 69174156;
+var __ZTSSt18bad_variant_access = Module['__ZTSSt18bad_variant_access'] = 69019870;
+var __ZTVN10__cxxabiv120__si_class_type_infoE = Module['__ZTVN10__cxxabiv120__si_class_type_infoE'] = 69166068;
+var __ZTIPKc = Module['__ZTIPKc'] = 69166012;
+var __ZTVN10__cxxabiv117__class_type_infoE = Module['__ZTVN10__cxxabiv117__class_type_infoE'] = 69166028;
+var __ZTVN10__cxxabiv121__vmi_class_type_infoE = Module['__ZTVN10__cxxabiv121__vmi_class_type_infoE'] = 69166120;
+var __ZTVSt9exception = Module['__ZTVSt9exception'] = 69166200;
+var __ZTISt20bad_array_new_length = Module['__ZTISt20bad_array_new_length'] = 69166240;
+var __ZTISt9exception = Module['__ZTISt9exception'] = 69166220;
+var __ZTVSt11logic_error = Module['__ZTVSt11logic_error'] = 69166252;
+var __ZTVSt13runtime_error = Module['__ZTVSt13runtime_error'] = 69166272;
+var __ZTISt11logic_error = Module['__ZTISt11logic_error'] = 69166292;
+var __ZTISt13runtime_error = Module['__ZTISt13runtime_error'] = 69166400;
+var __ZTVSt16invalid_argument = Module['__ZTVSt16invalid_argument'] = 69166304;
+var __ZTISt16invalid_argument = Module['__ZTISt16invalid_argument'] = 69166324;
+var __ZTVSt12length_error = Module['__ZTVSt12length_error'] = 69166336;
+var __ZTISt12length_error = Module['__ZTISt12length_error'] = 69166356;
+var __ZTVSt12out_of_range = Module['__ZTVSt12out_of_range'] = 69166368;
+var __ZTISt12out_of_range = Module['__ZTISt12out_of_range'] = 69166388;
+var __ZTVSt14overflow_error = Module['__ZTVSt14overflow_error'] = 69166412;
+var __ZTISt14overflow_error = Module['__ZTISt14overflow_error'] = 69166432;
+var __ZTISt8bad_cast = Module['__ZTISt8bad_cast'] = 69165864;
 function invoke_vi(index,a1) {
   var sp = stackSave();
   try {

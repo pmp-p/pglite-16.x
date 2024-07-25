@@ -1,2 +1,2 @@
-import{i as e,k as t}from"../chunk-TYZHXJCT.js";t();e();var s=async(r,n)=>({emscriptenOpts:n,bundlePath:new URL("../vector.tar.gz",import.meta.url)}),a={name:"pgvector",setup:s};export{a as vector};
+import{h as e,j as t}from"../chunk-RZJOGGMK.js";t();e();var s=async(r,n)=>({emscriptenOpts:n,bundlePath:new URL("../vector.tar.gz",import.meta.url)}),a={name:"pgvector",setup:s};export{a as vector};
 //# sourceMappingURL=index.js.map

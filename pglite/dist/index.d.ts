@@ -420,7 +420,7 @@ declare const serialize: {
     query: (text: string) => Buffer;
     parse: (query: ParseOpts) => Buffer;
     bind: (config?: BindOpts) => Buffer;
-    execute: (config?: ExecOpts | undefined) => Buffer;
+    execute: (config?: ExecOpts) => Buffer;
     describe: (msg: PortalOpts) => Buffer;
     close: (msg: PortalOpts) => Buffer;
     flush: () => Buffer;
