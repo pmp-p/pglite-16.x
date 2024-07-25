@@ -1,0 +1,2 @@
+import{a as m,c as a,f as i}from"./chunk-MAGDP6ZW.js";import{i as n,k as p}from"./chunk-TYZHXJCT.js";p();n();import*as t from"fs";import*as s from"path";var f=class extends m{constructor(r){super(r),this.rootDir=s.resolve(r),t.existsSync(s.join(this.rootDir))||t.mkdirSync(this.rootDir)}async emscriptenOpts(r){return{...r,preRun:[...r.preRun||[],o=>{let c=o.FS.filesystems.NODEFS;o.FS.mkdir(i),o.FS.mount(c,{root:this.rootDir},i)}]}}async dumpTar(r,e){return a(r,e)}};export{f as NodeFS};
+//# sourceMappingURL=nodefs-NL6VVRSF.js.map
