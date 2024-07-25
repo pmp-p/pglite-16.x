@@ -85,35 +85,6 @@ fi
 
 export CC_PGLITE
 
-
-=======
-
-if which emcc
-then
-    echo "Using provided emsdk from $(which emcc)"
-else
-    . /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
-fi
-
-
-# custom code for node/web builds that modify pg main/tools behaviour
-# this used by both node/linkweb build stages
-
-# pass the "kernel" contiguous memory zone size to the C compiler.
-CC_PGLITE="-DCMA_MB=${CMA_MB}"
-
-# these are files that shadow original portion of pg core, with minimal changes
-# to original code
-# some may be included multiple time
-CC_PGLITE="-DPATCH_MAIN=${GITHUB_WORKSPACE}/patches/pg_main.c ${CC_PGLITE}"
-CC_PGLITE="-DPATCH_LOOP=${GITHUB_WORKSPACE}/patches/interactive_one.c ${CC_PGLITE}"
-CC_PGLITE="-DPATCH_PLUGIN=${GITHUB_WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
-
-export CC_PGLITE
-
-
-
->>>>>>> upstream/main
 if [ -f ${WEBROOT}/postgres.js ]
 then
     echo using current from ${WEBROOT}
