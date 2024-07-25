@@ -56,8 +56,8 @@ pushd src/backend
 # https://github.com/llvm/llvm-project/issues/50623
 
 
-    echo " ---------- building web test PREFIX=$PGROOT ------------"
-    du -hs ${WEBROOT}/libpg?.*
+echo " ---------- building web test PREFIX=$PGROOT ------------"
+du -hs ${WEBROOT}/libpg?.*
 
     PG_O="../../src/fe_utils/string_utils.o ../../src/common/logging.o \
  $(find . -type f -name "*.o" \
@@ -126,45 +126,7 @@ rm ${PGROOT}/lib/postgresql/utf8_and*.so
 
 echo 'localhost:5432:postgres:postgres:password' > pgpass
 
-
-if [ -f ${PGROOT}/symbols ]
-then
-    # _main,_getenv,_setenv,_interactive_one,_interactive_write,_interactive_read,_pg_initdb,_pg_shutdown
-
-#not yet
-#_emscripten_copy_from
-#_emscripten_copy_to
-#_emscripten_copy_to_end
-
-
-    cat > exports <<END
-___cxa_throw
-_main
-_main_repl
-_pg_repl_raf
-_getenv
-_setenv
-_interactive_one
-_interactive_write
-_interactive_read
-_pg_initdb
-_pg_shutdown
-_lowerstr
-END
-    cat ${PGROOT}/symbols | sort | uniq \
-     | grep -v _plpgsql_ \
-     | grep -v duckdb \
-     | grep -v ^_halfvec_l2_normalize \
-     | grep -v ^_l2_normalize \
-     | grep -v ^_sparsevec_l2_normalize \
-     | grep -v ^_1 \
-     | grep -v ^_\< \
-     | grep -v ^_env$ \
-     >> exports
-    cat exports > ${GITHUB_WORKSPACE}/patches/exports
-else
-    cat ${GITHUB_WORKSPACE}/patches/exports >> exports
-fi
+cat ${GITHUB_WORKSPACE}/patches/exports > exports
 
 # copyFrom,copyTo,copyToEnd
 
@@ -186,17 +148,17 @@ emcc $EMCC_WEB -fPIC -sMAIN_MODULE=2 \
 mkdir -p ${WEBROOT}
 
 cp -v postgres.* ${WEBROOT}/
-#cp ${PGROOT}/lib/libecpg.so ${WEBROOT}/
 cp ${PGROOT}/sdk/*.tar ${WEBROOT}/
+
 for tarf in ${WEBROOT}/*.tar
 do
     gzip -f -9 $tarf
 done
 
 
-    cp $GITHUB_WORKSPACE/{tests/vtx.js,patches/tinytar.min.js} ${WEBROOT}/
+cp $GITHUB_WORKSPACE/{tests/vtx.js,patches/tinytar.min.js} ${WEBROOT}/
 
-    popd
+popd
 
 echo "
 linkweb:end
