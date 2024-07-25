@@ -79,17 +79,6 @@ then
 
 fi
 
-=======
-if false
-then
-    # PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so /tmp/pglite/lib/postgresql/libduckdb.so"
-    PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so /tmp/libduckdb.so -lstdc++"
-else
-    PG_L="$PG_L -L../../src/interfaces/ecpg/ecpglib ../../src/interfaces/ecpg/ecpglib/libecpg.so"
-    PG_L="../../src/common/libpgcommon_srv.a ../../src/port/libpgport_srv.a ../.././src/interfaces/libpq/libpq.a"
-
-fi
-
 # ? -sLZ4=1  -sENVIRONMENT=web
 # -sSINGLE_FILE  => Uncaught SyntaxError: Cannot use 'import.meta' outside a module (at postgres.html:1:6033)
 # -sENVIRONMENT=web => XHR
@@ -98,7 +87,7 @@ EMCC_WEB="-sNO_EXIT_RUNTIME=1 -sFORCE_FILESYSTEM=1"
 if ${PGES6:-true}
 then
     # es6
-    MODULE="-g0 -Os -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module --shell-file ${GITHUB_WORKSPACE}/tests/repl.html"
+    MODULE="-g3 -O0 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module --shell-file ${GITHUB_WORKSPACE}/tests/repl.html"
 else
     # local debug fast build
     MODULE="-g3 -O0 -sMODULARIZE=0 -sEXPORT_ES6=0 --shell-file ${GITHUB_WORKSPACE}/tests/repl.html"
