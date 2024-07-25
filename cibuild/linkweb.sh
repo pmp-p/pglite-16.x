@@ -137,6 +137,7 @@ emcc $EMCC_WEB -fPIC -sMAIN_MODULE=2 \
  -lnodefs.js -lidbfs.js \
  -sEXPORTED_RUNTIME_METHODS=FS,setValue,getValue,UTF8ToString,stringToNewUTF8,stringToUTF8OnStack,ccall,cwrap,callMain \
  -sEXPORTED_FUNCTIONS=@exports \
+ --preload-file ${PGROOT}/etc/postgresql/locale@${PGROOT}/etc/postgresql/locale \
  --preload-file ${PGROOT}/share/postgresql@${PGROOT}/share/postgresql \
  --preload-file ${PGROOT}/lib/postgresql@${PGROOT}/lib/postgresql \
  --preload-file ${PGROOT}/password@${PGROOT}/password \
