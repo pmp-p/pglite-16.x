@@ -55,7 +55,7 @@ test("pgvector", async (t) => {
         },
         {
           name: "vec",
-          dataTypeID: 12771,
+          dataTypeID: 12772,
         },
         {
           name: "distance",

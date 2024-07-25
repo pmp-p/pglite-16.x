@@ -333,9 +333,7 @@ do
 
             # copy packed extensions
             cp ${WEBROOT}/*.tar.gz ${PGLITE}/release/
-
             cp -vf ${WEBROOT}/postgres.{js,data,wasm} $PGLITE/release/
-            #cp -vf ${WEBROOT}/libecpg.so $PGLITE/release/postgres.so
         ;;
 
         pglite-bundle-interim) echo "================== pglite-bundle-interim ======================"
