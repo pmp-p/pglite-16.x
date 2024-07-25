@@ -1,4 +1,4 @@
-#define PDEBUG(...)
+#define PDEBUG(string) puts(string)
 #include <unistd.h>  // access, unlink
 
 static void pg_prompt() {

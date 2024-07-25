@@ -1,4 +1,4 @@
-#define PDEBUG(...)
+#define PDEBUG(string) puts(string)
 #if defined(PG_MAIN)
 
 #if defined(PG_EC_STATIC)

@@ -183,7 +183,7 @@ then
         then
             echo using local pgvector
         else
-            wget -c -q https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.2.tar.gz -Opgvector.tar.gz
+            wget -c -q https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.3.tar.gz -Opgvector.tar.gz
             tar xvfz pgvector.tar.gz && rm pgvector.tar.gz
             mv pgvector-?.?.? pgvector
         fi
