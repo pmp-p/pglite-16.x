@@ -316,14 +316,7 @@ IgnoreSystemIndexes = false;
 //    InitProcess();
 
     SetProcessingMode(InitProcessing);
-puts("# 91: Re-InitPostgres");
-=======
-//PDEBUG("# NO InitProcess 'FATAL:  you already exist'");
-//    InitProcess();
-
-    SetProcessingMode(InitProcessing);
 PDEBUG("# 91: Re-InitPostgres");
->>>>>>> upstream/main
 //      BaseInit();
 
     InitPostgres(dbname, InvalidOid,	/* database to connect to */
