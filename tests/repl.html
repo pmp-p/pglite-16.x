@@ -206,7 +206,12 @@
                 case 3:
                     // data = "SELECT * FROM pg_extension;"
                     data = "NOTIFY template1, 'hello';"
-
+                    break
+                case 4:
+                    data = "CREATE OR REPLACE FUNCTION test_func() RETURNS TEXT AS $$ BEGIN RETURN 'test'; END; $$ LANGUAGE plpgsql;"
+                    break
+                case 5:
+                    data = "SELECT test_func();"
                     break
             }
 
