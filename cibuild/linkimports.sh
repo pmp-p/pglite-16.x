@@ -46,6 +46,7 @@ _shmem_request_hook
 _TopMemoryContext
 _check_function_bodies
 _clock_gettime
+_shmem_startup_hook
 _setenv""".split("\n"):
     if not sym in matches:
         matches.append(sym)

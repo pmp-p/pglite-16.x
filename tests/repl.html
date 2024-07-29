@@ -210,9 +210,15 @@
                 case 4:
                     data = "CREATE OR REPLACE FUNCTION test_func() RETURNS TEXT AS $$ BEGIN RETURN 'test'; END; $$ LANGUAGE plpgsql;"
                     break
+
                 case 5:
                     data = "SELECT test_func();"
                     break
+
+                case 6:
+                    data = "CREATE EXTENSION pg_stat_statements;"
+                    break
+
             }
 
             if (data!=null) {
@@ -277,6 +283,7 @@
             }
             */
             await Module.load_package("vector", "vector.tar.gz")
+            await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
 
             vm._setenv(vm.stringToUTF8OnStack("REPL"),vm.stringToUTF8OnStack("Y"),1)
 
