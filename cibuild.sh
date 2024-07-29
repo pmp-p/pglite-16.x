@@ -177,18 +177,44 @@ export PATH=${WORKSPACE}/build/postgres/bin:${PGROOT}/bin:$PATH
 
 if echo "$*"|grep -q " contrib"
 then
-    for ext in pg_stat_statements
+
+    SKIP="\
+ [\
+ sslinfo bool_plperl hstore_plperl hstore_plpython jsonb_plperl jsonb_plpython\
+ ltree_plpython pgcrypto sepgsql bool_plperl start-scripts uuid-ossp\
+ ]"
+
+    for extdir in postgresql/contrib/*
     do
-        echo "
+        if [ -d "$extdir" ]
+        then
+            ext=$(echo -n $extdir|cut -d/ -f3)
+            if echo -n $SKIP|grep -q "$ext "
+            then
+                echo skipping extension $ext
+            else
+                echo "
 
-    Building contrib extension : $ext
+        Building contrib extension : $ext : begin
+"
+                pushd build/postgres/contrib/$ext
+                if emmake make install
+                then
+                    popd
+                    python3 cibuild/pack_extension.py
 
+                else
+                    popd
+                    echo "
+
+        Extension $ext from $extdir failed to build
 
 "
-        pushd build/postgres/contrib/$ext
-            emmake make install
-        popd
-        python3 cibuild/pack_extension.py
+                    exit 208
+                fi
+            fi
+        fi
+    read
     done
 fi
 
