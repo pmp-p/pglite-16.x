@@ -40,12 +40,13 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
+            /opt/python-wasm-sdk
             /tmp/web
             /tmp/pglite
             /tmp/sdk/postgres-*.tar.gz
             postgres
             postgresql-*
-          key: build-cache-${{ hashFiles('cibuild/**', 'patches/**') }}
+          key: build-cache-${{ hashFiles('cibuild/**', 'patches/*.c', 'patches/postgresql-*') }}
 
       - name: Install python-wasm-sdk for emsdk/wasi+prebuilts
         if: steps.cache-restore.outputs.cache-hit != 'true'
@@ -60,25 +61,15 @@ jobs:
         run: |
           bash ./cibuild.sh
 
-      - name: Build pgvector
+      - name: Build extensions
         if: steps.cache-restore.outputs.cache-hit != 'true'
         run: |
-          bash ./cibuild.sh vector
-
-      - name: Build contrib
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: |
-          bash ./cibuild.sh contrib
+          bash ./cibuild.sh vector contrib
 
       - name: Pack node distribution
         if: steps.cache-restore.outputs.cache-hit != 'true'
         run: |
           bash ./cibuild.sh node
-
-      - name: Link postgres WASM for web
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: |
-          bash ./cibuild.sh linkweb
 
       - name: Cached intermediate
         if: steps.cache-restore.outputs.cache-hit != 'true'
@@ -88,10 +79,16 @@ jobs:
           path: |
             /tmp/web
             /tmp/pglite
-            /tmp/sdk/postgres-*.tar.gz
+            /tmp/sdk/*.tar
+            /tmp/sdk/*.tar.gz
             postgres
             postgresql-*
           key: ${{ steps.cache-restore.outputs.cache-primary-key }}
+
+      - name: Link postgres WASM for web
+        if: steps.cache-restore.outputs.cache-hit != 'true'
+        run: |
+          bash ./cibuild.sh linkweb
 
       - uses: pnpm/action-setup@v4
         with:
@@ -110,6 +107,12 @@ jobs:
 
       - name: Build REPL for Example deployment
         working-directory: ./packages/repl
+        run: |
+          pnpm install
+          pnpm run build
+
+      - name: Build Benchmarks
+        working-directory: ./packages/benchmark
         run: |
           pnpm install
           pnpm run build
