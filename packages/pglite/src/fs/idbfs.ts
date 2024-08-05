@@ -38,7 +38,7 @@ export class IdbFs extends FilesystemBase {
     });
   }
 
-  syncToFs(fs: FS) {
+  syncToFs(fs: FS, relaxedDurability?: boolean) {
     return new Promise<void>((resolve, reject) => {
       fs.syncfs(false, (err: any) => {
         if (err) {
@@ -52,5 +52,18 @@ export class IdbFs extends FilesystemBase {
 
   async dumpTar(mod: FS, dbname: string) {
     return dumpTar(mod, dbname);
+  }
+
+  async close(FS: FS): Promise<void> {
+    // IDBDatabase.close() method is essentially async, but returns immediately,
+    // the database will be closed when all transactions are complete.
+    // This needs to be handled in application code if you want to delete the
+    // database after it has been closed. If you try to delete the database
+    // before it has fully closed it will throw a blocking error.
+    const indexedDb = FS.filesystems.IDBFS.dbs[this.dataDir!];
+    if (indexedDb) {
+      indexedDb.close();
+    }
+    FS.quit();
   }
 }

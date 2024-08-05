@@ -1,15 +1,20 @@
 //@ts-ignore
-// This file in placed in the build from ../release/postgres.js
-import PostgresModFactory from "./postgres.js";
+import PostgresModFactory from "../release/postgres.js";
 
 // Uses the types from @types/emscripten
+
+type IDBFS = Emscripten.FileSystemType & {
+  quit: () => void;
+  dbs: Record<string, IDBDatabase>;
+};
 
 export type FS = typeof FS & {
   filesystems: {
     MEMFS: Emscripten.FileSystemType;
     NODEFS: Emscripten.FileSystemType;
-    IDBFS: Emscripten.FileSystemType;
+    IDBFS: IDBFS;
   };
+  quit: () => void;
 };
 
 export interface PostgresMod

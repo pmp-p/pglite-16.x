@@ -1,6 +1,6 @@
 {
   "name": "@electric-sql/pglite",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0-alpha.6",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -18,19 +18,40 @@
   "license": "Apache-2.0",
   "main": "dist/index.js",
   "exports": {
-    ".": "./dist/index.js",
-    "./live": "./dist/live/index.js",
-    "./worker": "./dist/worker/index.js",
-    "./vector": "./dist/vector/index.js"
-  },
-  "typesVersions": {
-    "*": {
-      "worker": [
-        "./dist/worker/index.d.ts"
-      ],
-      "vector": [
-        "./dist/vector/index.d.ts"
-      ]
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./live": {
+      "import": "./dist/live/index.js",
+      "require": "./dist/live/index.cjs",
+      "types": "./dist/live/index.d.ts"
+    },
+    "./worker": {
+      "import": "./dist/worker/index.js",
+      "require": "./dist/worker/index.cjs",
+      "types": "./dist/worker/index.d.ts"
+    },
+    "./vector": {
+      "import": "./dist/vector/index.js",
+      "require": "./dist/vector/index.cjs",
+      "types": "./dist/vector/index.d.ts"
+    },
+    "./nodefs": {
+      "import": "./dist/fs/nodefs.js",
+      "require": "./dist/fs/nodefs.cjs",
+      "types": "./dist/fs/nodefs.d.ts"
+    },
+    "./opfs-ahp": {
+      "import": "./dist/fs/opfs-ahp/index.js",
+      "require": "./dist/fs/opfs-ahp/index.cjs",
+      "types": "./dist/fs/opfs-ahp/index.d.ts"
+    },
+    "./contrib/*": {
+      "import": "./dist/contrib/*.js",
+      "require": "./dist/contrib/*.cjs",
+      "types": "./dist/contrib/*.d.ts"
     }
   },
   "type": "module",
@@ -49,6 +70,8 @@
     "test:bun": "rm -rf ./pgdata-test && npx bun test tests/basic.test.js && npx bun test tests/pgvector.test.js && npx bun test tests/targets/node-fs.test.js",
     "build:js": "tsup && tsx scripts/bundle-wasm.ts",
     "build": "npm run build:js",
+    "dev": "concurrently \"tsup --watch\" \"sleep 1 && tsx scripts/bundle-wasm.ts\" \"pnpm dev-server\"",
+    "dev-server": "pnpm http-server ../",
     "format": "prettier --write ./src"
   },
   "devDependencies": {
@@ -59,15 +82,27 @@
     "ava": "^6.1.2",
     "buffer": "^6.0.3",
     "bun": "^1.1.18",
-    "comlink": "^4.4.1",
     "concurrently": "^8.2.2",
     "http-server": "^14.1.1",
     "pg-protocol": "^1.6.1",
     "playwright": "^1.42.1",
     "prettier": "3.2.5",
+    "serve": "^14.2.3",
     "tinytar": "^0.1.0",
-    "tsup": "^8.0.2",
+    "tsup": "^8.1.0",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3"
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "url": false,
+    "zlib": false,
+    "stream": false,
+    "stream/promises": false,
+    "crypto": false,
+    "ws": false,
+    "child_process": false,
+    "module": false
   }
 }

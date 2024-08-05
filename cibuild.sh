@@ -59,6 +59,7 @@ fi
 
 # setup compiler+node. emsdk provides node (18), recent enough for bun.
 # TODO: but may need to adjust $PATH with stock emsdk.
+
 if ${WASI:-false}
 then
     echo "Wasi build (experimental)"
@@ -175,13 +176,15 @@ export PATH=${WORKSPACE}/build/postgres/bin:${PGROOT}/bin:$PATH
 # ===========================================================================
 
 
-if echo "$*"|grep -q " contrib"
+if echo " $*"|grep -q " contrib"
 then
-
+    # TEMP FIX for SDK
+    SSL_INCDIR=$EMSDK/upstream/emscripten/cache/sysroot/include/openssl
+    [ -f $SSL_INCDIR/evp.h ] || ln -s $PREFIX/include/openssl $SSL_INCDIR
     SKIP="\
  [\
  sslinfo bool_plperl hstore_plperl hstore_plpython jsonb_plperl jsonb_plpython\
- ltree_plpython pgcrypto sepgsql bool_plperl start-scripts uuid-ossp\
+ ltree_plpython sepgsql bool_plperl start-scripts\
  ]"
 
     for extdir in postgresql/contrib/*
@@ -198,29 +201,29 @@ then
         Building contrib extension : $ext : begin
 "
                 pushd build/postgres/contrib/$ext
-                if emmake make install
+                if PATH=$PREFIX/bin:$PATH emmake make install
                 then
-                    popd
-                    python3 cibuild/pack_extension.py
-
+                    echo "
+        Building contrib extension : $ext : end
+"
                 else
-                    popd
                     echo "
 
         Extension $ext from $extdir failed to build
 
 "
-                    exit 208
+                    exit 216
                 fi
+                popd
+                python3 cibuild/pack_extension.py
+
             fi
         fi
-    read
     done
 fi
 
 
-
-if echo "$*"|grep -q "vector"
+if echo " $*"|grep -q " vector"
 then
     echo "====================== vector : $(pwd) ================="
 
@@ -251,7 +254,7 @@ then
 
 fi
 
-if echo "$*"|grep -q "postgis"
+if echo " $*"|grep -q " postgis"
 then
     echo "======================= postgis : $(pwd) ==================="
 
@@ -260,7 +263,7 @@ then
     python3 cibuild/pack_extension.py
 fi
 
-if echo "$*"|grep -q " quack"
+if echo " $*"|grep -q " quack"
 then
     echo "================================================="
     ./cibuild/pg_quack.sh
@@ -297,7 +300,7 @@ fi
 # TODO: check if some versionned *.sql files can be omitted
 # TODO: for bigger extensions than pgvector make separate packaging.
 
-if echo "$*"|grep "node"
+if echo " $*"|grep " node"
 then
     echo "====================== node : $(pwd) ========================"
     mkdir -p /tmp/sdk/
@@ -315,7 +318,7 @@ fi
 
 # include current pglite source for easy local rebuild with just npm run build:js.
 
-if echo "$*"|grep "linkweb"
+if echo " $*"|grep " linkweb"
 then
 
     # build web version
@@ -387,7 +390,7 @@ do
         <li><a href=./pglite/examples/repl-idb.html>PGlite REPL (indexedDB)</a></li>
         <li><a href=./pglite/examples/notify.html>list/notify test</a></li>
         <li><a href=./pglite/examples/index.html>All PGlite Examples</a></li>
-        <li><a href=./pglite/benchmark/index.html>Benchmarks</a> / <a href=./pglite/benchmark/rtt.html>RTT Benchmarks</a></li>
+        <li><a href=./benchmark/index.html>Benchmarks</a> / <a href=./benchmark/rtt.html>RTT Benchmarks</a></li>
         <li><a href=./postgres.html>Postgres xterm REPL</a></li>
     </ul>
 </body>
@@ -395,12 +398,13 @@ do
 
             mkdir -p /tmp/web/pglite
             mkdir -p /tmp/web/repl
+            mkdir -p /tmp/web/benchmarks
 
             PGLITE=$(pwd)/packages/pglite
             cp -r ${PGLITE}/dist /tmp/web/pglite/
             cp -r ${PGLITE}/examples /tmp/web/pglite/
             cp -r ${WORKSPACE}/packages/repl/dist-webcomponent /tmp/web/repl/
-            cp -r ${WORKSPACE}/packages/benchmark /tmp/web/pglite/
+            cp -r ${WORKSPACE}/packages/benchmark/dist/* /tmp/web/benchmarks/
         ;;
     esac
     shift

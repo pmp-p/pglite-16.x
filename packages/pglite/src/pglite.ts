@@ -17,21 +17,22 @@ import type {
 } from "./interface.js";
 import { loadExtensionBundle, loadExtensions } from "./extensionUtils.js";
 import { loadTar } from "./fs/tarUtils.js";
+import { Buffer } from "./polyfills/buffer.js";
 
 import { PGDATA, WASM_PREFIX } from "./fs/index.js";
 
 // Importing the source as the built version is not ESM compatible
-import { serialize } from "pg-protocol/dist/index.js";
-import { Parser } from "pg-protocol/dist/parser.js";
+import { serialize } from "pg-protocol/src/index.js";
+import { Parser } from "pg-protocol/src/parser.js";
 import {
   BackendMessage,
   DatabaseError,
   NoticeMessage,
   CommandCompleteMessage,
   NotificationResponseMessage,
-} from "pg-protocol/dist/messages.js";
+} from "pg-protocol/src/messages.js";
 
-export class PGlite implements PGliteInterface {
+export class PGlite implements PGliteInterface, AsyncDisposable {
   fs?: Filesystem;
   protected mod?: PostgresMod;
 
@@ -110,11 +111,26 @@ export class PGlite implements PGliteInterface {
     // Save the extensions for later use
     this.#extensions = options.extensions ?? {};
 
-    // Save the extensions for later use
-    this.#extensions = options.extensions ?? {};
-
     // Initialize the database, and store the promise so we can wait for it to be ready
     this.waitReady = this.#init(options ?? {});
+  }
+
+  /**
+   * Create a new PGlite instance with extensions on the Typescript interface
+   * (The main constructor does enable extensions, however due to the limitations
+   * of Typescript, the extensions are not available on the instance interface)
+   * @param dataDir The directory to store the database files
+   *                Prefix with idb:// to use indexeddb filesystem in the browser
+   *                Use memory:// to use in-memory filesystem
+   * @param options Optional options
+   * @returns A promise that resolves to the PGlite instance when it's ready.
+   */
+  static async create<O extends PGliteOptions>(
+    options?: O,
+  ): Promise<PGlite & PGliteInterfaceExtensions<O["extensions"]>> {
+    const pg = new PGlite(options);
+    await pg.waitReady;
+    return pg as any;
   }
 
   /**
@@ -295,6 +311,13 @@ export class PGlite implements PGliteInterface {
   }
 
   /**
+   * The Postgres Emscripten Module
+   */
+  get Module() {
+    return this.mod!;
+  }
+
+  /**
    * The ready state of the database
    */
   get ready() {
@@ -322,20 +345,33 @@ export class PGlite implements PGliteInterface {
     }
 
     // Close the database
-    await new Promise<void>(async (resolve, reject) => {
-      try {
-        await this.execProtocol(serialize.end());
-      } catch (e) {
-        const err = e as { name: string; status: number };
-        if (err.name === "ExitStatus" && err.status === 0) {
-          resolve();
-        } else {
-          reject(e);
-        }
+    try {
+      await this.execProtocol(serialize.end());
+    } catch (e) {
+      const err = e as { name: string; status: number };
+      if (err.name === "ExitStatus" && err.status === 0) {
+        // Database closed successfully
+        // An earlier build of PGlite would throw an error here when closing
+        // leaving this here for now. I believe it was a bug in Emscripten.
+      } else {
+        throw e;
       }
-    });
+    }
+
+    // Close the filesystem
+    await this.fs!.close(this.mod!.FS);
+
     this.#closed = true;
     this.#closing = false;
+  }
+
+  /**
+   * Close the database when the object exits scope
+   * Stage 3 ECMAScript Explicit Resource Management
+   * https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management
+   */
+  async [Symbol.asyncDispose]() {
+    await this.close();
   }
 
   /**
@@ -400,19 +436,22 @@ export class PGlite implements PGliteInterface {
               text: query,
               types: parsedParams.map(([, type]) => type),
             }),
+            options,
           )),
           ...(await this.#execProtocolNoSync(
             serialize.bind({
               values: parsedParams.map(([val]) => val),
             }),
+            options,
           )),
           ...(await this.#execProtocolNoSync(
             serialize.describe({ type: "P" }),
+            options,
           )),
-          ...(await this.#execProtocolNoSync(serialize.execute({}))),
+          ...(await this.#execProtocolNoSync(serialize.execute({}), options)),
         ];
       } finally {
-        await this.#execProtocolNoSync(serialize.sync());
+        await this.#execProtocolNoSync(serialize.sync(), options);
       }
       this.#cleanupBlob();
       if (!this.#inTransaction) {
@@ -448,9 +487,12 @@ export class PGlite implements PGliteInterface {
       await this.#handleBlob(options?.blob);
       let results;
       try {
-        results = await this.#execProtocolNoSync(serialize.query(query));
+        results = await this.#execProtocolNoSync(
+          serialize.query(query),
+          options,
+        );
       } finally {
-        await this.#execProtocolNoSync(serialize.sync());
+        await this.#execProtocolNoSync(serialize.sync(), options);
       }
       this.#cleanupBlob();
       if (!this.#inTransaction) {
@@ -562,83 +604,106 @@ export class PGlite implements PGliteInterface {
   }
 
   /**
+   * Execute a postgres wire protocol message directly without wrapping the response.
+   * Only use if `execProtocol()` doesn't suite your needs.
+   *
+   * **Warning:** This bypasses PGlite's protocol wrappers that manage error/notice messages,
+   * transactions, and notification listeners. Only use if you need to bypass these wrappers and
+   * don't intend to use the above features.
+   *
+   * @param message The postgres wire protocol message to execute
+   * @returns The direct message data response produced by Postgres
+   */
+  async execProtocolRaw(
+    message: Uint8Array,
+    { syncToFs = true }: ExecProtocolOptions = {},
+  ) {
+    const msg_len = message.length;
+    const mod = this.mod!;
+
+    // >0 set buffer content type to wire protocol
+    // set buffer size so answer will be at size+0x2 pointer addr
+    mod._interactive_write(msg_len);
+
+    // copy whole buffer at addr 0x1
+    mod.HEAPU8.set(message, 1);
+
+    // execute the message
+    mod._interactive_one();
+
+    // Read responses from the buffer
+    const msg_start = msg_len + 2;
+    const msg_end = msg_start + mod._interactive_read();
+    const data = mod.HEAPU8.subarray(msg_start, msg_end);
+
+    if (syncToFs) {
+      await this.#syncToFs();
+    }
+
+    return data;
+  }
+
+  /**
    * Execute a postgres wire protocol message
    * @param message The postgres wire protocol message to execute
    * @returns The result of the query
    */
   async execProtocol(
     message: Uint8Array,
-    { syncToFs = true }: ExecProtocolOptions = {},
+    { syncToFs = true, onNotice }: ExecProtocolOptions = {},
   ): Promise<Array<[BackendMessage, Uint8Array]>> {
-    return await this.#executeMutex.runExclusive(async () => {
-      const msg_len = message.length;
-      const mod = this.mod!;
+    const data = await this.execProtocolRaw(message, { syncToFs });
+    const results: Array<[BackendMessage, Uint8Array]> = [];
 
-      // >0 set buffer content type to wire protocol
-      // set buffer size so answer will be at size+0x2 pointer addr
-      mod._interactive_write(msg_len);
-
-      // copy whole buffer at addr 0x1
-      mod.HEAPU8.set(message, 1);
-
-      // execute the message
-      mod._interactive_one();
-
-      if (syncToFs) {
-        await this.#syncToFs();
-      }
-
-      const results: Array<[BackendMessage, Uint8Array]> = [];
-
-      // Read responses from the buffer
-      const msg_start = msg_len + 2;
-      const msg_end = msg_start + mod._interactive_read();
-      const data = mod.HEAPU8.subarray(msg_start, msg_end);
-
-      this.#parser.parse(Buffer.from(data), (msg) => {
-        if (msg instanceof DatabaseError) {
-          this.#parser = new Parser(); // Reset the parser
-          throw msg;
-          // TODO: Do we want to wrap the error in a custom error?
-        } else if (msg instanceof NoticeMessage && this.debug > 0) {
+    this.#parser.parse(Buffer.from(data), (msg) => {
+      if (msg instanceof DatabaseError) {
+        this.#parser = new Parser(); // Reset the parser
+        throw msg;
+        // TODO: Do we want to wrap the error in a custom error?
+      } else if (msg instanceof NoticeMessage) {
+        if (this.debug > 0) {
           // Notice messages are warnings, we should log them
           console.warn(msg);
-        } else if (msg instanceof CommandCompleteMessage) {
-          // Keep track of the transaction state
-          switch (msg.text) {
-            case "BEGIN":
-              this.#inTransaction = true;
-              break;
-            case "COMMIT":
-            case "ROLLBACK":
-              this.#inTransaction = false;
-              break;
-          }
-        } else if (msg instanceof NotificationResponseMessage) {
-          // We've received a notification, call the listeners
-          const listeners = this.#notifyListeners.get(msg.channel);
-          if (listeners) {
-            listeners.forEach((cb) => {
-              // We use queueMicrotask so that the callback is called after any
-              // synchronous code has finished running.
-              queueMicrotask(() => cb(msg.payload));
-            });
-          }
-          this.#globalNotifyListeners.forEach((cb) => {
-            queueMicrotask(() => cb(msg.channel, msg.payload));
+        }
+        if (onNotice) {
+          onNotice(msg);
+        }
+      } else if (msg instanceof CommandCompleteMessage) {
+        // Keep track of the transaction state
+        switch (msg.text) {
+          case "BEGIN":
+            this.#inTransaction = true;
+            break;
+          case "COMMIT":
+          case "ROLLBACK":
+            this.#inTransaction = false;
+            break;
+        }
+      } else if (msg instanceof NotificationResponseMessage) {
+        // We've received a notification, call the listeners
+        const listeners = this.#notifyListeners.get(msg.channel);
+        if (listeners) {
+          listeners.forEach((cb) => {
+            // We use queueMicrotask so that the callback is called after any
+            // synchronous code has finished running.
+            queueMicrotask(() => cb(msg.payload));
           });
         }
-        results.push([msg, data]);
-      });
-
-      return results;
+        this.#globalNotifyListeners.forEach((cb) => {
+          queueMicrotask(() => cb(msg.channel, msg.payload));
+        });
+      }
+      results.push([msg, data]);
     });
+
+    return results;
   }
 
   async #execProtocolNoSync(
     message: Uint8Array,
+    options: ExecProtocolOptions = {},
   ): Promise<Array<[BackendMessage, Uint8Array]>> {
-    return await this.execProtocol(message, { syncToFs: false });
+    return await this.execProtocol(message, { ...options, syncToFs: false });
   }
 
   /**
@@ -654,7 +719,7 @@ export class PGlite implements PGliteInterface {
     const doSync = async () => {
       await this.#fsSyncMutex.runExclusive(async () => {
         this.#fsSyncScheduled = false;
-        await this.fs!.syncToFs(this.mod!.FS);
+        await this.fs!.syncToFs(this.mod!.FS, this.#relaxedDurability);
       });
     };
 
@@ -727,22 +792,6 @@ export class PGlite implements PGliteInterface {
    */
   offNotification(callback: (channel: string, payload: string) => void) {
     this.#globalNotifyListeners.delete(callback);
-  }
-
-  /**
-   * Create a new PGlite instance with extensions on the Typescript interface
-   * (The main constructor does enable extensions, however due to the limitations
-   * of Typescript, the extensions are not available on the instance interface)
-   * @param dataDir The directory to store the database files
-   *                Prefix with idb:// to use indexeddb filesystem in the browser
-   *                Use memory:// to use in-memory filesystem
-   * @param options Optional options
-   * @returns A new PGlite instance with extensions
-   */
-  static withExtensions<O extends PGliteOptions>(
-    options?: O,
-  ): PGlite & PGliteInterfaceExtensions<O["extensions"]> {
-    return new PGlite(options) as any;
   }
 
   /**

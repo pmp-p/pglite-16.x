@@ -1,4 +1,4 @@
-#define PDEBUG(string) puts(string)
+#define PDEBUG(...) puts(string)
 #include <unistd.h>  // access, unlink
 
 static void pg_prompt() {
@@ -194,7 +194,6 @@ interactive_one() {
                 fclose(SOCKET_FILE);
 
             PDEBUG("setting lock");
-
             FILE *c_lock;
             c_lock = fopen(PGS_OLOCK, "w");
             fclose(c_lock);
@@ -296,6 +295,9 @@ interactive_one() {
                             }
                             PDEBUG("TODO: pg_main start flag");
 
+
+
+
                         }
                     } else {
                         fprintf(stderr, "incoming=%d [%d, ", packetlen, firstchar);
@@ -330,6 +332,7 @@ interactive_one() {
     } // is_node
 
     if (cma_rsize) {
+//        PDEBUG("wire message !");
         is_wire = true;
         is_socket = false;
         whereToSendOutput = DestRemote;
@@ -435,7 +438,6 @@ incoming:
             WalSndErrorCleanup();
 
         PortalErrorCleanup();
-
         if (MyReplicationSlot != NULL)
             ReplicationSlotRelease();
 

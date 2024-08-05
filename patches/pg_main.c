@@ -75,7 +75,7 @@ progname;
 void
 PostgresMain(const char *dbname, const char *username)
 {
-    PDEBUG("# 22: ERROR: PostgresMain should not be called anymore" __FILE__ );
+    puts("# 78: ERROR: PostgresMain should not be called anymore" __FILE__ );
     while (1){};
 }
 
@@ -553,15 +553,16 @@ PDEBUG("# 100");
         single_mode_feed = NULL;
 
         force_echo = true;
-        if (!is_node) {
+        //if (!is_node) {
             fprintf(stdout,"# now in webloop(RAF)\npg> %c\n", 4);
             emscripten_set_main_loop( (em_callback_func)interactive_one, 0, 1);
+/*
         } else {
             PDEBUG("# 331: REPL(single after initdb):Begin(NORETURN)");
             while (repl) { interactive_file(); }
             exit(0);
         }
-
+*/
         PDEBUG("# 338: REPL:End Raising a 'RuntimeError Exception' to halt program NOW");
         {
             void (*npe)() = NULL;
@@ -581,11 +582,13 @@ PDEBUG("# 100");
 /* ================================================================================ */
 
 EMSCRIPTEN_KEEPALIVE void
-pg_repl_raf(){ // const char* std_in, const char* std_out, const char* std_err, const char* js_handler) {
-    //printf("# 531: in=%s out=%s err=%s js=%s\n", std_in, std_out, std_err, js_handler);
+pg_repl_raf(){
 
     is_repl = strlen(getenv("REPL")) && getenv("REPL")[0]=='Y';
+    if (is_node) {
 
+
+    }
     if (is_repl) {
         PDEBUG("# 536: switching to REPL mode (raf)");
         repl = true;
@@ -594,7 +597,7 @@ pg_repl_raf(){ // const char* std_in, const char* std_out, const char* std_err, 
         whereToSendOutput = DestNone;
         emscripten_set_main_loop( (em_callback_func)interactive_one, 0, 0);
     } else {
-        PDEBUG("# 543: wire mode");
+        PDEBUG("# 543: TODO: headless wire mode");
     }
 }
 
@@ -1424,7 +1427,7 @@ main_repl(int async) {
         }
 
         PDEBUG("# 1362: single: " __FILE__ );
-        if (async)
+        if (async>0)
             AsyncPostgresSingleUserMain(g_argc, g_argv, strdup(getenv("PGUSER")), 0);
         else
             PostgresSingleUserMain(g_argc, g_argv, strdup( getenv("PGUSER")));
@@ -1432,21 +1435,17 @@ main_repl(int async) {
     return 0;
 }
 
-
+extern void pg_repl_raf(void);
 
 int
-main(int argc, char **argv) // [])
+main(int argc, char **argv)
 {
-/*
-TODO:
-	postgres.js:6382 warning: unsupported syscall: __syscall_prlimit64
-*/
     int ret=0;
     is_node = !is_web_env();
 
     main_pre(argc, argv);
 
-    printf("# argv0 (%s) PGUSER=%s PGDATA=%s\n", argv[0], getenv("PGUSER"), getenv("PGDATA"));
+    printf("# 1449 argv0 (%s) PGUSER=%s PGDATA=%s\n", argv[0], getenv("PGUSER"), getenv("PGDATA"));
 
 	progname = get_progname(argv[0]);
 
@@ -1491,7 +1490,11 @@ TODO:
 
     // so it is repl
     main_repl(1);
-    PDEBUG("# 1453: " __FILE__);
+    if (is_node) {
+        PDEBUG("# 1494 node-REPL sim web loop :" __FILE__);
+        pg_repl_raf();
+        PDEBUG("# ? exit");
+    }
     emscripten_force_exit(ret);
 	return ret;
 }
