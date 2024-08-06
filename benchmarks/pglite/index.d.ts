@@ -1,6 +1,6 @@
 import { F as Filesystem, P as PostgresMod, a as FilesystemBase, b as FS } from './types-BRRGJ5cy.js';
-import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, b as PGliteInterfaceExtensions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, c as ParserOptions } from './interface-CaxYu8mu.js';
-export { i as DumpDataDirResult, g as Extension, f as ExtensionSetup, e as ExtensionSetupResult, h as Extensions, F as FilesystemType, j as Row, d as RowMode } from './interface-CaxYu8mu.js';
+import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, b as PGliteInterfaceExtensions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, c as ParserOptions } from './interface-Bd0KqC2R.js';
+export { i as DumpDataDirResult, g as Extension, f as ExtensionSetup, e as ExtensionSetupResult, h as Extensions, F as FilesystemType, j as Row, d as RowMode } from './interface-Bd0KqC2R.js';
 import { BackendMessage } from 'pg-protocol/src/messages.js';
 import * as messages_js from 'pg-protocol/src/messages.js';
 export { messages_js as messages };
