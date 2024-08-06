@@ -1050,8 +1050,9 @@ pg_initdb() {
 
             /* assume auth success for now */
             pg_idb_status |= IDB_HASUSER;
-/*
+
             printf("# 1054: pg_initdb: db exists at : %s TODO: test for db name : %s \n", getenv("PGDATA"), getenv("PGDATABASE"));
+/*
             print_bits(sizeof(pg_idb_status), &pg_idb_status);
 */
             main_post();
