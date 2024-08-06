@@ -1,4 +1,4 @@
-import { P as PGliteInterface } from '../interface-CsW9Cczh.js';
+import { P as PGliteInterface } from '../interface-CaxYu8mu.js';
 import 'pg-protocol/src/messages.js';
 import '../types-BRRGJ5cy.js';
 

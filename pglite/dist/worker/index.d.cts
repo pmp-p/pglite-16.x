@@ -1,4 +1,4 @@
-import { a as PGliteOptions, P as PGliteInterface, b as PGliteInterfaceExtensions, D as DebugLevel, Q as QueryOptions, R as Results, T as Transaction } from '../interface-BmgYFDvu.cjs';
+import { a as PGliteOptions, P as PGliteInterface, b as PGliteInterfaceExtensions, D as DebugLevel, Q as QueryOptions, R as Results, T as Transaction } from '../interface-CmiFbP3N.cjs';
 import { BackendMessage } from 'pg-protocol/src/messages.js';
 import '../types-BRRGJ5cy.cjs';
 

@@ -1,5 +1,5 @@
 import { NoticeMessage, BackendMessage } from 'pg-protocol/src/messages.js';
-import { F as Filesystem } from './types-BRRGJ5cy.cjs';
+import { F as Filesystem } from './types-BRRGJ5cy.js';
 
 type FilesystemType = "nodefs" | "idbfs" | "memoryfs";
 type DebugLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -39,6 +39,8 @@ interface DumpDataDirResult {
 }
 interface PGliteOptions {
     dataDir?: string;
+    username?: string;
+    dbname?: string;
     fs?: Filesystem;
     debug?: DebugLevel;
     relaxedDurability?: boolean;
