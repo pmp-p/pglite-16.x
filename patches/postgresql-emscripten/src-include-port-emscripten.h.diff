@@ -1,6 +1,6 @@
 --- postgresql-16.3/src/include/port/emscripten.h
 +++ postgresql-16.3-wasm/src/include/port/emscripten.h
-@@ -0,0 +1,329 @@
+@@ -0,0 +1,328 @@
 +/* src/include/port/emscripten.h */
 +
 +#ifndef I_EMSCRIPTEN
@@ -232,14 +232,13 @@
 +    const char *locale = "/locale";
 +    char *localefile = malloc( strlen(prefix) + strlen(locale) + 1 );
 +    localefile = strcat(prefix,locale);
-+    fprintf(stderr, "# 204:%s: OpenPipeStream(command=%s, mode=%s)\n#\tredirected to %s\n", __FILE__, command, mode, localefile);
++    //fprintf(stderr, "# 232:%s: OpenPipeStream(command=%s, mode=%s)\n#\tredirected to %s\n", __FILE__, command, mode, localefile);
 +    if (localefile) {
 +        if (access(localefile, F_OK) != 0) {
 +            FILE *fakeloc = fopen(localefile, "w");
 +            {
 +                const char* encoding = getenv("PGCLIENTENCODING");
 +                fprintf(fakeloc, "C\nC.%s\nPOSIX\n%s\n", encoding, encoding);
-+                puts("#211 locale created");
 +            }
 +            if (fakeloc)
 +                fclose(fakeloc);

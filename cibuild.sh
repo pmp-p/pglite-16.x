@@ -175,7 +175,6 @@ export PATH=${WORKSPACE}/build/postgres/bin:${PGROOT}/bin:$PATH
 # ===========================================================================
 # ===========================================================================
 
-
 if echo " $*"|grep -q " contrib"
 then
     # TEMP FIX for SDK
@@ -220,56 +219,57 @@ then
             fi
         fi
     done
-fi
 
+    if echo " $*"|grep -q " vector"
+    then
+        echo "====================== vector : $(pwd) ================="
 
-if echo " $*"|grep -q " vector"
-then
-    echo "====================== vector : $(pwd) ================="
+        pushd build
 
-    pushd build
+            # [ -d pgvector ] || git clone --no-tags --depth 1 --single-branch --branch master https://github.com/pgvector/pgvector
 
-        # [ -d pgvector ] || git clone --no-tags --depth 1 --single-branch --branch master https://github.com/pgvector/pgvector
+            if [ -d pgvector ]
+            then
+                echo using local pgvector
+            else
+                wget -c -q https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.3.tar.gz -Opgvector.tar.gz
+                tar xvfz pgvector.tar.gz && rm pgvector.tar.gz
+                mv pgvector-?.?.? pgvector
+            fi
 
-        if [ -d pgvector ]
-        then
-            echo using local pgvector
-        else
-            wget -c -q https://github.com/pgvector/pgvector/archive/refs/tags/v0.7.3.tar.gz -Opgvector.tar.gz
-            tar xvfz pgvector.tar.gz && rm pgvector.tar.gz
-            mv pgvector-?.?.? pgvector
-        fi
+            pushd pgvector
+                # path for wasm-shared already set to (pwd:pg build dir)/bin
+                # OPTFLAGS="" turns off arch optim (sse/neon).
+                PG_CONFIG=${PGROOT}/bin/pg_config emmake make OPTFLAGS="" install
+                cp sql/vector.sql sql/vector--0.7.3.sql ${PGROOT}/share/postgresql/extension
+                rm ${PGROOT}/share/postgresql/extension/vector--?.?.?--?.?.?.sql ${PGROOT}/share/postgresql/extension/vector.sql
+            popd
 
-        pushd pgvector
-            # path for wasm-shared already set to (pwd:pg build dir)/bin
-            # OPTFLAGS="" turns off arch optim (sse/neon).
-            PG_CONFIG=${PGROOT}/bin/pg_config emmake make OPTFLAGS="" install
-            cp sql/vector.sql sql/vector--0.7.3.sql ${PGROOT}/share/postgresql/extension
-            rm ${PGROOT}/share/postgresql/extension/vector--?.?.?--?.?.?.sql ${PGROOT}/share/postgresql/extension/vector.sql
         popd
 
-    popd
+        python3 cibuild/pack_extension.py
 
-    python3 cibuild/pack_extension.py
+    fi
 
+    if echo " $*"|grep -q " postgis"
+    then
+        echo "======================= postgis : $(pwd) ==================="
+
+        ./cibuild/postgis.sh
+
+        python3 cibuild/pack_extension.py
+    fi
+
+    if echo " $*"|grep -q " quack"
+    then
+        echo "================================================="
+        ./cibuild/pg_quack.sh
+        cp $PGROOT/lib/libduckdb.so /tmp/
+        python3 cibuild/pack_extension.py
+    fi
 fi
 
-if echo " $*"|grep -q " postgis"
-then
-    echo "======================= postgis : $(pwd) ==================="
 
-    ./cibuild/postgis.sh
-
-    python3 cibuild/pack_extension.py
-fi
-
-if echo " $*"|grep -q " quack"
-then
-    echo "================================================="
-    ./cibuild/pg_quack.sh
-    cp $PGROOT/lib/libduckdb.so /tmp/
-    python3 cibuild/pack_extension.py
-fi
 
 
 # ===========================================================================

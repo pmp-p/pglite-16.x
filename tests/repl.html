@@ -195,9 +195,34 @@
                     break
 
                 case 1:
-                    data = "SELECT now();"
+                    data = "SELECT now(), current_database(), session_user, current_user;"
+                    break
+/*
+                case 2:
+                    data = "CREATE USER test_user WITH PASSWORD 'md5abdbecd56d5fbd2cdaee3d0fa9e4f434';"
                     break
 
+                case 3:
+                    data = "CREATE DATABASE test_user WITH OWNER = test_user;"
+                    break
+
+                case 4:
+                    data = "CREATE SCHEMA test_user;"
+                    break
+
+                case 5:
+                    data = `CREATE TABLE IF NOT EXISTS test_user.test (
+      id SERIAL PRIMARY KEY,
+      number INT
+    );
+    INSERT INTO test_user.test (number) VALUES (42);
+    ALTER TABLE test_user.test OWNER TO test_user;
+`;
+                case 6:
+                    data = "SELECT now(), current_database(), session_user, current_user;"
+                    break
+*/
+/*
                 case 2:
                     //data = "CREATE EXTENSION vector;"
                     data = "LISTEN template1;"
@@ -207,6 +232,7 @@
                     // data = "SELECT * FROM pg_extension;"
                     data = "NOTIFY template1, 'hello';"
                     break
+
                 case 4:
                     data = "CREATE OR REPLACE FUNCTION test_func() RETURNS TEXT AS $$ BEGIN RETURN 'test'; END; $$ LANGUAGE plpgsql;"
                     break
@@ -218,6 +244,7 @@
                 case 6:
                     data = "CREATE EXTENSION pg_stat_statements;"
                     break
+*/
 
             }
 
@@ -282,15 +309,50 @@
                 }
             }
             */
-            await Module.load_package("vector", "vector.tar.gz")
-            await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
+            console.error("TODO: load ext from pg_extensions")
+            //await Module.load_package("vector", "vector.tar.gz")
+            //await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
 
             vm._setenv(vm.stringToUTF8OnStack("REPL"),vm.stringToUTF8OnStack("Y"),1)
 
-            vm._pg_initdb()
+            const idb  = vm._pg_initdb()
 
+            if (!idb) {
+                console.error("FATAL: INITDB failed to return value");
+                return
+            }
+
+            if (idb & 0b0001) {
+                console.error("INITDB failed");
+                return
+            }
+
+            if (idb & 0b0010) {
+                console.log(" #1 initdb was called");
+                if (idb & 0b0100 ) {
+                    console.log(" #2 found db")
+
+                    if (idb & (0b0100|0b1000)) {
+                        console.log(" #3 found db+user : switch user")
+                        // switch role
+                        vm.readline("SET ROLE test_user;");
+                    }
+                    console.error("Invalid user ?");
+                } else {
+                    console.warn(" TODO:  create db+user here / callback / throw ")
+                    vm.readline(`
+CREATE USER test_user WITH PASSWORD 'md5abdbecd56d5fbd2cdaee3d0fa9e4f434';
+CREATE TABLE IF NOT EXISTS test (
+      id SERIAL PRIMARY KEY,
+      number INT
+    );
+    INSERT INTO test (number) VALUES (42);
+    ALTER TABLE test OWNER TO test_user;
+SET ROLE test_user;
+`);
+                }
+            }
             vm._pg_repl_raf()
-
             setTimeout(test_drive, 2400)
         }
 
@@ -380,8 +442,8 @@
             load_pg_extension: load_pg_extension,
 
             load_package: load_package,
-
-            arguments : ["PGDATA=/tmp/pglite/base", "PREFIX=/tmp/pglite", "REPL=N"],
+// "PGDATABASE=test_user", "PGUSER=test_user"
+            arguments : ["PGDATA=/tmp/pglite/base", "PREFIX=/tmp/pglite", "PGUSER=postgres", "REPL=N"],
 
             config : {
                 cdn : "https://pygame-web.github.io/archives/0.9/",
@@ -503,7 +565,7 @@
 
         const { WasmTerminal } = await /**/ import("./vtx.js")
 
-        Module.vt = new WasmTerminal("repl",132,32,12)
+        Module.vt = new WasmTerminal("repl", 132, 72, 12)
 #if MODULARIZE
         if (is_es6)
             window.Module = await initModule(Module)
