@@ -1,5 +1,5 @@
 import { NoticeMessage, BackendMessage } from 'pg-protocol/src/messages.js';
-import { F as Filesystem } from './types-BRRGJ5cy.js';
+import { F as Filesystem } from './types-BRRGJ5cy.cjs';
 
 type FilesystemType = "nodefs" | "idbfs" | "memoryfs";
 type DebugLevel = 0 | 1 | 2 | 3 | 4 | 5;
@@ -12,6 +12,7 @@ interface QueryOptions {
     parsers?: ParserOptions;
     blob?: Blob | File;
     onNotice?: (notice: NoticeMessage) => void;
+    setAllTypes?: boolean;
 }
 interface ExecProtocolOptions {
     syncToFs?: boolean;

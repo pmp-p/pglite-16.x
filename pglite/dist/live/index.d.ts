@@ -1,4 +1,4 @@
-import { R as Results, P as PGliteInterface } from '../interface-Bd0KqC2R.js';
+import { R as Results, P as PGliteInterface } from '../interface-Xh0uzKp-.js';
 import 'pg-protocol/src/messages.js';
 import '../types-BRRGJ5cy.js';
 
@@ -35,7 +35,7 @@ interface LiveNamespace {
      */
     incrementalQuery<T = {
         [key: string]: any;
-    }>(query: string, params: any[] | undefined | null, key: string, callback: (results: Results<Change<T>>) => void): Promise<LiveQueryReturn<Change<T>>>;
+    }>(query: string, params: any[] | undefined | null, key: string, callback: (results: Results<T>) => void): Promise<LiveQueryReturn<T>>;
 }
 interface LiveQueryReturn<T> {
     initialResults: Results<T>;
@@ -79,5 +79,8 @@ declare const live: {
         namespaceObj: LiveNamespace;
     }>;
 };
+type PGliteWithLive = PGliteInterface & {
+    live: LiveNamespace;
+};
 
-export { live };
+export { type PGliteWithLive, live };

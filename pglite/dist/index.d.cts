@@ -1,6 +1,6 @@
 import { F as Filesystem, P as PostgresMod, a as FilesystemBase, b as FS } from './types-BRRGJ5cy.cjs';
-import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, b as PGliteInterfaceExtensions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, c as ParserOptions } from './interface-txcl9cTr.cjs';
-export { i as DumpDataDirResult, g as Extension, f as ExtensionSetup, e as ExtensionSetupResult, h as Extensions, F as FilesystemType, j as Row, d as RowMode } from './interface-txcl9cTr.cjs';
+import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, b as PGliteInterfaceExtensions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, c as ParserOptions } from './interface-Z9OGIloC.cjs';
+export { i as DumpDataDirResult, g as Extension, f as ExtensionSetup, e as ExtensionSetupResult, h as Extensions, F as FilesystemType, j as Row, d as RowMode } from './interface-Z9OGIloC.cjs';
 import { BackendMessage } from 'pg-protocol/src/messages.js';
 import * as messages_js from 'pg-protocol/src/messages.js';
 export { messages_js as messages };
@@ -212,12 +212,14 @@ declare const types: {
         from: number[];
         serialize: (x: string) => string;
         parse: (x: string) => string;
+        forceTo: number;
     };
     number: {
         to: number;
         from: number[];
         serialize: (x: number) => string;
         parse: (x: string) => number;
+        forceTo: (x: number) => 20 | 701;
     };
     bigint: {
         to: number;
@@ -265,6 +267,7 @@ type TypeHandler = {
     js?: any;
     serialize: (x: any) => string;
     parse: (x: string, typeId?: number) => any;
+    forceTo?: number | ((x: any) => number);
 };
 type TypeHandlers = {
     [key: string]: TypeHandler;
@@ -278,9 +281,9 @@ declare const serializers: {
     [key: number]: Serializer;
 };
 declare const serializerInstanceof: [any, Serializer][];
-type Serializer = (x: any) => [string, number];
+type Serializer = (x: any, setAllTypes?: boolean) => [string, number];
 declare function serializerFor(x: any): Serializer;
-declare function serializeType(x: any): [string | null, number];
+declare function serializeType(x: any, setAllTypes?: boolean): [string | null, number];
 declare function parseArray(value: string, parser?: (s: string) => any): any;
 declare function parseType(x: string, type: number, parsers?: ParserOptions): any;
 
@@ -413,4 +416,7 @@ declare class Mutex implements MutexInterface {
     private _semaphore;
 }
 
-export { DebugLevel, ExecProtocolOptions, IdbFs, MemoryFS, Mutex, PGlite, PGliteInterface, PGliteInterfaceExtensions, PGliteOptions, ParserOptions, QueryOptions, Results, Transaction, parse, types$1 as types };
+declare const uuid: () => string;
+declare function formatQuery(pg: PGliteInterface | Transaction, query: string, params?: any[] | null): Promise<string>;
+
+export { DebugLevel, ExecProtocolOptions, IdbFs, MemoryFS, Mutex, PGlite, PGliteInterface, PGliteInterfaceExtensions, PGliteOptions, ParserOptions, QueryOptions, Results, Transaction, formatQuery, parse, types$1 as types, uuid };

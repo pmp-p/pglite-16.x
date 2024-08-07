@@ -1,72 +1,72 @@
-"use strict";var h=Object.defineProperty;var I=Object.getOwnPropertyDescriptor;var O=Object.getOwnPropertyNames;var C=Object.prototype.hasOwnProperty;var b=(a,r)=>{for(var _ in r)h(a,_,{get:r[_],enumerable:!0})},q=(a,r,_,m)=>{if(r&&typeof r=="object"||typeof r=="function")for(let s of O(r))!C.call(a,s)&&s!==_&&h(a,s,{get:()=>r[s],enumerable:!(m=I(r,s))||m.enumerable});return a};var U=a=>q(h({},"__esModule",{value:!0}),a);var j={};b(j,{live:()=>M});module.exports=U(j);var W=typeof process=="object"&&typeof process.versions=="object"&&typeof process.versions.node=="string";var v=()=>{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();let a=new Uint8Array(16);if(globalThis.crypto?.getRandomValues)globalThis.crypto.getRandomValues(a);else for(let _=0;_<a.length;_++)a[_]=Math.floor(Math.random()*256);a[6]=a[6]&15|64,a[8]=a[8]&63|128;let r=[];return a.forEach(_=>{r.push(_.toString(16).padStart(2,"0"))}),r.slice(0,4).join("")+"-"+r.slice(4,6).join("")+"-"+r.slice(6,8).join("")+"-"+r.slice(8,10).join("")+"-"+r.slice(10).join("")};var F=5,P=async(a,r)=>{let _=new Set,m={async query(s,y,n){let c=v().replace(/-/g,""),e,u,T=async()=>{await a.transaction(async o=>{await o.query(`CREATE OR REPLACE TEMP VIEW live_query_${c}_view AS ${s}`,y??[]),u=await w(o,`live_query_${c}_view`),await N(o,u,_),await o.exec(`
-            PREPARE live_query_${c}_get AS
-            SELECT * FROM live_query_${c}_view;
-          `),e=await o.query(`EXECUTE live_query_${c}_get;`)})};await T();let R=async(o=0)=>{try{e=await a.query(`EXECUTE live_query_${c}_get;`)}catch($){if($.message==`prepared statement "live_query_${c}_get" does not exist`){if(o>F)throw $;await T(),R(o+1)}else throw $}n(e)},f=[];for(let o of u){let $=await a.listen(`table_change__${o.schema_name}__${o.table_name}`,async()=>{R()});f.push($)}let g=async()=>{for(let o of f)await o();await a.exec(`
-          DROP VIEW IF EXISTS live_query_${c}_view;
-          DEALLOCATE live_query_${c}_get;
-        `)};return n(e),{initialResults:e,unsubscribe:g,refresh:R}},async changes(s,y,n,c){let e=v().replace(/-/g,""),u,T=1,R,f=async()=>{await a.transaction(async i=>{await i.query(`CREATE OR REPLACE TEMP VIEW live_query_${e}_view AS ${s}`,y??[]),u=await w(i,`live_query_${e}_view`),await N(i,u,_);let E=[...(await i.query(`
+"use strict";var v=Object.defineProperty;var O=Object.getOwnPropertyDescriptor;var C=Object.getOwnPropertyNames;var q=Object.prototype.hasOwnProperty;var b=(t,s)=>{for(var n in s)v(t,n,{get:s[n],enumerable:!0})},P=(t,s,n,R)=>{if(s&&typeof s=="object"||typeof s=="function")for(let a of C(s))!q.call(t,a)&&a!==n&&v(t,a,{get:()=>s[a],enumerable:!(R=O(s,a))||R.enumerable});return t};var U=t=>P(v({},"__esModule",{value:!0}),t);var G={};b(G,{live:()=>j});module.exports=U(G);var H=typeof process=="object"&&typeof process.versions=="object"&&typeof process.versions.node=="string";var w=()=>{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID();let t=new Uint8Array(16);if(globalThis.crypto?.getRandomValues)globalThis.crypto.getRandomValues(t);else for(let n=0;n<t.length;n++)t[n]=Math.floor(Math.random()*256);t[6]=t[6]&15|64,t[8]=t[8]&63|128;let s=[];return t.forEach(n=>{s.push(n.toString(16).padStart(2,"0"))}),s.slice(0,4).join("")+"-"+s.slice(4,6).join("")+"-"+s.slice(6,8).join("")+"-"+s.slice(8,10).join("")+"-"+s.slice(10).join("")};async function I(t,s,n){if(!n||n.length===0)return s;let R=s.replace(/\$([0-9]+)/g,(g,r)=>"%"+r+"L");return(await t.query(`SELECT format($1, ${n.map((g,r)=>`$${r+2}`).join(", ")}) as query`,[R,...n],{setAllTypes:!0})).rows[0].query}var F=5,M=async(t,s)=>{let n=new Set,R={async query(a,g,r){let E=w().replace(/-/g,""),e,u,T=async()=>{await t.transaction(async o=>{let m=await I(o,a,g);await o.query(`CREATE OR REPLACE TEMP VIEW live_query_${E}_view AS ${m}`),u=await N(o,`live_query_${E}_view`),await h(o,u,n),await o.exec(`
+            PREPARE live_query_${E}_get AS
+            SELECT * FROM live_query_${E}_view;
+          `),e=await o.query(`EXECUTE live_query_${E}_get;`)})};await T();let f=async(o=0)=>{try{e=await t.query(`EXECUTE live_query_${E}_get;`)}catch(m){if(m.message==`prepared statement "live_query_${E}_get" does not exist`){if(o>F)throw m;await T(),f(o+1)}else throw m}r(e)},p=await Promise.all(u.map(o=>t.listen(`table_change__${o.schema_name}__${o.table_name}`,async()=>{f()}))),A=async()=>{await Promise.all(p.map(o=>o())),await t.exec(`
+            DROP VIEW IF EXISTS live_query_${E}_view;
+            DEALLOCATE live_query_${E}_get;
+          `)};return r(e),{initialResults:e,unsubscribe:A,refresh:f}},async changes(a,g,r,E){let e=w().replace(/-/g,""),u,T=1,f,p=async()=>{await t.transaction(async _=>{let $=await I(_,a,g);await _.query(`CREATE OR REPLACE TEMP VIEW live_query_${e}_view AS ${$}`),u=await N(_,`live_query_${e}_view`),await h(_,u,n);let l=[...(await _.query(`
                 SELECT column_name, data_type, udt_name
                 FROM information_schema.columns 
                 WHERE table_name = 'live_query_${e}_view'
-              `)).rows,{column_name:"__after__",data_type:"integer"}];await i.exec(`
+              `)).rows,{column_name:"__after__",data_type:"integer"}];await _.exec(`
             CREATE TEMP TABLE live_query_${e}_state1 (LIKE live_query_${e}_view INCLUDING ALL);
             CREATE TEMP TABLE live_query_${e}_state2 (LIKE live_query_${e}_view INCLUDING ALL);
-          `);for(let l of[1,2]){let S=l===1?2:1;await i.exec(`
-              PREPARE live_query_${e}_diff${l} AS
+          `);for(let y of[1,2]){let c=y===1?2:1;await _.exec(`
+              PREPARE live_query_${e}_diff${y} AS
               WITH
-                prev AS (SELECT LAG("${n}") OVER () as __after__, * FROM live_query_${e}_state${S}),
-                curr AS (SELECT LAG("${n}") OVER () as __after__, * FROM live_query_${e}_state${l}),
+                prev AS (SELECT LAG("${r}") OVER () as __after__, * FROM live_query_${e}_state${c}),
+                curr AS (SELECT LAG("${r}") OVER () as __after__, * FROM live_query_${e}_state${y}),
                 data_diff AS (
                   -- INSERT operations: Include all columns
                   SELECT 
                     'INSERT' AS __op__,
-                    ${E.map(({column_name:t})=>`curr."${t}" AS "${t}"`).join(`,
+                    ${l.map(({column_name:i})=>`curr."${i}" AS "${i}"`).join(`,
 `)},
                     ARRAY[]::text[] AS __changed_columns__
                   FROM curr
-                  LEFT JOIN prev ON curr.${n} = prev.${n}
-                  WHERE prev.${n} IS NULL
+                  LEFT JOIN prev ON curr.${r} = prev.${r}
+                  WHERE prev.${r} IS NULL
                 UNION ALL
                   -- DELETE operations: Include only the primary key
                   SELECT 
                     'DELETE' AS __op__,
-                    ${E.map(({column_name:t,data_type:p,udt_name:L})=>t===n?`prev."${t}" AS "${t}"`:`NULL::${p=="USER-DEFINED"?L:p} AS "${t}"`).join(`,
+                    ${l.map(({column_name:i,data_type:L,udt_name:d})=>i===r?`prev."${i}" AS "${i}"`:`NULL::${L=="USER-DEFINED"?d:L} AS "${i}"`).join(`,
 `)},
                       ARRAY[]::text[] AS __changed_columns__
                   FROM prev
-                  LEFT JOIN curr ON prev.${n} = curr.${n}
-                  WHERE curr.${n} IS NULL
+                  LEFT JOIN curr ON prev.${r} = curr.${r}
+                  WHERE curr.${r} IS NULL
                 UNION ALL
                   -- UPDATE operations: Include only changed columns
                   SELECT 
                     'UPDATE' AS __op__,
-                    ${E.map(({column_name:t,data_type:p,udt_name:L})=>t===n?`curr."${t}" AS "${t}"`:`CASE 
-                              WHEN curr."${t}" IS DISTINCT FROM prev."${t}" 
-                              THEN curr."${t}"
-                              ELSE NULL::${p=="USER-DEFINED"?L:p} 
-                              END AS "${t}"`).join(`,
+                    ${l.map(({column_name:i,data_type:L,udt_name:d})=>i===r?`curr."${i}" AS "${i}"`:`CASE 
+                              WHEN curr."${i}" IS DISTINCT FROM prev."${i}" 
+                              THEN curr."${i}"
+                              ELSE NULL::${L=="USER-DEFINED"?d:L} 
+                              END AS "${i}"`).join(`,
 `)},
-                      ARRAY(SELECT unnest FROM unnest(ARRAY[${E.filter(({column_name:t})=>t!==n).map(({column_name:t})=>`CASE
-                              WHEN curr."${t}" IS DISTINCT FROM prev."${t}" 
-                              THEN '${t}' 
+                      ARRAY(SELECT unnest FROM unnest(ARRAY[${l.filter(({column_name:i})=>i!==r).map(({column_name:i})=>`CASE
+                              WHEN curr."${i}" IS DISTINCT FROM prev."${i}" 
+                              THEN '${i}' 
                               ELSE NULL 
                               END`).join(", ")}]) WHERE unnest IS NOT NULL) AS __changed_columns__
                   FROM curr
-                  INNER JOIN prev ON curr.${n} = prev.${n}
+                  INNER JOIN prev ON curr.${r} = prev.${r}
                   WHERE NOT (curr IS NOT DISTINCT FROM prev)
                 )
               SELECT * FROM data_diff;
-            `)}})};await f();let g=async()=>{let i=!1;for(let E=0;E<5;E++)try{await a.transaction(async l=>{await l.exec(`
+            `)}})};await p();let A=async()=>{let _=!1;for(let $=0;$<5;$++)try{await t.transaction(async l=>{await l.exec(`
                 DELETE FROM live_query_${e}_state${T};
                 INSERT INTO live_query_${e}_state${T} 
                   SELECT * FROM live_query_${e}_view;
-              `),R=await l.query(`EXECUTE live_query_${e}_diff${T};`)});break}catch(l){if(l.message==`relation "live_query_${e}_state${T}" does not exist`){i=!0,await f();continue}else throw l}T=T===1?2:1,c([...i?[{__op__:"RESET"}]:[],...R.rows])},o=[];for(let i of u){let E=await a.listen(`table_change__${i.schema_name}__${i.table_name}`,async()=>{g()});o.push(E)}let $=async()=>{for(let i of o)await i();await a.exec(`
+              `),f=await l.query(`EXECUTE live_query_${e}_diff${T};`)});break}catch(l){if(l.message==`relation "live_query_${e}_state${T}" does not exist`){_=!0,await p();continue}else throw l}T=T===1?2:1,E([..._?[{__op__:"RESET"}]:[],...f.rows])},o=await Promise.all(u.map(_=>t.listen(`table_change__${_.schema_name}__${_.table_name}`,async()=>A()))),m=async()=>{await Promise.all(o.map(_=>_())),await t.exec(`
           DROP VIEW IF EXISTS live_query_${e}_view;
           DROP TABLE IF EXISTS live_query_${e}_state1;
           DROP TABLE IF EXISTS live_query_${e}_state2;
           DEALLOCATE live_query_${e}_diff1;
           DEALLOCATE live_query_${e}_diff2;
-        `)};return await g(),{fields:R.fields.filter(i=>!["__after__","__op__","__changed_columns__"].includes(i.name)),initialChanges:R.rows,unsubscribe:$,refresh:g}},async incrementalQuery(s,y,n,c){let e=new Map,u=new Map,T=[],R=!0,{fields:f,unsubscribe:g,refresh:o}=await m.changes(s,y,n,$=>{for(let E of $){let{__op__:l,__changed_columns__:S,...t}=E;switch(l){case"RESET":e.clear(),u.clear();break;case"INSERT":e.set(t[n],t),u.set(t.__after__,t[n]);break;case"DELETE":let p=e.get(t[n]);e.delete(t[n]),u.delete(p.__after__);break;case"UPDATE":let L={...e.get(t[n])??{}};for(let d of S)L[d]=t[d],d==="__after__"&&u.set(t.__after__,t[n]);e.set(t[n],L);break}}let A=[],i=null;for(;;){let E=u.get(i),l=e.get(E);if(!l)break;A.push(l),i=E}T=A,R||c({rows:A,fields:f})});return R=!1,c({rows:T,fields:f}),{initialResults:{rows:T,fields:f},unsubscribe:g,refresh:o}}};return{namespaceObj:m}},M={name:"Live Queries",setup:P};async function w(a,r){return(await a.query(`
+        `)};return await A(),{fields:f.fields.filter(_=>!["__after__","__op__","__changed_columns__"].includes(_.name)),initialChanges:f.rows,unsubscribe:m,refresh:A}},async incrementalQuery(a,g,r,E){let e=new Map,u=new Map,T=[],f=!0,{fields:p,unsubscribe:A,refresh:o}=await R.changes(a,g,r,m=>{for(let $ of m){let{__op__:l,__changed_columns__:y,...c}=$;switch(l){case"RESET":e.clear(),u.clear();break;case"INSERT":e.set(c[r],c),u.set(c.__after__,c[r]);break;case"DELETE":let i=e.get(c[r]);e.delete(c[r]),u.delete(i.__after__);break;case"UPDATE":let L={...e.get(c[r])??{}};for(let d of y)L[d]=c[d],d==="__after__"&&u.set(c.__after__,c[r]);e.set(c[r],L);break}}let S=[],_=null;for(let $=0;$<e.size;$++){let l=u.get(_),y=e.get(l);if(!y)break;let c={...y};delete c.__after__,S.push(c),_=l}T=S,f||E({rows:S,fields:p})});return f=!1,E({rows:T,fields:p}),{initialResults:{rows:T,fields:p},unsubscribe:A,refresh:o}}};return{namespaceObj:R}},j={name:"Live Queries",setup:M};async function N(t,s){return(await t.query(`
         SELECT DISTINCT
           cl.relname AS table_name,
           n.nspname AS schema_name
@@ -79,16 +79,16 @@
             SELECT oid FROM pg_class WHERE relname = $1 AND relkind = 'v'
         )
         AND d.deptype = 'n';
-      `,[r])).rows.filter(_=>_.table_name!==r)}async function N(a,r,_){let m=r.filter(s=>!_.has(`${s.schema_name}_${s.table_name}`)).map(s=>`
-      CREATE OR REPLACE FUNCTION _notify_${s.schema_name}_${s.table_name}() RETURNS TRIGGER AS $$
+      `,[s])).rows.filter(n=>n.table_name!==s)}async function h(t,s,n){let R=s.filter(a=>!n.has(`${a.schema_name}_${a.table_name}`)).map(a=>`
+      CREATE OR REPLACE FUNCTION _notify_${a.schema_name}_${a.table_name}() RETURNS TRIGGER AS $$
       BEGIN
-        PERFORM pg_notify('table_change__${s.schema_name}__${s.table_name}', '');
+        PERFORM pg_notify('table_change__${a.schema_name}__${a.table_name}', '');
         RETURN NULL;
       END;
       $$ LANGUAGE plpgsql;
-      CREATE OR REPLACE TRIGGER _notify_trigger_${s.schema_name}_${s.table_name}
-      AFTER INSERT OR UPDATE OR DELETE ON ${s.schema_name}.${s.table_name}
-      FOR EACH STATEMENT EXECUTE FUNCTION _notify_${s.schema_name}_${s.table_name}();
+      CREATE OR REPLACE TRIGGER _notify_trigger_${a.schema_name}_${a.table_name}
+      AFTER INSERT OR UPDATE OR DELETE ON ${a.schema_name}.${a.table_name}
+      FOR EACH STATEMENT EXECUTE FUNCTION _notify_${a.schema_name}_${a.table_name}();
       `).join(`
-`);m.trim()!==""&&await a.exec(m),r.map(s=>_.add(`${s.schema_name}_${s.table_name}`))}0&&(module.exports={live});
+`);R.trim()!==""&&await t.exec(R),s.map(a=>n.add(`${a.schema_name}_${a.table_name}`))}0&&(module.exports={live});
 //# sourceMappingURL=index.cjs.map
