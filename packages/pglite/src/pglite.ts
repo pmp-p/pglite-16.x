@@ -86,7 +86,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
 
   constructor(
     dataDirOrPGliteOptions: string | PGliteOptions = {},
-    options: PGliteOptions = {}
+    options: PGliteOptions = {},
   ) {
     if (typeof dataDirOrPGliteOptions === "string") {
       options = {
@@ -126,7 +126,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
    * @returns A promise that resolves to the PGlite instance when it's ready.
    */
   static async create<O extends PGliteOptions>(
-    options?: O
+    options?: O,
   ): Promise<PGlite & PGliteInterfaceExtensions<O["extensions"]>> {
     const pg = new PGlite(options);
     await pg.waitReady;
@@ -151,8 +151,8 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
     const args = [
       `PGDATA=${PGDATA}`,
       `PREFIX=${WASM_PREFIX}`,
-      `PGUSER=${options.username ?? 'postgres'}`,
-      `PGDATABASE=${options.database ?? 'template1'}`,
+      `PGUSER=${options.username ?? "postgres"}`,
+      `PGDATABASE=${options.database ?? "template1"}`,
       "MODE=REACT",
       "REPL=N",
       // "-F", // Disable fsync (TODO: Only for in-memory mode?)
@@ -183,7 +183,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
               buffer: Uint8Array,
               offset: number,
               length: number,
-              position: number
+              position: number,
             ) => {
               const buf = this.#queryReadBuffer;
               if (!buf) {
@@ -202,12 +202,12 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
               buffer: Uint8Array,
               offset: number,
               length: number,
-              position: number
+              position: number,
             ) => {
               callCounter++;
               this.#queryWriteChunks ??= [];
               this.#queryWriteChunks.push(
-                buffer.slice(offset, offset + length)
+                buffer.slice(offset, offset + length),
               );
               return length;
             },
@@ -246,7 +246,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
         }
         if (extRet.bundlePath) {
           extensionBundlePromises[extName] = loadExtensionBundle(
-            extRet.bundlePath
+            extRet.bundlePath,
           ); // Don't await here, this is parallel
         }
         if (extRet.init) {
@@ -308,7 +308,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
     } else if (idb & 0b0010) {
       // initdb was called to init PGDATA if required
       const pguser = options.username ?? "postgres";
-      const pgdatabase = "template1"; // TODO: allow custom db
+      const pgdatabase = options.database ?? "template1";
       if (idb & 0b0100) {
         // initdb has found a previous database
         if (idb & (0b0100 | 0b1000)) {
@@ -323,7 +323,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
         if (pgdatabase !== "template1" && pguser !== "postgres") {
           // throw new Error(`Invalid database ${pgdatabase} requested`);
           throw new Error(
-            "INITDB created a new datadir, but an alternative db/user was requested"
+            "INITDB created a new datadir, but an alternative db/user was requested",
           );
         }
       }
@@ -418,7 +418,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
   async query<T>(
     query: string,
     params?: any[],
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<Results<T>> {
     await this.#checkReady();
     // We wrap the public query method in the transaction mutex to ensure that
@@ -455,13 +455,14 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
   async #runQuery<T>(
     query: string,
     params?: any[],
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<Results<T>> {
     return await this.#queryMutex.runExclusive(async () => {
       // We need to parse, bind and execute a query with parameters
       this.#log("runQuery", query, params, options);
       await this.#handleBlob(options?.blob);
-      const parsedParams = params?.map((p) => serializeType(p)) || [];
+      const parsedParams =
+        params?.map((p) => serializeType(p, options?.setAllTypes)) || [];
       let results;
       try {
         results = [
@@ -470,17 +471,17 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
               text: query,
               types: parsedParams.map(([, type]) => type),
             }),
-            options
+            options,
           )),
           ...(await this.#execProtocolNoSync(
             serialize.bind({
               values: parsedParams.map(([val]) => val),
             }),
-            options
+            options,
           )),
           ...(await this.#execProtocolNoSync(
             serialize.describe({ type: "P" }),
-            options
+            options,
           )),
           ...(await this.#execProtocolNoSync(serialize.execute({}), options)),
         ];
@@ -499,7 +500,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
       return parseResults(
         results.map(([msg]) => msg),
         options,
-        blob
+        blob,
       )[0] as Results<T>;
     });
   }
@@ -513,7 +514,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
    */
   async #runExec(
     query: string,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<Array<Results>> {
     return await this.#queryMutex.runExclusive(async () => {
       // No params so we can just send the query
@@ -523,7 +524,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
       try {
         results = await this.#execProtocolNoSync(
           serialize.query(query),
-          options
+          options,
         );
       } finally {
         await this.#execProtocolNoSync(serialize.sync(), options);
@@ -540,7 +541,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
       return parseResults(
         results.map(([msg]) => msg),
         options,
-        blob
+        blob,
       ) as Array<Results>;
     });
   }
@@ -551,7 +552,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
    * @returns The result of the transaction
    */
   async transaction<T>(
-    callback: (tx: Transaction) => Promise<T>
+    callback: (tx: Transaction) => Promise<T>,
   ): Promise<T | undefined> {
     await this.#checkReady();
     return await this.#transactionMutex.runExclusive(async () => {
@@ -570,7 +571,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
           query: async (
             query: string,
             params?: any[],
-            options?: QueryOptions
+            options?: QueryOptions,
           ) => {
             checkClosed();
             return await this.#runQuery(query, params, options);
@@ -650,7 +651,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
    */
   async execProtocolRaw(
     message: Uint8Array,
-    { syncToFs = true }: ExecProtocolOptions = {}
+    { syncToFs = true }: ExecProtocolOptions = {},
   ) {
     const msg_len = message.length;
     const mod = this.mod!;
@@ -684,7 +685,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
    */
   async execProtocol(
     message: Uint8Array,
-    { syncToFs = true, onNotice }: ExecProtocolOptions = {}
+    { syncToFs = true, onNotice }: ExecProtocolOptions = {},
   ): Promise<Array<[BackendMessage, Uint8Array]>> {
     const data = await this.execProtocolRaw(message, { syncToFs });
     const results: Array<[BackendMessage, Uint8Array]> = [];
@@ -735,7 +736,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
 
   async #execProtocolNoSync(
     message: Uint8Array,
-    options: ExecProtocolOptions = {}
+    options: ExecProtocolOptions = {},
   ): Promise<Array<[BackendMessage, Uint8Array]>> {
     return await this.execProtocol(message, { ...options, syncToFs: false });
   }
@@ -797,7 +798,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
   async unlisten(channel: string, callback?: (payload: string) => void) {
     if (callback) {
       this.#notifyListeners.get(channel)?.delete(callback);
-      if (this.#notifyListeners.get(channel)!.size === 0) {
+      if (this.#notifyListeners.get(channel)?.size === 0) {
         await this.exec(`UNLISTEN ${channel}`);
         this.#notifyListeners.delete(channel);
       }
@@ -812,7 +813,7 @@ export class PGlite implements PGliteInterface, AsyncDisposable {
    * @param callback The callback to call when a notification is received
    */
   onNotification(
-    callback: (channel: string, payload: string) => void
+    callback: (channel: string, payload: string) => void,
   ): () => void {
     this.#globalNotifyListeners.add(callback);
     return () => {
