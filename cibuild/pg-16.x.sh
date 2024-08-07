@@ -1,12 +1,20 @@
-ARCHIVE=postgresql-${PGVERSION}.tar.bz2
+if echo ${PGVERSION} | grep -q 16.4
+then
+    ARCHIVE_URL=https://github.com/postgres/postgres/archive/refs/tags/REL_16_4.tar.gz
+else
+    ARCHIVE_URL=https://ftp.postgresql.org/pub/source/v${PGVERSION}/${ARCHIVE}
+fi
+
+ARCHIVE=postgresql-${PGVERSION}.tar.gz
 
 if [ -f postgresql/postgresql-${PGVERSION}.patched ]
 then
     echo version already selected and patch stage already done
 else
-    [ -f ${ARCHIVE} ] || wget -q -c https://ftp.postgresql.org/pub/source/v${PGVERSION}/${ARCHIVE}
+    [ -f ${ARCHIVE} ] || wget -q -c -O${ARCHIVE} ${ARCHIVE_URL}
 
-    tar xfj ${ARCHIVE}
+    tar xfz ${ARCHIVE}
+    ln -sf $(pwd)/postgres-REL_16_? postgresql-${PGVERSION}
 
     if pushd postgresql-${PGVERSION}
     then
