@@ -1,7 +1,9 @@
 if echo ${PGVERSION} | grep -q 16.4
 then
+    PG_PREREL=true
     ARCHIVE_URL=https://github.com/postgres/postgres/archive/refs/tags/REL_16_4.tar.gz
 else
+    PG_PREREL=false
     ARCHIVE_URL=https://ftp.postgresql.org/pub/source/v${PGVERSION}/${ARCHIVE}
 fi
 
@@ -9,12 +11,20 @@ ARCHIVE=postgresql-${PGVERSION}.tar.gz
 
 if [ -f postgresql/postgresql-${PGVERSION}.patched ]
 then
-    echo version already selected and patch stage already done
+    echo "
+
+    Version ${PGVERSION} already selected and patch stage already done
+
+"
 else
     [ -f ${ARCHIVE} ] || wget -q -c -O${ARCHIVE} ${ARCHIVE_URL}
 
     tar xfz ${ARCHIVE}
-    ln -sf $(pwd)/postgres-REL_16_? postgresql-${PGVERSION}
+
+    if $PG_PREREL
+    then
+        ln -sf $(pwd)/postgres-REL_16_? postgresql-${PGVERSION}
+    fi
 
     if pushd postgresql-${PGVERSION}
     then
@@ -48,7 +58,10 @@ export PGSRC=$(realpath postgresql-${PGVERSION})
 
 if [ -f ${PGROOT}/pg.installed ]
 then
-    echo "skipping pg build, using previous install from ${PGROOT}"
+    echo "
+        skipping pg build, using previous install from ${PGROOT}
+
+"
 else
     echo "Building $ARCHIVE (patched) from $PGSRC"
     . cibuild/pgbuild.sh

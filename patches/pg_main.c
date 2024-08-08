@@ -1279,7 +1279,7 @@ extra_env:;
 	setenv("LC_CTYPE", "C" , 1);
 
 	/* default username */
-	// setenv("PGUSER", WASM_USERNAME , 0);
+	setenv("PGUSER", WASM_USERNAME , 0);
 
 	/* default path */
 	setenv("PGDATA", PGDB , 0);

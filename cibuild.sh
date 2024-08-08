@@ -67,10 +67,18 @@ then
 else
     if which emcc
     then
-        echo "Using provided emsdk from $(which emcc)"
+        echo "emcc found in PATH=$PATH"
     else
         . /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
     fi
+    export PG_LINK=${PG_LINK:-$(which emcc)}
+
+    echo "
+
+    Using provided emsdk from $(which emcc)
+    Using PG_LINK=$PG_LINK as linker
+
+"
 
     # custom code for node/web builds that modify pg main/tools behaviour
     # this used by both node/linkweb build stages
