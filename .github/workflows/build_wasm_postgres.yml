@@ -71,25 +71,13 @@ jobs:
       - name: Build PGlite
         working-directory: ./packages/pglite
         run: |
-          pnpm install
-          pnpm run build
-          pnpm pack
+          bash ./cibuild.sh pglite
 
       - name: Build REPL for Example deployment
         working-directory: ./packages/repl
         run: |
           pnpm install
           pnpm run build
-
-      - name: Build Benchmarks
-        working-directory: ./packages/benchmark
-        run: |
-          pnpm install
-          pnpm run build
-
-      - name: Build demo site
-        run: |
-          bash ./cibuild.sh demo-site
 
       - name : "Upload to GitHub pages"
         uses: JamesIves/github-pages-deploy-action@v4.4.1

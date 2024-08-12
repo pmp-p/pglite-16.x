@@ -9,17 +9,6 @@
         PGLITE=$(pwd)
     fi
 
-    # not used for now, everything in PGROOT is to be bundled
-    cat > $PGLITE/release/share.js <<END
-
-    function loadPgShare(module, require) {
-        console.warn("share.js: loadPgShare");
-    }
-
-    export default loadPgShare;
-END
-
-
     pnpm install
     pushd  $PGLITE/../repl
         pnpm install
