@@ -1379,7 +1379,9 @@ main_repl(int async) {
 
     if (!mkdir(PGDB, 0700)) {
         /* no db : run initdb now. */
-        fprintf(stderr, "db %s not found, running initdb with defaults\n", PGDB );
+#if PGDEBUG
+        fprintf(stderr, "PGDATA=%s not found, running initdb with defaults\n", PGDB );
+#endif
         #if defined(PG_INITDB_MAIN)
             #warning "web build"
             hadloop_error = pg_initdb() & IDB_FAILED;

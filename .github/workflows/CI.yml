@@ -46,7 +46,7 @@ jobs:
 
       - name: Build postgres WASM via emsdk
         run: |
-          bash ./cibuild.sh vector contrib node linkweb pglite pglite-prep repl
+          bash ./cibuild.sh vector contrib node linkweb pglite pglite-prep pglite-repl
 
       - name : "Upload to GitHub pages"
         uses: JamesIves/github-pages-deploy-action@v4.4.1
@@ -57,6 +57,5 @@ jobs:
       - name: Test pglite
         working-directory: ./packages/pglite
         run: |
-          pnpm exec playwright install --with-deps
-          pnpm run test
+          bash ./cibuild.sh pglite-test
 

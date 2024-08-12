@@ -393,11 +393,16 @@ do
             du -hs ${WEBROOT}/*
         ;;
 
-        repl) echo "=============== pglite-repl ================================"
+        pglite-repl) echo "=============== pglite-repl ================================"
             pushd ./packages/repl
             pnpm install
             pnpm run build
             popd
+        ;;
+
+        pglite-test) echo "================== pglite-test ========================="
+            pnpm exec playwright install --with-deps
+            pnpm run test
         ;;
 
         pglite-prep) echo "==================== pglite-prep  =========================="
