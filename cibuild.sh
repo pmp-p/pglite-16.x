@@ -393,6 +393,13 @@ do
             du -hs ${WEBROOT}/*
         ;;
 
+        repl) echo "=============== pglite-repl ================================"
+            pushd ./packages/repl
+            pnpm install
+            pnpm run build
+            popd
+        ;;
+
         pglite-prep) echo "==================== pglite-prep  =========================="
             mkdir -p $PGLITE/release
             rm $PGLITE/release/*

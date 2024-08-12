@@ -1,7 +1,19 @@
-name: Build WASM PGlite files
+name: CI
 
 on:
-  workflow_call:
+  workflow_dispatch:
+
+  release:
+    # this runs CI only when a release is created at first (and not when it is
+    # edited or published)
+    types: [created]
+
+  push:
+    branches: main
+
+  pull_request:
+    branches: main
+
 
 jobs:
   build:
@@ -25,21 +37,20 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Restore cached build
-        id: cache-restore
-        uses: actions/cache@v4
-        with:
-          path: |
-            /opt/python-wasm-sdk
-            /tmp/web
-            /tmp/pglite
-            /tmp/sdk/postgres-*.tar.gz
-            postgres
-            postgresql-*
-          key: build-cache-${{ hashFiles('cibuild/**', 'patches/*.c', 'patches/postgresql-*') }}
+      - name: Display CI properties
+        run: |
+	    WD=$(pwd)
+        python3 -V
+        echo $WD
+        clang --version | head -n 1
+        echo
+	    gcc --version | head -n 1
+        echo "Github env:"
+        env|grep GITHUB
+        echo "Android support:"
+        env|grep ANDROID
 
       - name: Install python-wasm-sdk for emsdk/wasi+prebuilts
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         working-directory: /
         run: |
           sudo apt-get install -y lz4 wget pv bash
@@ -48,14 +59,7 @@ jobs:
 
       - name: Build postgres WASM via emsdk
         run: |
-          bash ./cibuild.sh vector contrib node linkweb pglite pglite-prep
-
-
-      - name: Build REPL for Example deployment
-        working-directory: ./packages/repl
-        run: |
-          pnpm install
-          pnpm run build
+          bash ./cibuild.sh vector contrib node linkweb pglite pglite-prep repl
 
       - name : "Upload to GitHub pages"
         uses: JamesIves/github-pages-deploy-action@v4.4.1
@@ -68,3 +72,4 @@ jobs:
         run: |
           pnpm exec playwright install --with-deps
           pnpm run test
+
