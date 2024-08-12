@@ -75,16 +75,24 @@ END
 fi
 
 # make sure CI pnpm will be in the path
-if which npm
+if which pnpm
 then
-    npm install -g pnpm@^8.0.0
-    echo "
-
-    PNPM : $(which pnpm)
-
-"
+    echo -n
 else
-    echo will use sdk bundled node18/npm/pnpm
+    if which npm
+    then
+        npm install -g pnpm@^8.0.0
+        pnpm create playwright
+        echo "
+
+        PNPM : $(which pnpm)
+        playwright : $(which playwright)
+
+
+    "
+    else
+        echo will use sdk bundled node18/npm/pnpm
+    fi
 fi
 
 
@@ -401,8 +409,14 @@ do
         ;;
 
         pglite-test) echo "================== pglite-test ========================="
+            echo "
+
+        PNPM : $(which pnpm)
+        playwright : $(which playwright)
+
+
+"
             pushd ./packages/pglite
-            pnpm exec playwright install
             if pnpm exec playwright install --with-deps
             then
                 pnpm run test || exit 395
