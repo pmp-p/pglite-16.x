@@ -91,13 +91,13 @@ else
         node : $(which node) $($(which node) -v)
 
     "
-        NPATH="/usr/local/bin"
-        CIPNPM=true
-        CIHOME=${HOME}
+        export NPATH="/usr/local/bin"
+        export CIPNPM=true
+        export CIHOME=${HOME}
     else
         echo will use sdk bundled node18/npm/pnpm
-        NPATH=""
-        CIPNPM=false
+        export NPATH=""
+        export CIPNPM=false
     fi
 fi
 
@@ -154,6 +154,9 @@ else
 
     # store all pg options that have impact on cmd line initdb/boot
     cat > ${PGROOT}/pgopts.sh <<END
+export NPATH=$NPATH
+export CIHOME=$CIHOME
+export CIPNPM=$CIPNPM
 export PGOPTS="\\
  -c log_checkpoints=false \\
  -c dynamic_shared_memory_type=posix \\
@@ -415,10 +418,15 @@ do
         ;;
 
         pglite-test) echo "================== pglite-test ========================="
-            export HOME=$CIHOME
+            if $CIPNPM
+            then
+                export HOME=$CIHOME
+            fi
             echo "
 
         PNPM : $(which pnpm)
+        CIPNPM=$CIPNPM
+        CIHOME=$CIHOME
         PATH=$PATH
         HOME=$HOME
 
