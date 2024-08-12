@@ -1,24 +1,11 @@
-name: Build PGLite
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+name: Build WASM PGlite files
 
 on:
-  workflow_dispatch:
-    inputs:
-      message:
-        description: 'Build PGLite'
-
-  push:
-    branches: main
-
-  pull_request:
-    branches: main
+  workflow_call:
 
 jobs:
   build:
-    name: Build and Test PGlite
+    name: Build WASM Postgres
     runs-on: ubuntu-22.04
     env:
       PGVERSION: 16.4
@@ -36,9 +23,9 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Restore cached
+      - name: Restore cached build
         id: cache-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache@v4
         with:
           path: |
             /opt/python-wasm-sdk
@@ -72,28 +59,10 @@ jobs:
         run: |
           bash ./cibuild.sh node
 
-      - name: Cached intermediate
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        id: cache-intermediate
-        uses: actions/cache/save@v4
-        with:
-          path: |
-            /tmp/web
-            /tmp/pglite
-            /tmp/sdk/*.tar
-            /tmp/sdk/*.tar.gz
-            postgres
-            postgresql-*
-          key: ${{ steps.cache-restore.outputs.cache-primary-key }}
-
       - name: Link postgres WASM for web
         if: steps.cache-restore.outputs.cache-hit != 'true'
         run: |
           bash ./cibuild.sh linkweb
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 8
 
       - name: Copy release for PGlite build
         run: |
