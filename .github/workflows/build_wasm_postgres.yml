@@ -15,6 +15,8 @@ jobs:
       SYS_PYTHON: /usr/bin/python3
       PGROOT: /tmp/pglite
       DEBUG: true
+      WASI: false
+      PGES6: true
       contrib: contrib
       OBJDUMP: true
 
@@ -45,33 +47,9 @@ jobs:
           curl -sL --retry 5 https://github.com/pygame-web/python-wasm-sdk/releases/download/$SDK_VERSION/$SDK_ARCHIVE | tar xvP --use-compress-program=lz4 | pv -p -l -s 24400 >/dev/null
 
       - name: Build postgres WASM via emsdk
-        if: steps.cache-restore.outputs.cache-hit != 'true'
         run: |
-          bash ./cibuild.sh
+          bash ./cibuild.sh vector contrib node linkweb pglite pglite-prep
 
-      - name: Build extensions
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: |
-          bash ./cibuild.sh vector contrib
-
-      - name: Pack node distribution
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: |
-          bash ./cibuild.sh node
-
-      - name: Link postgres WASM for web
-        if: steps.cache-restore.outputs.cache-hit != 'true'
-        run: |
-          bash ./cibuild.sh linkweb
-
-      - name: Copy release for PGlite build
-        run: |
-          bash ./cibuild.sh pglite-prep
-
-      - name: Build PGlite
-        working-directory: ./packages/pglite
-        run: |
-          bash ./cibuild.sh pglite
 
       - name: Build REPL for Example deployment
         working-directory: ./packages/repl
