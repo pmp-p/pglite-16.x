@@ -27,7 +27,8 @@ jobs:
       SDKROOT: /opt/python-wasm-sdk
       SYS_PYTHON: /usr/bin/python3
       PGROOT: /tmp/pglite
-      DEBUG: false
+      DEBUG: true
+      contrib: contrib
       OBJDUMP: true
 
     steps:

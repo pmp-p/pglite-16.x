@@ -11,7 +11,7 @@ export PGROOT=${PGROOT:-/tmp/pglite}
 export WEBROOT=${WEBROOT:-/tmp/web}
 export DEBUG=${DEBUG:-false}
 export PGDATA=${PGROOT}/base
-export PGUSER=postgres
+export PGUSER=${PGUSER:-postgres}
 export PGPATCH=${WORKSPACE}/patches
 
 
@@ -50,11 +50,28 @@ fi
 # default to web/release size optim.
 if $DEBUG
 then
-    echo "debug not supported on web build"
-    exit 51
+    export PGDEBUG=""
+    export CDEBUG="-g0 -O0"
+    cat > /tmp/pgdebug.h << END
+#ifndef I_PGDEBUG
+#define I_PGDEBUG
+#define WASM_USERNAME "$PGUSER"
+#define PGDEBUG 1
+#define PDEBUG(string) puts(string)
+#endif
+END
+
 else
     export PGDEBUG=""
     export CDEBUG="-g0 -Os"
+    cat > /tmp/pgdebug.h << END
+#ifndef I_PGDEBUG
+#define I_PGDEBUG
+#define WASM_USERNAME "$PGUSER"
+#define PDEBUG(string)
+#define PGDEBUG 0
+#endif
+END
 fi
 
 # setup compiler+node. emsdk provides node (18), recent enough for bun.
