@@ -189,7 +189,7 @@ rm -rf ${PGDATA} /tmp/initdb-* ${PGROOT}/wal/*
 export TZ=UTC
 export PGTZ=UTC
 SQL=/tmp/initdb-\$\$
-# TODO: --waldir=${PREFIX}/wal
+# TODO: --waldir=${PGROOT}/wal
 > /tmp/initdb.txt
 
 ${PGROOT}/initdb --no-clean --wal-segsize=1 -g $LANG $CRED --pgdata=${PGDATA}
