@@ -1281,6 +1281,7 @@ extra_env:;
     // also we store the fake locale file there.
 	// postgres.js:1605 You must specify the --config-file or -D invocation option or set the PGDATA environment variable.
 
+    /* enforce ? */
 	setenv("PGSYSCONFDIR", WASM_PREFIX, 1);
 	setenv("PGCLIENTENCODING", "UTF8", 1);
 
@@ -1293,15 +1294,13 @@ extra_env:;
 
 	setenv("LC_CTYPE", "C" , 1);
 
-	/* default username */
+    /* defaults */
+
+    setenv("TZ", "UTC", 0);
+    setenv("PGTZ", "UTC", 0);
 	setenv("PGUSER", WASM_USERNAME , 0);
-
-	/* default path */
 	setenv("PGDATA", PGDB , 0);
-
-    /* default database */
 	setenv("PGDATABASE", "template1" , 0);
-
     setenv("PG_COLOR", "always", 0);
 
 #if PGDEBUG
