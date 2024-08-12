@@ -81,17 +81,23 @@ then
 else
     if which npm
     then
+        npm init playwright@latest --force
+        npx playwright install
         npm install -g pnpm@^8.0.0
         pnpm create playwright
         echo "
 
         PNPM : $(which pnpm)
-        playwright : $(which playwright)
-
+        node : $(which node) $($(which node) -v)
 
     "
+        NPATH="/usr/local/bin"
+        CIPNPM=true
+        CIHOME=${HOME}
     else
         echo will use sdk bundled node18/npm/pnpm
+        NPATH=""
+        CIPNPM=false
     fi
 fi
 
@@ -207,7 +213,7 @@ fi
 
 # put wasm-shared the pg extension linker from build dir in the path
 # and also pg_config from the install dir.
-export PATH=${WORKSPACE}/build/postgres/bin:${PGROOT}/bin:$PATH
+export PATH=${WORKSPACE}/build/postgres/bin:${PGROOT}/bin:$NPATH:$PATH
 
 
 
@@ -409,20 +415,21 @@ do
         ;;
 
         pglite-test) echo "================== pglite-test ========================="
+            export HOME=$CIHOME
             echo "
 
         PNPM : $(which pnpm)
-        playwright : $(which playwright)
-
+        PATH=$PATH
+        HOME=$HOME
 
 "
             pushd ./packages/pglite
             if pnpm exec playwright install --with-deps
             then
-                pnpm run test || exit 395
+                pnpm run test || exit 429
             else
                 echo "failed to install test env"
-                exit 398
+                pnpm run test || exit 432
             fi
             popd
         ;;
