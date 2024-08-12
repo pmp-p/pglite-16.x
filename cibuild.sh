@@ -390,6 +390,8 @@ do
 
         pglite-test) echo "================== pglite-test ========================="
             pushd ./packages/pglite
+            pnpm install
+            pnpm exec playwright install
             if pnpm exec playwright install --with-deps
             then
                 pnpm run test || exit 395
