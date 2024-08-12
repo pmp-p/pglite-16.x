@@ -74,6 +74,20 @@ else
 END
 fi
 
+# make sure CI pnpm will be in the path
+if which npm
+then
+    npm install -g pnpm@^8.0.0
+    echo "
+
+    PNPM : $(which pnpm)
+
+"
+else
+    echo will use sdk bundled node18/npm/pnpm
+fi
+
+
 # setup compiler+node. emsdk provides node (18), recent enough for bun.
 # TODO: but may need to adjust $PATH with stock emsdk.
 
@@ -112,8 +126,6 @@ else
 
 fi
 
-# make sure pnpm will be in the path
-export PATH=$(echo -n $EMSDK/node/*_64bit/bin):$PATH
 
 export CC_PGLITE
 
@@ -390,7 +402,6 @@ do
 
         pglite-test) echo "================== pglite-test ========================="
             pushd ./packages/pglite
-            pnpm install
             pnpm exec playwright install
             if pnpm exec playwright install --with-deps
             then
