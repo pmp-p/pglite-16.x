@@ -37,19 +37,6 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Display CI properties
-        run: |
-          WD=$(pwd)
-          python3 -V
-          echo $WD
-          clang --version | head -n 1
-          echo
-	      gcc --version | head -n 1
-          echo "Github env:"
-          env|grep GITHUB
-          echo "Android support:"
-          env|grep ANDROID
-
       - name: Install python-wasm-sdk for emsdk/wasi+prebuilts
         working-directory: /
         run: |
