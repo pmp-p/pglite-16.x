@@ -55,7 +55,6 @@ jobs:
           folder: /tmp/web
 
       - name: Test pglite
-        working-directory: ./packages/pglite
         run: |
           bash ./cibuild.sh pglite-test
 
