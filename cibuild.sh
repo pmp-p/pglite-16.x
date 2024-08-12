@@ -13,7 +13,7 @@ export DEBUG=${DEBUG:-false}
 export PGDATA=${PGROOT}/base
 export PGUSER=${PGUSER:-postgres}
 export PGPATCH=${WORKSPACE}/patches
-
+export TOTAL_MEMORY=${TOTAL_MEMORY:-256MB}
 
 # exit on error
 EOE=false
@@ -112,7 +112,8 @@ else
 
 fi
 
-export PATH=$PATH:$(echo -n $EMSDK/node/*_64bit/bin)
+# make sure pnpm will be in the path
+export PATH=$(echo -n $EMSDK/node/*_64bit/bin):$PATH
 
 export CC_PGLITE
 
@@ -250,7 +251,8 @@ then
 
 fi
 
-
+if ${EXTRA_EXT:-true}
+then
     if echo " $*"|grep -q " vector"
     then
         echo "====================== vector : $(pwd) ================="
@@ -271,7 +273,7 @@ fi
             pushd pgvector
                 # path for wasm-shared already set to (pwd:pg build dir)/bin
                 # OPTFLAGS="" turns off arch optim (sse/neon).
-                PG_CONFIG=${PGROOT}/bin/pg_config emmake make OPTFLAGS="" install
+                PG_CONFIG=${PGROOT}/bin/pg_config emmake make OPTFLAGS="" install || exit 276
                 cp sql/vector.sql sql/vector--0.7.3.sql ${PGROOT}/share/postgresql/extension
                 rm ${PGROOT}/share/postgresql/extension/vector--?.?.?--?.?.?.sql ${PGROOT}/share/postgresql/extension/vector.sql
             popd
@@ -294,32 +296,16 @@ fi
     if echo " $*"|grep -q " quack"
     then
         echo "================================================="
-        ./cibuild/pg_quack.sh
+        ./cibuild/pg_quack.sh || exit 299
         cp $PGROOT/lib/libduckdb.so /tmp/
         python3 cibuild/pack_extension.py
     fi
-
+fi
 # ===========================================================================
 # ===========================================================================
 #                               PGLite
 # ===========================================================================
 # ===========================================================================
-
-
-
-
-# in pg git test mode we pull pglite instead
-if [ -d pglite ]
-then
-    # to get  pglite/postgres populated by web build
-    rmdir pglite/postgres pglite 2>/dev/null
-    if [ -d pglite ]
-    then
-        echo using local
-    else
-        git clone --no-tags --depth 1 --single-branch --branch pglite-build https://github.com/electric-sql/pglite pglite
-    fi
-fi
 
 
 # run this last so all extensions files can be packaged
@@ -404,8 +390,13 @@ do
 
         pglite-test) echo "================== pglite-test ========================="
             pushd ./packages/pglite
-            pnpm exec playwright install --with-deps
-            pnpm run test || exit 408
+            if pnpm exec playwright install --with-deps
+            then
+                pnpm run test || exit 395
+            else
+                echo "failed to install test env"
+                exit 398
+            fi
             popd
         ;;
 

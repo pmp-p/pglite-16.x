@@ -31,6 +31,7 @@ jobs:
       PGES6: true
       contrib: contrib
       OBJDUMP: true
+      TOTAL_MEMORY: 512MB
 
     steps:
       - uses: actions/checkout@v4
