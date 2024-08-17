@@ -42,6 +42,7 @@ jobs:
         working-directory: /
         run: |
           sudo apt-get install -y lz4 wget pv bash
+          sudo rm $(which node) $(which npm)
           echo https://github.com/pygame-web/python-wasm-sdk/releases/download/$SDK_VERSION/$SDK_ARCHIVE
           curl -sL --retry 5 https://github.com/pygame-web/python-wasm-sdk/releases/download/$SDK_VERSION/$SDK_ARCHIVE | tar xvP --use-compress-program=lz4 | pv -p -l -s 36000 >/dev/null
 
