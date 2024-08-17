@@ -98,7 +98,16 @@ export default defineConfig({
           { text: 'PGlite API', link: '/docs/api' },
           { text: 'Live Queries', link: '/docs/live-queries' },
           { text: 'Filesystems', link: '/docs/filesystems' },
-          { text: 'Framework Hooks', link: '/docs/framework-hooks' },
+          {
+            text: 'Framework Hooks',
+            link: '/react',
+            base: '/docs/framework-hooks',
+            collapsed: true,
+            items: [
+              { text: 'React', link: '/react' },
+              { text: 'Vue', link: '/vue' },
+            ],
+          },
           { text: 'Multi-tab Worker', link: '/docs/multi-tab-worker' },
           { text: 'REPL Component', link: '/docs/repl' },
           { text: 'ORM Support', link: '/docs/orm-support' },
@@ -129,6 +138,9 @@ export default defineConfig({
       message:
         'Dual-licensed under <a href="https://github.com/electric-sql/pglite/blob/main/LICENSE">Apache 2.0</a> and the <a href="https://github.com/electric-sql/pglite/blob/main/POSTGRES-LICENSE">PostgreSQL License</a>',
       copyright: '© <a href="https://electric-sql.com/">ElectricSQL</a>',
+    },
+    search: {
+      provider: 'local',
     },
   },
   vue: {
