@@ -1,5 +1,4 @@
 #include "/tmp/pgdebug.h"
-
 #define IDB_OK  0b11111110
 #define IDB_FAILED  0b0001
 #define IDB_CALLED  0b0010
@@ -592,11 +591,10 @@ pg_repl_raf(){
 
     is_repl = strlen(getenv("REPL")) && getenv("REPL")[0]=='Y';
     if (is_node) {
-
-
+JSDEBUG("pg_repl_raf(NODE)");
     }
     if (is_repl) {
-        PDEBUG("# 595: switching to REPL mode (raf)");
+ADEBUG("#598: pg_repl_raf(REPL)");
         repl = true;
         single_mode_feed = NULL;
         force_echo = true;
@@ -605,6 +603,11 @@ pg_repl_raf(){
     } else {
         PDEBUG("# 602: TODO: headless wire mode");
     }
+
+    if (is_node) {
+JSDEBUG("pg_repl_raf(NODE) EXIT!!!");
+    }
+
 }
 
 

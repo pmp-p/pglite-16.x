@@ -58,48 +58,36 @@ then
 #define WASM_USERNAME "$PGUSER"
 #define PGDEBUG 1
 #define PDEBUG(string) puts(string)
+#define JSDEBUG(string) {EM_ASM({ console.log(string); });}
+#define ADEBUG(string) { PDEBUG(string); JSDEBUG(string) }
 #endif
 END
 
 else
     export PGDEBUG=""
-    export CDEBUG="-g0 -Os"
+    export CDEBUG="-g0 -O2"
     cat > /tmp/pgdebug.h << END
 #ifndef I_PGDEBUG
 #define I_PGDEBUG
 #define WASM_USERNAME "$PGUSER"
 #define PDEBUG(string)
+#define JSDEBUG(string)
+#define ADEBUG(string)
 #define PGDEBUG 0
 #endif
 END
 fi
 
-# make sure CI pnpm will be in the path
-if which pnpm
-then
-    echo -n
-else
-    if which npm
-    then
-        npm init playwright@latest --force
-        npx playwright install
-        npm install -g pnpm@^8.0.0
-        pnpm create playwright
-        echo "
+echo "
 
-        PNPM : $(which pnpm)
         node : $(which node) $($(which node) -v)
+        PNPM : $(which pnpm)
 
-    "
-        export NPATH="/usr/local/bin"
-        export CIPNPM=true
-        export CIHOME=${HOME}
-    else
-        echo will use sdk bundled node18/npm/pnpm
-        export NPATH=""
-        export CIPNPM=false
-    fi
-fi
+
+
+
+"
+
 
 
 # setup compiler+node. emsdk provides node (18), recent enough for bun.
@@ -109,6 +97,7 @@ if ${WASI:-false}
 then
     echo "Wasi build (experimental)"
     . /opt/python-wasm-sdk/wasm32-wasi-shell.sh
+
 else
     if which emcc
     then
@@ -122,6 +111,10 @@ else
 
     Using provided emsdk from $(which emcc)
     Using PG_LINK=$PG_LINK as linker
+
+        node : $(which node) $($(which node) -v)
+        PNPM : $(which pnpm)
+
 
 "
 
@@ -154,9 +147,6 @@ else
 
     # store all pg options that have impact on cmd line initdb/boot
     cat > ${PGROOT}/pgopts.sh <<END
-export NPATH=$NPATH
-export CIHOME=$CIHOME
-export CIPNPM=$CIPNPM
 export PGOPTS="\\
  -c log_checkpoints=false \\
  -c dynamic_shared_memory_type=posix \\
@@ -216,7 +206,7 @@ fi
 
 # put wasm-shared the pg extension linker from build dir in the path
 # and also pg_config from the install dir.
-export PATH=${WORKSPACE}/build/postgres/bin:${PGROOT}/bin:$NPATH:$PATH
+export PATH=${WORKSPACE}/build/postgres/bin:${PGROOT}/bin:$PATH
 
 
 
@@ -411,6 +401,7 @@ do
         ;;
 
         pglite-repl) echo "=============== pglite-repl ================================"
+            PATH=$PATH:$PREFIX/bin
             pushd ./packages/repl
             pnpm install
             pnpm run build
@@ -418,20 +409,15 @@ do
         ;;
 
         pglite-test) echo "================== pglite-test ========================="
-            if $CIPNPM
-            then
-                export HOME=$CIHOME
-            fi
             echo "
-
+        node : $(which node) $($(which node) -v)
         PNPM : $(which pnpm)
-        CIPNPM=$CIPNPM
-        CIHOME=$CIHOME
-        PATH=$PATH
-        HOME=$HOME
-
 "
+            export PATH=$PATH:$(pwd)/node_modules/.bin
             pushd ./packages/pglite
+            #npm install -g concurrently playwright ava http-server pg-protocol serve tinytar buffer async-mutex 2>&1 > /dev/null
+            pnpm install --prefix .
+            pnpm run build
             if pnpm exec playwright install --with-deps
             then
                 pnpm run test || exit 429

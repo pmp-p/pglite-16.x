@@ -43,7 +43,9 @@ _pg_initdb
 _pg_shutdown
 _lowerstr
 _shmem_request_hook
+_CurrentMemoryContext
 _TopMemoryContext
+_error_context_stack
 _check_function_bodies
 _clock_gettime
 _shmem_startup_hook
