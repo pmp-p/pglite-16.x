@@ -174,8 +174,8 @@ interactive_one() {
     int packetlen;
     bool is_socket = false;
     bool is_wire = true;
-
     if (is_node && is_repl) {
+
         wait_unlock();
 
         if (!MyProcPort) {
@@ -222,7 +222,9 @@ interactive_one() {
     #define IO ((char *)(1))
 
     if (is_node && is_repl) {
+ADEBUG("# 225: tick-raf");
         if (access(PGS_ILOCK, F_OK) != 0) {
+            ADEBUG("# 179: tick-wire");
             packetlen = 0;
             FILE *fp;
             // TODO: lock file
@@ -419,7 +421,9 @@ interactive_one() {
     IO[0] = 0;
 
 incoming:
-
+#if PGDEBUG
+    #warning "exception handler off"
+#else
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)
 	{
         error_context_stack = NULL;
@@ -466,7 +470,7 @@ incoming:
         RESUME_INTERRUPTS();
         return;
     }
-
+#endif
 	PG_exception_stack = &local_sigjmp_buf;
 
 

@@ -50,7 +50,6 @@ _check_function_bodies
 _clock_gettime
 _shmem_startup_hook
 _stderr
-_setenv
 _readstoplist
 _searchstoplist""".split("\n"):
     if not sym in matches:

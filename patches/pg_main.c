@@ -1,4 +1,5 @@
 #include "/tmp/pgdebug.h"
+
 #define IDB_OK  0b11111110
 #define IDB_FAILED  0b0001
 #define IDB_CALLED  0b0010
@@ -414,7 +415,9 @@ PDEBUG("# 330");
      * were inside a transaction.
      */
 
-#if 1
+#if PGDEBUG
+    #warning "exception handler off"
+#else
     if (sigsetjmp(local_sigjmp_buf, 1) != 0)
     {
         /*
@@ -939,7 +942,9 @@ PDEBUG("784");
 
 exception_handler:
 
-#if 1
+#if PGDEBUG
+    #warning "exception handler off"
+#else
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)
 	{
 		error_context_stack = NULL;
