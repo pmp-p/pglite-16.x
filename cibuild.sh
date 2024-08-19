@@ -365,16 +365,7 @@ then
     # build web version
     echo "========== linkweb : $(pwd) =================="
     pushd build/postgres
-
-    . $WORKSPACE/cibuild/linkweb.sh
-
-    # upload all to gh pages,
-    # TODO: include node archive and samples ?
-    if $CI
-    then
-        mkdir -p /tmp/web/
-        cp -r $WEBROOT/* /tmp/web/
-    fi
+        . $WORKSPACE/cibuild/linkweb.sh
     popd
 fi
 
@@ -411,7 +402,7 @@ do
 
         pglite-repl) echo "=============== pglite-repl ================================"
             PATH=$PATH:$PREFIX/bin
-            pushd ./packages/repl
+            pushd ./packages/pglite-repl
             pnpm install
             pnpm run build
             popd

@@ -194,9 +194,12 @@ interactive_one() {
         // this could be pg_flush in sync mode.
         // but really we are writing socket data that was piled up previous frame.
         if (SOCKET_DATA>0) {
-
+if (!ClientAuthInProgress) {
             PDEBUG("# 193: end packet");
             ReadyForQuery(DestRemote);
+} else {
+    PDEBUG("# 201: end packet (ClientAuthInProgress - no rfq) ");
+}
 
             PDEBUG("# 196: flushing data");
             if (SOCKET_FILE)
