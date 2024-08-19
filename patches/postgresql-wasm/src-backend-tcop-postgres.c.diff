@@ -1,6 +1,6 @@
---- postgresql-16.3/src/backend/tcop/postgres.c
-+++ postgresql-16.3-wasm/src/backend/tcop/postgres.c
-@@ -3988,7 +3988,11 @@
+--- postgresql-16.4/src/backend/tcop/postgres.c
++++ postgresql-16.4-wasm/src/backend/tcop/postgres.c
+@@ -4052,7 +4052,11 @@
  #endif
  }
  
@@ -13,7 +13,7 @@
  /*
   * PostgresSingleUserMain
   *     Entry point for single user mode. argc/argv are the command line
-@@ -4884,7 +4888,7 @@
+@@ -4948,7 +4952,7 @@
  		}
  	}							/* end of input-reading loop */
  }
