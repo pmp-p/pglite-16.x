@@ -5,12 +5,7 @@ emcc $EMCC_WEB -fPIC -sMAIN_MODULE=1 -O0 \
  -sERROR_ON_UNDEFINED_SYMBOLS -sASSERTIONS=0 \
  -lnodefs.js -lidbfs.js \
  -sEXPORTED_RUNTIME_METHODS=FS,setValue,getValue,UTF8ToString,stringToNewUTF8,stringToUTF8OnStack,ccall,cwrap,callMain \
- --preload-file ${PGROOT}/share/postgresql@${PGROOT}/share/postgresql \
- --preload-file ${PGROOT}/lib/postgresql@${PGROOT}/lib/postgresql \
- --preload-file ${PGROOT}/password@${PGROOT}/password \
- --preload-file pgpass@${PGROOT}/pgpass \
- --preload-file placeholder@${PGROOT}/bin/postgres \
- --preload-file placeholder@${PGROOT}/bin/initdb \
+ $PGPRELOAD \
  -o postgres.html $PG_O $PG_L || exit 14
 
 echo "FULL:" > ${WORKSPACE}/build/sizes.log

@@ -1,6 +1,8 @@
 #define PDEBUG(string) puts(string)
 #include <unistd.h>  // access, unlink
 
+#include "interactive_one.h"
+
 static void pg_prompt() {
     fprintf(stdout,"pg> %c\n", 4);
 }
@@ -122,20 +124,23 @@ recv_password_packet(Port *port) {
 int md5Salt_len  = 4;
 char md5Salt[4];
 
-static void io_init() {
-        ClientAuthInProgress = false;
+static void io_init(bool in_auth, bool out_auth) {
+        ClientAuthInProgress = in_auth;
     	pq_init();					/* initialize libpq to talk to client */
     	whereToSendOutput = DestRemote; /* now safe to ereport to client */
         MyProcPort = (Port *) calloc(1, sizeof(Port));
         if (!MyProcPort) {
-            PDEBUG("      --------- NO CLIENT (oom) ---------");
+            PDEBUG("# 131 io_init   --------- NO CLIENT (oom) ---------");
             abort();
         }
         MyProcPort->canAcceptConnections = CAC_OK;
+        ClientAuthInProgress = out_auth;
 
         SOCKET_FILE = NULL;
         SOCKET_DATA = 0;
-        PDEBUG("      --------- CLIENT (ready) ---------");
+        PDEBUG("# 139 io_init  --------- CLIENT (ready) ---------");
+
+
 }
 
 static void wait_unlock() {
@@ -158,6 +163,7 @@ interactive_write(int size) {
     cma_rsize = size;
 }
 
+
 EMSCRIPTEN_KEEPALIVE int
 interactive_read() {
     return cma_wsize;
@@ -171,30 +177,33 @@ interactive_one() {
 	StringInfoData input_message;
 	StringInfoData *inBuf;
     FILE *stream ;
+    FILE *c_lock;
+    FILE *fp;
     int packetlen;
     bool is_socket = false;
     bool is_wire = true;
+
     if (is_node && is_repl) {
 
         wait_unlock();
 
         if (!MyProcPort) {
-            io_init();
+            io_init(false, false);
         }
 
-
         // this could be pg_flush in sync mode.
+        // but really we are writing socket data that was piled up previous frame.
         if (SOCKET_DATA>0) {
 
-            PDEBUG("end packet");
+            PDEBUG("# 193: end packet");
             ReadyForQuery(DestRemote);
 
-            PDEBUG("flushing data");
+            PDEBUG("# 196: flushing data");
             if (SOCKET_FILE)
                 fclose(SOCKET_FILE);
 
-            PDEBUG("setting lock");
-            FILE *c_lock;
+            PDEBUG("# 200: setting lock");
+
             c_lock = fopen(PGS_OLOCK, "w");
             fclose(c_lock);
             SOCKET_FILE = NULL;
@@ -202,10 +211,13 @@ interactive_one() {
             return;
         }
 
+
         if (!SOCKET_FILE) {
             SOCKET_FILE =  fopen(PGS_OUT,"w") ;
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
+
+
     } // is_node
 
 
@@ -221,17 +233,25 @@ interactive_one() {
 
     #define IO ((char *)(1))
 
+    // in web mode, client call the wire loop itself waiting synchronously for the results
+    // in repl mode, the wire loop polls a pseudo socket made from incoming and outgoing files.
+
     if (is_node && is_repl) {
-ADEBUG("# 225: tick-raf");
-        if (access(PGS_ILOCK, F_OK) != 0) {
-            ADEBUG("# 179: tick-wire");
+
+        // ready to read marker
+        if (access(PGS_ILOCK, R_OK) != 0) {
+
             packetlen = 0;
-            FILE *fp;
+
             // TODO: lock file
             fp = fopen(PGS_IN, "r");
+
+            // read as a socket.
             if (fp) {
                 fseek(fp, 0L, SEEK_END);
                 packetlen = ftell(fp);
+
+printf("# 250 : wire packetlen = %d\n", packetlen);
                 if (packetlen) {
                     whereToSendOutput = DestRemote;
                     resetStringInfo(inBuf);
@@ -243,6 +263,7 @@ ADEBUG("# 225: tick-raf");
                         rewind(fp);
 
                         if (!firstchar) {
+
                             pq_recvbuf_fill(fp, packetlen);
                             if (ProcessStartupPacket(MyProcPort, true, true) != STATUS_OK) {
                                 PDEBUG("ProcessStartupPacket !OK");
@@ -331,24 +352,16 @@ ADEBUG("# 225: tick-raf");
             //no use on node. usleep(10);
         }
 
-    } // is_node
+    } // is_node + is_repl
 
     if (cma_rsize) {
-//        PDEBUG("wire message !");
+        PDEBUG("wire message in cma buffer !");
         is_wire = true;
         is_socket = false;
         whereToSendOutput = DestRemote;
 
         if (!MyProcPort) {
-            ClientAuthInProgress = true;
-            pq_init();
-            MyProcPort = (Port *) calloc(1, sizeof(Port));
-            if (!MyProcPort) {
-                PDEBUG("      --------- NO CLIENT (oom) ---------");
-                abort();
-            }
-            MyProcPort->canAcceptConnections = CAC_OK;
-            ClientAuthInProgress = false;
+            io_init(true, false);
         }
 
         if (!SOCKET_FILE) {
@@ -421,7 +434,7 @@ ADEBUG("# 225: tick-raf");
     IO[0] = 0;
 
 incoming:
-#if PGDEBUG
+#if 0 //PGDEBUG
     #warning "exception handler off"
 #else
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)

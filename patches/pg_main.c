@@ -415,7 +415,7 @@ PDEBUG("# 330");
      * were inside a transaction.
      */
 
-#if PGDEBUG
+#if 0 //PGDEBUG
     #warning "exception handler off"
 #else
     if (sigsetjmp(local_sigjmp_buf, 1) != 0)
@@ -589,15 +589,32 @@ PDEBUG("# 330");
 /* ================================================================================ */
 /* ================================================================================ */
 
+
+extern int cma_rsize;
+
 EMSCRIPTEN_KEEPALIVE void
 pg_repl_raf(){
 
     is_repl = strlen(getenv("REPL")) && getenv("REPL")[0]=='Y';
     if (is_node) {
-JSDEBUG("pg_repl_raf(NODE)");
+        PDEBUG(WASM_PREFIX "/bin/postgres.js");
+        printf("cma_rsize was %d\n now set to 0\n", cma_rsize);
+        // force wire socket emulation
+        cma_rsize = 0;
+        if (!strcmp(getenv("_"), WASM_PREFIX "/bin/postgres.js")) {
+            while (1) {
+                interactive_one();
+            }
+            PDEBUG("# 1529 REPL:End Raising a 'RuntimeError Exception' to halt program NOW");
+            {
+                void (*npe)() = NULL;
+                npe();
+            }
+
+        }
     }
     if (is_repl) {
-ADEBUG("#598: pg_repl_raf(REPL)");
+PDEBUG("# 611: pg_repl_raf(REPL)");
         repl = true;
         single_mode_feed = NULL;
         force_echo = true;
@@ -608,7 +625,7 @@ ADEBUG("#598: pg_repl_raf(REPL)");
     }
 
     if (is_node) {
-JSDEBUG("pg_repl_raf(NODE) EXIT!!!");
+PDEBUG("# 622: pg_repl_raf(NODE) EXIT!!!");
     }
 
 }
@@ -942,7 +959,7 @@ PDEBUG("784");
 
 exception_handler:
 
-#if PGDEBUG
+#if 0 // PGDEBUG
     #warning "exception handler off"
 #else
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)
@@ -1521,9 +1538,7 @@ main(int argc, char **argv)
     // so it is repl
     main_repl(1);
     if (is_node) {
-        PDEBUG("# 1480: node-REPL sim web loop :" __FILE__);
         pg_repl_raf();
-        PDEBUG("# ? exit");
     }
     emscripten_force_exit(ret);
 	return ret;

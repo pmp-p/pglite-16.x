@@ -1,6 +1,6 @@
 --- postgresql-16.3/src/include/port/emscripten.h
 +++ postgresql-16.3-wasm/src/include/port/emscripten.h
-@@ -0,0 +1,333 @@
+@@ -0,0 +1,334 @@
 +/* src/include/port/emscripten.h */
 +
 +#ifndef I_EMSCRIPTEN
@@ -60,13 +60,6 @@
 +        "-c", "shared_buffers=128MB"
 +
 +
-+// socket emulation via file
-+#define PGS_ILOCK "/tmp/.s.PGSQL.5432.lock.in"
-+#define PGS_IN "/tmp/.s.PGSQL.5432.in"
-+
-+#define PGS_OLOCK "/tmp/.s.PGSQL.5432.lock.out"
-+#define PGS_OUT "/tmp/.s.PGSQL.5432.out"
-+
 +
 +#if defined(PREFIX)
 +#define em_xstr(s) em_str(s)
@@ -79,6 +72,14 @@
 +#   define PG_MAIN_INCLUDE "/data/git/pg/pg_main.c"
 +#   define PG_PLUGIN_INCLUDE "/data/git/pg/pg_plugin.h"
 +#endif
++
++// socket emulation via file, need to go in PGDATA for nodefs mount in web mode
++#define PGS_ILOCK "/tmp/pglite/base/.s.PGSQL.5432.lock.in"
++#define PGS_IN    "/tmp/pglite/base/.s.PGSQL.5432.in"
++#define PGS_OLOCK "/tmp/pglite/base/.s.PGSQL.5432.lock.out"
++#define PGS_OUT   "/tmp/pglite/base/.s.PGSQL.5432.out"
++
++// MEMFS ok files
 +
 +#define IDB_PIPE_FILE "/tmp/initdb.txt"
 +#define IDB_PIPE_BOOT "/tmp/initdb.boot.txt"
