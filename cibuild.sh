@@ -180,7 +180,7 @@ fi
 
 if $OBJDUMP
 then
-    mkdir -p patches/imports
+    mkdir -p patches/imports patches/imports.pgcore
 else
     echo "
 
