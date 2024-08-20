@@ -149,9 +149,9 @@ END
         # link with MAIN_MODULE=1 ( ie export all ) and extract all sym.
         . ${WORKSPACE}/cibuild/linkexport.sh
 
-        if [ -f ${WORKSPACE}/patches/exports.pglite ]
+        if [ -f ${WORKSPACE}/patches/exports/pgcore ]
         then
-            echo "PGLite can export $(wc -l ${WORKSPACE}/patches/exports.pglite) symbols"
+            echo "PGLite can export $(wc -l ${WORKSPACE}/patches/exports/pgcore) core symbols"
             . ${WORKSPACE}/cibuild/linkimports.sh
 
         else
@@ -177,7 +177,7 @@ _________________________________________________________
     fi
 
 
-    cat ${WORKSPACE}/patches/exports > exports
+    cat ${WORKSPACE}/patches/exports/pglite > exports
 
     # min
     # LINKER="-sMAIN_MODULE=2"

@@ -161,14 +161,19 @@ cma_rsize = 0;
 EMSCRIPTEN_KEEPALIVE void
 interactive_write(int size) {
     cma_rsize = size;
+    cma_wsize = 0;
 }
 
+/* TODO : prevent multiple write and write while reading ? */
 
 EMSCRIPTEN_KEEPALIVE int
 interactive_read() {
+/* should cma_rsize should be reset here ? */
     return cma_wsize;
 }
 
+volatile int sf_connected = 0;
+volatile bool sockfiles = false;
 
 EMSCRIPTEN_KEEPALIVE void
 interactive_one() {
@@ -192,27 +197,9 @@ interactive_one() {
         }
 
         // this could be pg_flush in sync mode.
-        // but really we are writing socket data that was piled up previous frame.
-        if (SOCKET_DATA>0) {
-if (!ClientAuthInProgress) {
-            PDEBUG("# 193: end packet");
-            ReadyForQuery(DestRemote);
-} else {
-    PDEBUG("# 201: end packet (ClientAuthInProgress - no rfq) ");
-}
-
-            PDEBUG("# 196: flushing data");
-            if (SOCKET_FILE)
-                fclose(SOCKET_FILE);
-
-            PDEBUG("# 200: setting lock");
-
-            c_lock = fopen(PGS_OLOCK, "w");
-            fclose(c_lock);
-            SOCKET_FILE = NULL;
-            SOCKET_DATA = 0;
-            return;
-        }
+        // but really we are writing socket data that was piled up previous frame async.
+        if (SOCKET_DATA>0)
+            goto wire_flush;
 
 
         if (!SOCKET_FILE) {
@@ -254,24 +241,31 @@ if (!ClientAuthInProgress) {
                 fseek(fp, 0L, SEEK_END);
                 packetlen = ftell(fp);
 
-printf("# 250 : wire packetlen = %d\n", packetlen);
+//printf("# 250 : wire packetlen = %d\n", packetlen);
                 if (packetlen) {
+                    sockfiles = true;
                     whereToSendOutput = DestRemote;
                     resetStringInfo(inBuf);
                     rewind(fp);
+                    /* peek on first char */
                     firstchar = getc(fp);
+                    rewind(fp);
+#define SOCKFILE 1
+                    pq_recvbuf_fill(fp, packetlen);
+#if PGDEBUG
+                    rewind(fp);
+#endif
 
-                    // first packet
+                    /* is it startup/auth packet ? */
                     if (!firstchar || (firstchar==112)) {
-                        rewind(fp);
+                        /* code is in handshake/auth domain so read whole msg now */
+                        //pq_recvbuf_fill(fp, packetlen);
 
                         if (!firstchar) {
-
-                            pq_recvbuf_fill(fp, packetlen);
                             if (ProcessStartupPacket(MyProcPort, true, true) != STATUS_OK) {
-                                PDEBUG("ProcessStartupPacket !OK");
+                                PDEBUG("# 274: ProcessStartupPacket !OK");
                             } else {
-                                PDEBUG("auth request");
+                                PDEBUG("# 276: auth request");
                                 //ClientAuthentication(MyProcPort);
     ClientAuthInProgress = true;
                                 md5Salt[0]=0x01;
@@ -288,9 +282,9 @@ printf("# 250 : wire packetlen = %d\n", packetlen);
                                     pq_flush();
                                 }
                             }
-                        }
+                        } // handshake
+
                         if (firstchar==112) {
-                            pq_recvbuf_fill(fp, packetlen);
                             char *passwd = recv_password_packet(MyProcPort);
                             printf("auth recv password: %s\n", "md5***" );
     ClientAuthInProgress = false;
@@ -310,8 +304,9 @@ printf("# 250 : wire packetlen = %d\n", packetlen);
                                 pq_sendint32(&buf, (int32) AUTH_REQ_OK);
                                 pq_endmessage(&buf);
                             }
+
                             BeginReportingGUCOptions();
-    pgstat_report_connect(MyDatabaseId);
+                            pgstat_report_connect(MyDatabaseId);
                             {
 	                            StringInfoData buf;
 	                            pq_beginmessage(&buf, 'K');
@@ -319,41 +314,52 @@ printf("# 250 : wire packetlen = %d\n", packetlen);
 	                            pq_sendint32(&buf, (int32) MyCancelKey);
 	                            pq_endmessage(&buf);
                             }
-                            PDEBUG("TODO: pg_main start flag");
 
-
-
-
-                        }
+PDEBUG("# 324 : TODO: set a pg_main started flag");
+                            sf_connected++;
+                        } // auth
                     } else {
-                        fprintf(stderr, "incoming=%d [%d, ", packetlen, firstchar);
+#if PGDEBUG
+                        fprintf(stderr, "# 331: CLI[%d] incoming=%d [%d, ", sf_connected, packetlen, firstchar);
                         for (int i=1;i<packetlen;i++) {
                             int b = getc(fp);
-                            if (i>4) {
-                                appendStringInfoChar(inBuf, (char)b);
+                            /* skip header (size uint32) */
+                            if (i>5) {
                                 fprintf(stderr, "%d, ", b);
                             }
                         }
                         fprintf(stderr, "]\n");
+#endif
                     }
-                    // when using lock
+                    // when using lock files
                     //ftruncate(filenum(fp), 0);
                 }
+/* FD CLEANUP */
                 fclose(fp);
                 unlink(PGS_IN);
+
                 if (packetlen) {
                     if (!firstchar || (firstchar==112)) {
-                        PDEBUG("auth/nego skip");
-                        return;
+                        PDEBUG("# 351: handshake/auth skip");
+                        goto wire_flush;
+//                        return;
                     }
 
+                    /* else it is wire msg */
+#if PGDEBUG
+printf("# 362 : node+repl is wire : %c\n", firstchar);
+                    force_echo = true;
+#endif
                     is_socket = true;
+                    is_wire = true;
                     whereToSendOutput = DestRemote;
+
                     goto incoming;
-                }
-            }
-            //no use on node. usleep(10);
-        }
+                } // wire msg
+
+            } // fp data read
+
+        } // ok lck
 
     } // is_node + is_repl
 
@@ -361,6 +367,7 @@ printf("# 250 : wire packetlen = %d\n", packetlen);
         PDEBUG("wire message in cma buffer !");
         is_wire = true;
         is_socket = false;
+        sockfiles = false;
         whereToSendOutput = DestRemote;
 
         if (!MyProcPort) {
@@ -486,18 +493,18 @@ incoming:
         RESUME_INTERRUPTS();
         return;
     }
-#endif
+
 	PG_exception_stack = &local_sigjmp_buf;
+#endif
+
+    if (force_echo) {
+        printf("# 524: wire=%d socket=%d repl=%c: %s", is_wire, is_socket, firstchar, inBuf->data);
+    }
 
 
     if (is_wire) {
-        /* wire on a socket */
-        if (is_socket) {
-            firstchar = SocketBackend(&input_message);
-        } else {
-            whereToSendOutput = DestRemote;
-            firstchar = SocketBackend(&input_message);
-        }
+        /* wire on a socket or cma */
+        firstchar = SocketBackend(inBuf);
 
     } else {
         /* nowire */
@@ -509,11 +516,9 @@ incoming:
         	firstchar = 'Q';
         }
 
-        if (is_repl) {
+        /* stdio node repl */
+        if (is_repl)
             whereToSendOutput = DestDebug;
-            if (force_echo && inBuf->len >2)
-                printf("# wire=%d socket=%d repl=%c: %s", is_wire, is_socket, firstchar, inBuf->data);
-        }
     }
 
     #include "pg_proto.c"
@@ -523,15 +528,37 @@ incoming:
 
     if (is_wire) {
 wire_flush:
-        cma_wsize = SOCKET_DATA;
         if (SOCKET_DATA>0) {
-            ReadyForQuery(DestRemote);
-            cma_wsize = SOCKET_DATA;
+            if (!ClientAuthInProgress) {
+                PDEBUG("# 529: end packet - sending rfq");
+                ReadyForQuery(DestRemote);
+            } else {
+                PDEBUG("# 532: end packet (ClientAuthInProgress - no rfq) ");
+            }
+
+            if (sockfiles) {
+                if (cma_wsize)
+                    puts("ERROR: cma was not flushed before socketfile interface");
+            } else {
+                /* wsize may have increased with previous rfq so assign here */
+                cma_wsize = SOCKET_DATA;
+            }
             if (SOCKET_FILE) {
                 fclose(SOCKET_FILE);
                 SOCKET_FILE = NULL;
                 SOCKET_DATA = 0;
+                if (cma_wsize)
+                    PDEBUG("# 551: cma and sockfile ???");
+                if (sockfiles) {
+                    PDEBUG("# 553: setting sockfile lock, ready to read");
+                    PDEBUG(PGS_OLOCK);
+                    c_lock = fopen(PGS_OLOCK, "w");
+                    fclose(c_lock);
+                }
             }
+
+        } else {
+            cma_wsize = 0;
         }
     }
 

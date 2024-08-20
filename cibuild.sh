@@ -42,10 +42,7 @@ fi
 
 export PGPASS
 
-if which wasm-objdump
-then
-    cp $(which wasm-objdump) $PGROOT/bin/
-fi
+
 
 # default to web/release size optim.
 if $DEBUG
@@ -79,11 +76,10 @@ END
 fi
 
 echo "
+System node/pnpm ( may interfer) :
 
-        node : $(which node) $($(which node) -v)
+        node : $(which node) $(which node && $(which node) -v)
         PNPM : $(which pnpm)
-
-
 
 
 "
@@ -144,6 +140,60 @@ export PGPRELOAD="\
 --preload-file placeholder@${PGROOT}/bin/initdb\
 "
 
+# ========================= symbol extractor ============================
+
+OBJDUMP=${OBJDUMP:-true}
+
+if $OBJDUMP
+then
+    if [ -f $PGROOT/bin/wasm-objdump ]
+    then
+        echo "wasm-objdump found"
+    else
+        WRAPPER=$(which wasm-objdump)
+        WASIFILE=$(realpath ${WRAPPER}.wasi)
+        if $WRAPPER -h $WASIFILE | grep -q 'file format wasm 0x1'
+        then
+            mkdir -p $PGROOT/bin/
+            if cp -f $WRAPPER $WASIFILE $PGROOT/bin/
+            then
+                echo "wasm-objdump found and working, and copied to $PGROOT/bin/"
+            else
+                OBJDUMP=false
+            fi
+        else
+            echo "
+        ERROR: $(which wasm-objdump) is not working properly ( is wasmtime ok ? )
+
+    "
+            OBJDUMP=false
+        fi
+    fi
+else
+    echo "
+
+    WARNING: OBJDUMP disabled, some newer or complex extensions may not load properly
+
+
+"
+fi
+
+if $OBJDUMP
+then
+    mkdir -p patches/imports
+else
+    echo "
+
+    WARNING:    wasm-objdump not found or OBJDUMP disabled, some extensions may not load properly
+
+
+"
+fi
+
+export OBJDUMP
+
+
+# ========================= pg core configuration ============================
 
 
 if [ -f ${WEBROOT}/postgres.js ]
@@ -400,19 +450,7 @@ do
             du -hs ${WEBROOT}/*
         ;;
 
-        pglite-repl) echo "=============== pglite-repl ================================"
-            PATH=$PATH:$PREFIX/bin
-            pushd ./packages/pglite-repl
-            pnpm install
-            pnpm run build
-            popd
-        ;;
-
         pglite-test) echo "================== pglite-test ========================="
-            echo "
-        node : $(which node) $($(which node) -v)
-        PNPM : $(which pnpm)
-"
             export PATH=$PATH:$(pwd)/node_modules/.bin
             pushd ./packages/pglite
             #npm install -g concurrently playwright ava http-server pg-protocol serve tinytar buffer async-mutex 2>&1 > /dev/null
