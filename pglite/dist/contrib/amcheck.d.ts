@@ -1,4 +1,4 @@
-import { P as PGliteInterface } from '../interface-PlMOR4rS.js';
+import { P as PGliteInterface } from '../interface-CWIZslPU.js';
 import '../types-CQTnnKLt.js';
 
 declare const amcheck: {

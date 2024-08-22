@@ -1,4 +1,4 @@
-import { F as Filesystem, D as DumpTarCompressionOptions } from './types-CQTnnKLt.js';
+import { F as Filesystem, D as DumpTarCompressionOptions } from './types-CQTnnKLt.cjs';
 
 declare let Buffer: BufferConstructor;
 
@@ -261,6 +261,7 @@ type PGliteInterface = {
     readonly closed: boolean;
     close(): Promise<void>;
     query<T>(query: string, params?: any[], options?: QueryOptions): Promise<Results<T>>;
+    sql<T>(sqlStrings: TemplateStringsArray, ...params: any[]): Promise<Results<T>>;
     exec(query: string, options?: QueryOptions): Promise<Array<Results>>;
     transaction<T>(callback: (tx: Transaction) => Promise<T>): Promise<T | undefined>;
     execProtocolRaw(message: Uint8Array, options?: ExecProtocolOptions): Promise<Uint8Array>;
@@ -290,6 +291,7 @@ type Results<T = {
 };
 interface Transaction {
     query<T>(query: string, params?: any[], options?: QueryOptions): Promise<Results<T>>;
+    sql<T>(sqlStrings: TemplateStringsArray, ...params: any[]): Promise<Results<T>>;
     exec(query: string, options?: QueryOptions): Promise<Array<Results>>;
     rollback(): Promise<void>;
     get closed(): boolean;

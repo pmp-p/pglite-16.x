@@ -1,4 +1,4 @@
-import { a as PGliteOptions, P as PGliteInterface, b as PGliteInterfaceExtensions, D as DebugLevel, Q as QueryOptions, R as Results, T as Transaction, B as BackendMessage } from '../interface-PlMOR4rS.js';
+import { a as PGliteOptions, P as PGliteInterface, b as PGliteInterfaceExtensions, D as DebugLevel, Q as QueryOptions, R as Results, T as Transaction, B as BackendMessage } from '../interface-CWIZslPU.js';
 import '../types-CQTnnKLt.js';
 
 type PGliteWorkerOptions = PGliteOptions & {
@@ -51,6 +51,24 @@ declare class PGliteWorker implements PGliteInterface, AsyncDisposable {
      * @returns The result of the query
      */
     query<T>(query: string, params?: any[], options?: QueryOptions): Promise<Results<T>>;
+    /**
+     * Execute a single SQL statement like with {@link PGlite.query}, but with a
+     * templated statement where template values will be treated as parameters.
+     *
+     * You can use helpers from `/template` to further format the query with
+     * identifiers, raw SQL, and nested statements.
+     *
+     * This uses the "Extended Query" postgres wire protocol message.
+     *
+     * @param query The query to execute with parameters as template values
+     * @returns The result of the query
+     *
+     * @example
+     * ```ts
+     * const results = await db.sql`SELECT * FROM ${identifier`foo`} WHERE id = ${id}`
+     * ```
+     */
+    sql<T>(sqlStrings: TemplateStringsArray, ...params: any[]): Promise<Results<T>>;
     /**
      * Execute a SQL query, this can have multiple statements.
      * This uses the "Simple Query" postgres wire protocol message.

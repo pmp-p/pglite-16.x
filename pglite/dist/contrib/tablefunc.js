@@ -1,2 +1,2 @@
-import{i as e}from"../chunk-TTNLE7CV.js";e();var t=async(n,s)=>({bundlePath:new URL("..//tablefunc.tar.gz",import.meta.url)}),r={name:"tablefunc",setup:t};export{r as tablefunc};
+import{i as e}from"../chunk-Y3AVQXKT.js";e();var t=async(n,s)=>({bundlePath:new URL("..//tablefunc.tar.gz",import.meta.url)}),r={name:"tablefunc",setup:t};export{r as tablefunc};
 //# sourceMappingURL=tablefunc.js.map

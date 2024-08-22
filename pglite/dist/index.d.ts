@@ -1,6 +1,6 @@
 import { F as Filesystem, P as PostgresMod, D as DumpTarCompressionOptions, a as FilesystemBase, b as FS } from './types-CQTnnKLt.js';
-import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, b as PGliteInterfaceExtensions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, B as BackendMessage$1, c as ParserOptions, d as Buffer } from './interface-PlMOR4rS.js';
-export { j as DumpDataDirResult, h as Extension, g as ExtensionSetup, f as ExtensionSetupResult, i as Extensions, F as FilesystemType, k as Row, e as RowMode, m as messages } from './interface-PlMOR4rS.js';
+import { P as PGliteInterface, D as DebugLevel, a as PGliteOptions, b as PGliteInterfaceExtensions, Q as QueryOptions, R as Results, T as Transaction, E as ExecProtocolOptions, B as BackendMessage$1, c as ParserOptions, d as Buffer } from './interface-CWIZslPU.js';
+export { j as DumpDataDirResult, h as Extension, g as ExtensionSetup, f as ExtensionSetupResult, i as Extensions, F as FilesystemType, k as Row, e as RowMode, m as messages } from './interface-CWIZslPU.js';
 
 declare class PGlite implements PGliteInterface, AsyncDisposable {
     #private;
@@ -64,6 +64,24 @@ declare class PGlite implements PGliteInterface, AsyncDisposable {
      * @returns The result of the query
      */
     query<T>(query: string, params?: any[], options?: QueryOptions): Promise<Results<T>>;
+    /**
+     * Execute a single SQL statement like with {@link PGlite.query}, but with a
+     * templated statement where template values will be treated as parameters.
+     *
+     * You can use helpers from `/template` to further format the query with
+     * identifiers, raw SQL, and nested statements.
+     *
+     * This uses the "Extended Query" postgres wire protocol message.
+     *
+     * @param query The query to execute with parameters as template values
+     * @returns The result of the query
+     *
+     * @example
+     * ```ts
+     * const results = await db.sql`SELECT * FROM ${identifier`foo`} WHERE id = ${id}`
+     * ```
+     */
+    sql<T>(sqlStrings: TemplateStringsArray, ...params: any[]): Promise<Results<T>>;
     /**
      * Execute a SQL query, this can have multiple statements.
      * This uses the "Simple Query" postgres wire protocol message.

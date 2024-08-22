@@ -1,4 +1,4 @@
-import { R as Results, P as PGliteInterface } from '../interface-PlMOR4rS.js';
+import { R as Results, P as PGliteInterface } from '../interface-CWIZslPU.js';
 import '../types-CQTnnKLt.js';
 
 interface LiveNamespace {

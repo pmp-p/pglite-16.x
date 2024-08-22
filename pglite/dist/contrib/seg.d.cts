@@ -1,4 +1,4 @@
-import { P as PGliteInterface } from '../interface-ByZj4XjO.cjs';
+import { P as PGliteInterface } from '../interface-BGC_QhTm.cjs';
 import '../types-CQTnnKLt.cjs';
 
 declare const seg: {

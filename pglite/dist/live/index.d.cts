@@ -1,4 +1,4 @@
-import { R as Results, P as PGliteInterface } from '../interface-ByZj4XjO.cjs';
+import { R as Results, P as PGliteInterface } from '../interface-BGC_QhTm.cjs';
 import '../types-CQTnnKLt.cjs';
 
 interface LiveNamespace {
