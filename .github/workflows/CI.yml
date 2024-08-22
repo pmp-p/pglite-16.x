@@ -48,7 +48,7 @@ jobs:
 
       - name: Build postgres WASM via emsdk
         run: |
-          bash ./cibuild.sh vector contrib node linkweb pglite-all
+          bash ./cibuild.sh vector contrib node linkweb pglite
 
       - name : "Upload to GitHub pages"
         uses: JamesIves/github-pages-deploy-action@v4.4.1
