@@ -28,15 +28,17 @@ CC_PGLITE=$CC_PGLITE
         fi
     fi
 
-
-# TODO: fix sdk to support --with-uuid=ossp
+# TODO: --with-libxml    xml2 >= 2.6.23
+# TODO: --with-libxslt   add to sdk
+#  --disable-atomics https://github.com/WebAssembly/threads/pull/147  "Allow atomic operations on unshared memories"
 
     CNF="${PGSRC}/configure --prefix=${PGROOT} \
+   XML2_CONFIG=$PREFIX/bin/xml2-config \
  --cache-file=${PGROOT}/config.cache.emsdk \
- --disable-spinlocks --disable-atomics \
+ --disable-spinlocks \
  --without-zlib --disable-largefile --without-llvm \
  --without-pam --disable-largefile --without-zlib --with-openssl=no \
- --without-readline --without-icu --with-uuid=ossp \
+ --without-readline --without-icu --with-libxml --with-uuid=ossp \
  ${PGDEBUG}"
 
     echo "  ==== building wasm MVP:$MVP Debug=${PGDEBUG} with opts : $@  == "
