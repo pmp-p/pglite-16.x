@@ -1,8 +1,8 @@
-const test = require('ava')
-const { PGlite } = require('../dist/index.cjs')
-const { vector } = require('../dist/vector/index.cjs')
+import { assertEquals } from 'https://deno.land/std@0.202.0/testing/asserts.ts'
+import { PGlite } from '@electric-sql/pglite'
+import { vector } from '@electric-sql/pglite/vector'
 
-test('pgvector cjs', async (t) => {
+Deno.test('pgvector', async () => {
   const pg = new PGlite({
     extensions: {
       vector,
@@ -29,7 +29,7 @@ test('pgvector cjs', async (t) => {
     FROM test;
   `)
 
-  t.deepEqual(res, [
+  assertEquals(res, [
     {
       rows: [
         {

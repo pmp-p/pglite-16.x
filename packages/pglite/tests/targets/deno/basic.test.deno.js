@@ -1,7 +1,10 @@
-const test = require('ava')
-const { PGlite } = require('../dist/index.cjs')
+import {
+  assertEquals,
+  assertRejects,
+} from 'https://deno.land/std@0.202.0/testing/asserts.ts'
+import { PGlite } from '@electric-sql/pglite'
 
-test('basic exec cjs', async (t) => {
+Deno.test('basic exec', async () => {
   const db = new PGlite()
   await db.exec(`
     CREATE TABLE IF NOT EXISTS test (
@@ -14,9 +17,9 @@ test('basic exec cjs', async (t) => {
     INSERT INTO test (name) VALUES ('test');
     UPDATE test SET name = 'test2';
     SELECT * FROM test;
-`)
+  `)
 
-  t.deepEqual(multiStatementResult, [
+  assertEquals(multiStatementResult, [
     {
       rows: [],
       fields: [],
@@ -36,7 +39,7 @@ test('basic exec cjs', async (t) => {
   ])
 })
 
-test('basic query cjs', async (t) => {
+Deno.test('basic query', async () => {
   const db = new PGlite()
   await db.query(`
     CREATE TABLE IF NOT EXISTS test (
@@ -49,7 +52,7 @@ test('basic query cjs', async (t) => {
     SELECT * FROM test;
   `)
 
-  t.deepEqual(selectResult, {
+  assertEquals(selectResult, {
     rows: [
       {
         id: 1,
@@ -70,14 +73,14 @@ test('basic query cjs', async (t) => {
   })
 
   const updateResult = await db.query("UPDATE test SET name = 'test2';")
-  t.deepEqual(updateResult, {
+  assertEquals(updateResult, {
     rows: [],
     fields: [],
     affectedRows: 1,
   })
 })
 
-test('basic types cjs', async (t) => {
+Deno.test('basic types', async () => {
   const db = new PGlite()
   await db.query(`
     CREATE TABLE IF NOT EXISTS test (
@@ -129,7 +132,7 @@ test('basic types cjs', async (t) => {
     SELECT * FROM test;
   `)
 
-  t.like(res, {
+  assertEquals(res, {
     rows: [
       {
         id: 1,
@@ -139,6 +142,7 @@ test('basic types cjs', async (t) => {
         bigint: 9223372036854775807n,
         bool: true,
         date: new Date('2021-01-01T00:00:00.000Z'),
+        timestamp: new Date('2021-01-01T12:00:00.000Z'),
         json: { test: 'test' },
         blob: Uint8Array.from([1, 2, 3]),
         array_text: ['test1', 'test2', 'test,3'],
@@ -217,13 +221,13 @@ test('basic types cjs', async (t) => {
   })
 
   // standardize timestamp comparison to UTC milliseconds to ensure predictable test runs on machines in different timezones.
-  t.deepEqual(
+  assertEquals(
     res.rows[0].timestamp.getUTCMilliseconds(),
     new Date('2021-01-01T12:00:00.000Z').getUTCMilliseconds(),
   )
 })
 
-test('basic params cjs', async (t) => {
+Deno.test('basic params', async () => {
   const db = new PGlite()
   await db.query(`
     CREATE TABLE IF NOT EXISTS test (
@@ -236,7 +240,7 @@ test('basic params cjs', async (t) => {
     SELECT * FROM test;
   `)
 
-  t.deepEqual(res, {
+  assertEquals(res, {
     rows: [
       {
         id: 1,
@@ -257,19 +261,18 @@ test('basic params cjs', async (t) => {
   })
 })
 
-test('basic error cjs', async (t) => {
+Deno.test('basic error', async () => {
   const db = new PGlite()
-  await t.throwsAsync(
+  await assertRejects(
     async () => {
       await db.query('SELECT * FROM test;')
     },
-    {
-      message: 'relation "test" does not exist',
-    },
+    Error,
+    'relation "test" does not exist',
   )
 })
 
-test('basic transaction cjs', async (t) => {
+Deno.test('basic transaction', async () => {
   const db = new PGlite()
   await db.query(`
     CREATE TABLE IF NOT EXISTS test (
@@ -283,7 +286,7 @@ test('basic transaction cjs', async (t) => {
     const res = await tx.query(`
       SELECT * FROM test;
     `)
-    t.deepEqual(res, {
+    assertEquals(res, {
       rows: [
         {
           id: 1,
@@ -311,7 +314,7 @@ test('basic transaction cjs', async (t) => {
   const res = await db.query(`
     SELECT * FROM test;
   `)
-  t.deepEqual(res, {
+  assertEquals(res, {
     rows: [
       {
         id: 1,
@@ -332,7 +335,7 @@ test('basic transaction cjs', async (t) => {
   })
 })
 
-test('basic copy to/from blob cjs', async (t) => {
+Deno.test('basic copy to/from blob', async () => {
   const db = new PGlite()
   await db.exec(`
     CREATE TABLE IF NOT EXISTS test (
@@ -345,7 +348,7 @@ test('basic copy to/from blob cjs', async (t) => {
   // copy to
   const ret = await db.query("COPY test TO '/dev/blob' WITH (FORMAT csv);")
   const csv = await ret.blob.text()
-  t.is(csv, '1,test\n2,test2\n')
+  assertEquals(csv, '1,test\n2,test2\n')
 
   // copy from
   const blob2 = new Blob([csv])
@@ -361,7 +364,7 @@ test('basic copy to/from blob cjs', async (t) => {
   const res = await db.query(`
     SELECT * FROM test2;
   `)
-  t.deepEqual(res, {
+  assertEquals(res, {
     rows: [
       {
         id: 1,
@@ -386,7 +389,7 @@ test('basic copy to/from blob cjs', async (t) => {
   })
 })
 
-test('basic close cjs', async (t) => {
+Deno.test('basic close', async () => {
   const db = new PGlite()
   await db.query(`
     CREATE TABLE IF NOT EXISTS test (
@@ -396,12 +399,11 @@ test('basic close cjs', async (t) => {
   `)
   await db.query("INSERT INTO test (name) VALUES ('test');")
   await db.close()
-  await t.throwsAsync(
+  await assertRejects(
     async () => {
       await db.query('SELECT * FROM test;')
     },
-    {
-      message: 'PGlite is closed',
-    },
+    Error,
+    'PGlite is closed',
   )
 })

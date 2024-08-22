@@ -13,7 +13,7 @@ export DEBUG=${DEBUG:-false}
 export PGDATA=${PGROOT}/base
 export PGUSER=${PGUSER:-postgres}
 export PGPATCH=${WORKSPACE}/patches
-export TOTAL_MEMORY=${TOTAL_MEMORY:-256MB}
+export TOTAL_MEMORY=${TOTAL_MEMORY:-128MB}
 
 # exit on error
 EOE=false
@@ -41,8 +41,6 @@ else
 fi
 
 export PGPASS
-
-
 
 # default to web/release size optim.
 if $DEBUG
@@ -128,7 +126,6 @@ else
     CC_PGLITE="-DPATCH_PLUGIN=${WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
 
 fi
-
 
 export CC_PGLITE
 export PGPRELOAD="\
