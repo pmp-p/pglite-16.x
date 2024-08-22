@@ -1,5 +1,5 @@
---- postgresql-16.4/src/backend/postmaster/postmaster.c
-+++ postgresql-16.4-wasm/src/backend/postmaster/postmaster.c
+--- postgresql/src/backend/postmaster/postmaster.c
++++ postgresql-wasm/src/backend/postmaster/postmaster.c
 @@ -422,7 +422,8 @@
  static void ExitPostmaster(int status) pg_attribute_noreturn();
  static int	ServerLoop(void);

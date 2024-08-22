@@ -1,5 +1,5 @@
---- postgresql-16.4/src/backend/libpq/pqcomm.c
-+++ postgresql-16.4-wasm/src/backend/libpq/pqcomm.c
+--- postgresql/src/backend/libpq/pqcomm.c
++++ postgresql-wasm/src/backend/libpq/pqcomm.c
 @@ -123,8 +123,12 @@
  static int	PqSendBufferSize;	/* Size send buffer */
  static int	PqSendPointer;		/* Next index to store a byte in PqSendBuffer */

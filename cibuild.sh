@@ -351,7 +351,7 @@ then
             pushd pgvector
                 # path for wasm-shared already set to (pwd:pg build dir)/bin
                 # OPTFLAGS="" turns off arch optim (sse/neon).
-                PG_CONFIG=${PGROOT}/bin/pg_config emmake make OPTFLAGS="" install || exit 276
+                PG_CONFIG=${PGROOT}/bin/pg_config emmake make OPTFLAGS="" install || exit 354
                 cp sql/vector.sql sql/vector--0.7.3.sql ${PGROOT}/share/postgresql/extension
                 rm ${PGROOT}/share/postgresql/extension/vector--?.?.?--?.?.?.sql ${PGROOT}/share/postgresql/extension/vector.sql
             popd
@@ -366,7 +366,7 @@ then
     then
         echo "======================= postgis : $(pwd) ==================="
 
-        ./cibuild/postgis.sh
+        ./cibuild/postgis.sh || exit 369
 
         python3 cibuild/pack_extension.py
     fi
@@ -374,7 +374,7 @@ then
     if echo " $*"|grep -q " quack"
     then
         echo "================================================="
-        ./cibuild/pg_quack.sh || exit 299
+        ./cibuild/pg_quack.sh || exit 377
         cp $PGROOT/lib/libduckdb.so /tmp/
         python3 cibuild/pack_extension.py
     fi
@@ -431,20 +431,67 @@ do
             # TODO: SAMs NOTE - Not using this in GitHub action as it doesnt resolve pnpm correctly
             # replaced with pglite-prep and pglite-bundle-sdk
 
-            . cibuild/pglite-ts.sh
+            pushd ${PGLITE}
+                pnpm install --frozen-lockfile
 
-            # copy needed files for a minimal js/ts/extension build
-            # NB: ext can't use NODE FS if main not linked with -lnodefs.js -lidbfs.js
+                mkdir -p $PGLITE/release
+                rm $PGLITE/release/* 2>/dev/null
+
+                # move packed extensions
+                mv ${WEBROOT}/*.tar.gz ${PGLITE}/release/
+
+                # copy wasm web prebuilt artifacts to release folder
+                # TODO: get them from web for nosdk systems.
+
+                cp ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
+
+                # debug CI does not use pnpm/npm for building pg, so call the typescript build
+                # part from here
+                pnpm run build:js || exit 450
+
+                mkdir -p /tmp/sdk
+                pnpm pack || exit 31
+                packed=$(echo -n electric-sql-pglite-*.tgz)
+
+                mv $packed /tmp/sdk/pg${PGVERSION}-${packed}
+
+                # for repl demo
+                mkdir -p /tmp/web/pglite
+                cp -r ${PGLITE}/dist ${WEBROOT}/pglite/
+                cp -r ${PGLITE}/examples ${WEBROOT}/pglite/
+
+                for dir in /tmp/web ${WEBROOT}/pglite/examples
+                do
+                    pushd "$dir"
+                    cp ${PGLITE}/dist/postgres.data ./
+                    popd
+                done
+
+                echo "<html>
+                <body>
+                    <ul>
+                        <li><a href=./pglite/examples/repl.html>PGlite REPL (in-memory)</a></li>
+                        <li><a href=./pglite/examples/repl-idb.html>PGlite REPL (indexedDB)</a></li>
+                        <li><a href=./pglite/examples/notify.html>list/notify test</a></li>
+                        <li><a href=./pglite/examples/index.html>All PGlite Examples</a></li>
+                        <li><a href=./pglite/benchmark/index.html>Benchmarks</a> / <a href=./pglite/benchmark/rtt.html>RTT Benchmarks</a></li>
+                        <li><a href=./postgres.html>Postgres xterm REPL</a></li>
+                    </ul>
+                </body>
+                </html>" > ${WEBROOT}/index.html
+
+            popd
 
             mkdir -p ${PGROOT}/sdk/packages/ /tmp/web/pglite /tmp/web/repl/
             cp -r $PGLITE ${PGROOT}/sdk/packages/
 
-            mkdir /tmp/web/repl/dist-webcomponent -p
-            cp -r ${WORKSPACE}/packages/repl/dist-webcomponent /tmp/web/repl/
+            #mkdir /tmp/web/repl/dist-webcomponent -p
+            #cp -r ${WORKSPACE}/packages/pglite-repl/dist-webcomponent /tmp/web/repl/
 
             if $CI
             then
                 tar -cpRz ${PGROOT} > /tmp/sdk/pglite-pg${PGVERSION}.tar.gz
+                cp /tmp/sdk/pglite-pg${PGVERSION}.tar.gz ${WEBROOT}/
             fi
 
             du -hs ${WEBROOT}/*
