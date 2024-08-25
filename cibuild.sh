@@ -4,8 +4,13 @@
 # expressed in EMSDK MB
 export CMA_MB=${CMA_MB:-64}
 
-export PG_VERSION=${PG_VERSION:-16.4}
 export CI=${CI:-false}
+if $CI
+then
+    . .buildconfig
+fi
+
+export PG_VERSION=${PG_VERSION:-16.4}
 export WORKSPACE=${GITHUB_WORKSPACE:-$(pwd)}
 export PGROOT=${PGROOT:-/tmp/pglite}
 export WEBROOT=${WEBROOT:-/tmp/web}
