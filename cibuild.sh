@@ -492,7 +492,7 @@ do
 
             if $CI
             then
-                tar -cpRz ${PGROOT} > /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz
+                tar -cpRz /tmp/pdebug.h ${PGROOT} > /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz
                 cp /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz ${WEBROOT}/
             fi
 
