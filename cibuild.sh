@@ -4,7 +4,7 @@
 # expressed in EMSDK MB
 export CMA_MB=${CMA_MB:-64}
 
-export PGVERSION=${PGVERSION:-16.3}
+export PG_VERSION=${PG_VERSION:-16.4}
 export CI=${CI:-false}
 export WORKSPACE=${GITHUB_WORKSPACE:-$(pwd)}
 export PGROOT=${PGROOT:-/tmp/pglite}
@@ -241,7 +241,7 @@ END
     # to get same path for wasm-shared link tool in the path
     # for extensions building.
     # we always symlink in-tree build to "postgresql" folder
-    if echo $PGVERSION|grep -q ^16
+    if echo $PG_VERSION|grep -q ^16
     then
         . cibuild/pg-16.x.sh
     else
@@ -397,7 +397,7 @@ then
     rm ${PGROOT}/lib/lib*.so.? 2>/dev/null
     if $CI
     then
-        tar -cpRz ${PGROOT} > /tmp/sdk/postgres-${PGVERSION}.tar.gz
+        tar -cpRz ${PGROOT} > /tmp/sdk/postgres-${PG_VERSION}.tar.gz
     fi
 fi
 
@@ -450,7 +450,7 @@ do
                 pnpm pack || exit 31
                 packed=$(echo -n electric-sql-pglite-*.tgz)
 
-                mv $packed /tmp/sdk/pg${PGVERSION}-${packed}
+                mv $packed /tmp/sdk/pg${PG_VERSION}-${packed}
 
                 # for repl demo
                 mkdir -p /tmp/web/pglite
@@ -487,8 +487,8 @@ do
 
             if $CI
             then
-                tar -cpRz ${PGROOT} > /tmp/sdk/pglite-pg${PGVERSION}.tar.gz
-                cp /tmp/sdk/pglite-pg${PGVERSION}.tar.gz ${WEBROOT}/
+                tar -cpRz ${PGROOT} > /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz
+                cp /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz ${WEBROOT}/
             fi
 
             du -hs ${WEBROOT}/*
@@ -520,7 +520,7 @@ do
         ;;
 
         pglite-bundle-interim) echo "================== pglite-bundle-interim ======================"
-            tar -cpRz ${PGLITE}/release > /tmp/sdk/pglite-interim-${PGVERSION}.tar.gz
+            tar -cpRz ${PGLITE}/release > /tmp/sdk/pglite-interim-${PG_VERSION}.tar.gz
         ;;
 
         demo-site) echo "==================== demo-site =========================="

@@ -1,9 +1,9 @@
 --- postgresql/src/backend/tcop/postgres.c
 +++ postgresql-wasm/src/backend/tcop/postgres.c
-@@ -4052,7 +4052,11 @@
+@@ -3988,7 +3988,11 @@
  #endif
  }
- 
+
 -
 +#if defined(__EMSCRIPTEN__) || defined(__wasi__)
 +#define PG_MAIN

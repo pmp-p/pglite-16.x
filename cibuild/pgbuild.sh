@@ -38,7 +38,7 @@ CC_PGLITE=$CC_PGLITE
  --disable-spinlocks \
  --without-zlib --disable-largefile --without-llvm \
  --without-pam --disable-largefile --without-zlib --with-openssl=no \
- --without-readline --without-icu --with-libxml --with-uuid=ossp \
+ --without-readline --without-icu --with-libxml --with-libxslt --with-uuid=ossp \
  ${PGDEBUG}"
 
     echo "  ==== building wasm MVP:$MVP Debug=${PGDEBUG} with opts : $@  == "

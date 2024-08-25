@@ -1,6 +1,6 @@
 --- postgresql/src/backend/catalog/index.c
 +++ postgresql-wasm/src/backend/catalog/index.c
-@@ -2995,7 +2995,7 @@
+@@ -2994,7 +2994,7 @@
  		indexInfo->ii_ParallelWorkers =
  			plan_create_index_workers(RelationGetRelid(heapRelation),
  									  RelationGetRelid(indexRelation));

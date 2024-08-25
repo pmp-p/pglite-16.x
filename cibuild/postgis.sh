@@ -1,4 +1,6 @@
 
+mkdir -p build
+
 pushd build
     if [ -d postgis-3.4.2 ]
     then
@@ -9,7 +11,7 @@ pushd build
     fi
 popd
 
-if ${CI:-false}
+if which emcc
 then
     echo -n
 else
