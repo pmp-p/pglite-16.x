@@ -40,12 +40,14 @@ else
     XSLT="--with-libxslt"
 fi
 
+# --with-libxml does not fit with --without-zlib
+
     CNF="${PGSRC}/configure --prefix=${PGROOT} \
    XML2_CONFIG=$PREFIX/bin/xml2-config \
  --cache-file=${PGROOT}/config.cache.emsdk \
  --disable-spinlocks \
- --without-zlib --disable-largefile --without-llvm \
- --without-pam --disable-largefile --without-zlib --with-openssl=no \
+ --disable-largefile --without-llvm \
+ --without-pam --disable-largefile --with-openssl=no \
  --without-readline --without-icu --with-libxml ${XSLT} --with-uuid=ossp \
  ${PGDEBUG}"
 

@@ -929,7 +929,9 @@ ___wasm_setjmp
 ___wasm_setjmp_test
 ___xmlOutputBufferCreateFilename
 ___xmlParserInputBufferCreateFilename
+__dist_code
 __exit
+__length_code
 _abort
 _access
 _acos
@@ -1921,3 +1923,6 @@ _xmlXPathSubstringFunction
 _xmlXPathSumFunction
 _xmlXPathTranslateFunction
 _xmlXPathTrueFunction
+_z_errmsg
+_zcalloc
+_zcfree

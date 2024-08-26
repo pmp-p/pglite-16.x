@@ -5,6 +5,7 @@
 export CMA_MB=${CMA_MB:-64}
 
 export CI=${CI:-false}
+
 if $CI
 then
     . .buildconfig
@@ -212,8 +213,8 @@ END
 END
     fi
 
-    mkdir -p ${PGROOT}/include/postgresql ${PGROOT}/include/postgresql/server
-    cp ${PG_DEBUG_HEADER}
+    mkdir -p ${PGROOT}/include/postgresql/server
+    cp ${PG_DEBUG_HEADER} ${PGROOT}/include/
     cp ${PG_DEBUG_HEADER} ${PGROOT}/include/postgresql
     cp ${PG_DEBUG_HEADER} ${PGROOT}/include/postgresql/server
 
