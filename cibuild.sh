@@ -47,36 +47,9 @@ fi
 
 export PGPASS
 
-# default to web/release size optim.
-if $DEBUG
-then
-    export PGDEBUG=""
-    export CDEBUG="-g0 -O0"
-    cat > /tmp/pgdebug.h << END
-#ifndef I_PGDEBUG
-#define I_PGDEBUG
-#define WASM_USERNAME "$PGUSER"
-#define PGDEBUG 1
-#define PDEBUG(string) puts(string)
-#define JSDEBUG(string) {EM_ASM({ console.log(string); });}
-#define ADEBUG(string) { PDEBUG(string); JSDEBUG(string) }
-#endif
-END
 
-else
-    export PGDEBUG=""
-    export CDEBUG="-g0 -O2"
-    cat > /tmp/pgdebug.h << END
-#ifndef I_PGDEBUG
-#define I_PGDEBUG
-#define WASM_USERNAME "$PGUSER"
-#define PDEBUG(string)
-#define JSDEBUG(string)
-#define ADEBUG(string)
-#define PGDEBUG 0
-#endif
-END
-fi
+export PG_DEBUG_HEADER="${PGROOT}/include/pg_debug.h"
+
 
 echo "
 System node/pnpm ( may interfer) :
@@ -129,7 +102,7 @@ else
     CC_PGLITE="-DPATCH_MAIN=${WORKSPACE}/patches/pg_main.c ${CC_PGLITE}"
     CC_PGLITE="-DPATCH_LOOP=${WORKSPACE}/patches/interactive_one.c ${CC_PGLITE}"
     CC_PGLITE="-DPATCH_PLUGIN=${WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
-
+    CC_PGLITE="-DPATCH_PG_DEBUG=${PG_DEBUG_HEADER} ${CC_PGLITE}"
 fi
 
 export CC_PGLITE
@@ -205,6 +178,44 @@ then
     . ${PGROOT}/pgopts.sh
 
 else
+
+    # default to web/release size optim.
+
+    mkdir -p ${PGROOT}/include
+    if $DEBUG
+    then
+        export PGDEBUG=""
+        export CDEBUG="-g0 -O0"
+        cat > ${PG_DEBUG_HEADER} << END
+#ifndef I_PGDEBUG
+#define I_PGDEBUG
+#define WASM_USERNAME "$PGUSER"
+#define PGDEBUG 1
+#define PDEBUG(string) puts(string)
+#define JSDEBUG(string) {EM_ASM({ console.log(string); });}
+#define ADEBUG(string) { PDEBUG(string); JSDEBUG(string) }
+#endif
+END
+
+    else
+        export PGDEBUG=""
+        export CDEBUG="-g0 -O2"
+        cat > ${PG_DEBUG_HEADER} << END
+#ifndef I_PGDEBUG
+#define I_PGDEBUG
+#define WASM_USERNAME "$PGUSER"
+#define PDEBUG(string)
+#define JSDEBUG(string)
+#define ADEBUG(string)
+#define PGDEBUG 0
+#endif
+END
+    fi
+
+    mkdir -p ${PGROOT}/include/postgresql ${PGROOT}/include/postgresql/server
+    cp ${PG_DEBUG_HEADER}
+    cp ${PG_DEBUG_HEADER} ${PGROOT}/include/postgresql
+    cp ${PG_DEBUG_HEADER} ${PGROOT}/include/postgresql/server
 
     # store all pg options that have impact on cmd line initdb/boot
     cat > ${PGROOT}/pgopts.sh <<END
@@ -492,8 +503,14 @@ do
 
             if $CI
             then
-                tar -cpRz /tmp/pdebug.h ${PGROOT} > /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz
+                tar -cpRz ${PGROOT} > /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz
+
+                # build sdk (node)
+                cp /tmp/sdk/postgres-${PG_VERSION}.tar.gz ${WEBROOT}/
+
+                # pglite (web)
                 cp /tmp/sdk/pglite-pg${PG_VERSION}.tar.gz ${WEBROOT}/
+
             fi
 
             du -hs ${WEBROOT}/*
