@@ -171,7 +171,7 @@ export OBJDUMP
 
 # ========================= pg core configuration ============================
 
-
+# testing postgres.js file instead of ${PGROOT}/pgopts.sh because build should not have failed.
 if [ -f ${WEBROOT}/postgres.js ]
 then
     echo using current from ${WEBROOT}
@@ -186,7 +186,8 @@ else
     if $DEBUG
     then
         export PGDEBUG=""
-        export CDEBUG="-g0 -O0"
+        export CDEBUG="-g3 -O0"
+        export LDEBUG="-g3 -O0"
         cat > ${PG_DEBUG_HEADER} << END
 #ifndef I_PGDEBUG
 #define I_PGDEBUG
@@ -200,7 +201,8 @@ END
 
     else
         export PGDEBUG=""
-        export CDEBUG="-g0 -O2"
+        export CDEBUG="-g0 -O0"
+        export LDEBUG="-g0 -O0"
         cat > ${PG_DEBUG_HEADER} << END
 #ifndef I_PGDEBUG
 #define I_PGDEBUG
@@ -220,6 +222,10 @@ END
 
     # store all pg options that have impact on cmd line initdb/boot
     cat > ${PGROOT}/pgopts.sh <<END
+export CDEBUG=$CDEBUG
+export LDEBUG=$LDEBUG
+export PGDEBUG=$PGDEBUG
+export PG_DEBUG_HEADER=$PG_DEBUG_HEADER
 export PGOPTS="\\
  -c log_checkpoints=false \\
  -c dynamic_shared_memory_type=posix \\
@@ -461,7 +467,7 @@ do
 
                 # debug CI does not use pnpm/npm for building pg, so call the typescript build
                 # part from here
-                pnpm run build:js || exit 450
+                pnpm --filter "pglite^..." build || exit 450
 
                 mkdir -p /tmp/sdk
                 pnpm pack || exit 31
@@ -525,10 +531,10 @@ do
             pnpm run build 2>&1 >/dev/null
             if pnpm exec playwright install --with-deps 2>&1 >/dev/null
             then
-                pnpm run test || exit 429
+                pnpm --filter "pglite^..." test || exit 429
             else
                 echo "failed to install test env"
-                pnpm run test || exit 432
+                pnpm --filter "pglite^..." test || exit 432
             fi
             popd
         ;;

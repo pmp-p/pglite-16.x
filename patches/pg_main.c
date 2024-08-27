@@ -1108,6 +1108,8 @@ pg_initdb() {
 #if PGDEBUG
     PDEBUG("# 1080");
     printf("# pg_initdb_main result = %d\n", pg_initdb_main() );
+#else
+    pg_initdb_main();
 #endif
 
     /* save stdin and use previous initdb output to feed boot mode */
@@ -1297,7 +1299,7 @@ extra_env:;
         };
     });
 
-#endif
+#endif // __EMSCRIPTEN__
 	chdir("/");
     mkdirp("/tmp");
     mkdirp(WASM_PREFIX);
