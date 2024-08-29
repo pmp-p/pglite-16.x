@@ -32,6 +32,7 @@ jobs:
       contrib: contrib
       OBJDUMP: true
       TOTAL_MEMORY: 256MB
+      EXTRA_EXT: vector postgis
 
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +49,7 @@ jobs:
 
       - name: Build postgres WASM via emsdk
         run: |
-          bash ./cibuild.sh vector contrib node linkweb pglite
+          bash ./cibuild.sh contrib extra node linkweb pglite
 
       - name : "Upload to GitHub pages"
         uses: JamesIves/github-pages-deploy-action@v4.4.1
