@@ -201,8 +201,8 @@ END
 
     else
         export PGDEBUG=""
-        export CDEBUG="-g0 -O0"
-        export LDEBUG="-g0 -O0"
+        export CDEBUG="-g3 -O0"
+        export LDEBUG="-g3 -O0"
         cat > ${PG_DEBUG_HEADER} << END
 #ifndef I_PGDEBUG
 #define I_PGDEBUG
@@ -531,11 +531,13 @@ do
             pnpm run build 2>&1 >/dev/null
             if pnpm exec playwright install --with-deps 2>&1 >/dev/null
             then
-                pnpm --filter "pglite^..." test || exit 429
+                pnpm --filter "pglite^..." test || exit 534
+                pnpm test:web || pnpm test:web || pnpm test:web || exit 535
             else
-                echo "failed to install test env"
-                pnpm --filter "pglite^..." test || exit 432
+                echo "failed to install web-test env"
+                pnpm --filter "pglite^..." test || exit 538
             fi
+            pnpm pack
             popd
         ;;
 
