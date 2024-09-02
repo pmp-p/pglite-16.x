@@ -1,6 +1,6 @@
 --- postgresql/src/include/port/emscripten.h
 +++ postgresql-wasm/src/include/port/emscripten.h
-@@ -0,0 +1,343 @@
+@@ -0,0 +1,407 @@
 +/* src/include/port/emscripten.h */
 +
 +#ifndef I_EMSCRIPTEN
@@ -36,9 +36,13 @@
 +#   define PG_PLUGIN_INCLUDE "/pgdata/pg_plugin.h"
 +#endif
 +
++// #include PG_DEBUG_HEADER
 +#include "/tmp/pglite/include/pg_debug.h"
 +
++
 +#define PGDLLIMPORT
++
++#define PG_FORCE_DISABLE_INLINE
 +
 +// #define COPY_INTERNAL
 +#define COPY_OFF
@@ -95,13 +99,11 @@
 +
 +
 +
-+#define PG_FORCE_DISABLE_INLINE
 +
 +// we want client and server in the same lib for now.
 +#if defined(PG_INITDB) && defined(PG_MAIN)
 +extern const char *progname;
 +#endif
-+
 +
 +
 +
@@ -341,6 +343,68 @@
 +	puts("# FIXME: int shmdt (const void *__shmaddr)");
 +	return 0;
 +}
++
++
++
++
++/*
++typedef struct {
++    pthread_mutex_t mutex;
++    pthread_cond_t cond;
++    int count;
++} sem_t;
++
++int sem_init(sem_t *sem, int pshared, unsigned int value){
++    if(pshared > 1) {
++        return -1;
++    }
++    sem->count = value;
++    pthread_mutex_init(&sem->mutex, NULL);
++    pthread_cond_init(&sem->cond, NULL);
++    return 0;
++}
++
++int sem_destroy(sem_t *sem){
++    pthread_mutex_destroy(&sem->mutex);
++    pthread_cond_destroy(&sem->cond);
++    return 0;
++}
++
++int sem_wait(sem_t *sem){
++    pthread_mutex_lock(&sem->mutex);
++    while(sem->count == 0){
++        pthread_cond_wait(&sem->cond, &sem->mutex);
++    }
++    sem->count--;
++    pthread_mutex_unlock(&sem->mutex);
++    return 0;
++}
++
++int sem_post(sem_t *sem){
++    pthread_mutex_lock(&sem->mutex);
++    sem->count++;
++    pthread_cond_signal(&sem->cond);
++    pthread_mutex_unlock(&sem->mutex);
++    return 0;
++}
++*/
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
++
 +
 +#endif // PG_SHMEM
 +#endif // I_EMSCRIPTEN

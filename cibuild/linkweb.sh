@@ -220,13 +220,23 @@ _________________________________________________________
 
     cp -v postgres.* ${WEBROOT}/
     #cp ${PGROOT}/lib/libecpg.so ${WEBROOT}/
-    cp ${PGROOT}/sdk/*.tar ${WEBROOT}/
+    cp ${PGROOT}/sdk/*.tar ${PGROOT}/sdk/*.tar.gz ${WEBROOT}/
     for tarf in ${WEBROOT}/*.tar
     do
         gzip -f -9 $tarf
     done
 
+    mkdir -p $PGLITE/release
 
+    echo "
+
+
+__________________________ enabled extensions (dlfcn)_____________________________
+"
+    cp -vf ${WEBROOT}/*.tar.gz ${PGLITE}/release/
+echo "
+__________________________________________________________________________________
+"
     cp $WORKSPACE/{tests/vtx.js,patches/tinytar.min.js} ${WEBROOT}/
 
 popd

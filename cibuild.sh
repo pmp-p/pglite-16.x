@@ -20,6 +20,8 @@ export PGDATA=${PGROOT}/base
 export PGUSER=${PGUSER:-postgres}
 export PGPATCH=${WORKSPACE}/patches
 export TOTAL_MEMORY=${TOTAL_MEMORY:-128MB}
+export WASI=${WASI:-false}
+
 
 # exit on error
 EOE=false
@@ -366,7 +368,7 @@ then
                 SDK_URL=https://github.com/pygame-web/python-wasm-sdk-extra/releases/download/$SDK_VERSION/python-emsdk-sdk-extra-${CIVER}.tar.lz4
                 echo "Installing $SDK_URL"
                 curl -sL --retry 5 $SDK_URL | tar xvP --use-compress-program=lz4 | pv -p -l -s 15000 >/dev/null
-                chmod ./extra/*.sh
+                chmod +x ./extra/*.sh
             fi
         fi
         echo "======================= ${extra_ext} : $(pwd) ==================="
@@ -519,10 +521,10 @@ do
 
         pglite-prep) echo "==================== pglite-prep  =========================="
             mkdir -p $PGLITE/release
-            rm $PGLITE/release/*
+            #rm $PGLITE/release/*
 
             # copy packed extensions
-            cp ${WEBROOT}/*.tar.gz ${PGLITE}/release/
+            cp -vf ${WEBROOT}/*.tar.gz ${PGLITE}/release/
             cp -vf ${WEBROOT}/postgres.{js,data,wasm} $PGLITE/release/
         ;;
 
