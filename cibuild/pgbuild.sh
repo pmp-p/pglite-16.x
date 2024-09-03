@@ -52,6 +52,7 @@ fi
 # --with-libxml does not fit with --without-zlib
 
     export XML2_CONFIG=$PREFIX/bin/xml2-config
+    export ZIC=$(pwd)/bin/zic
 
     CNF="${PGSRC}/configure --prefix=${PGROOT} \
  --cache-file=${PGROOT}/config.cache.${BUILD} \
@@ -67,12 +68,16 @@ fi
 
     # crash clang CFLAGS=-Wno-error=implicit-function-declaration
 
-    if EM_PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig CONFIG_SITE==${PGDATA}/config.site emconfigure $CNF --with-template=emscripten
+    cat > ${PGROOT}/config.site <<END
+ac_cv_exeext=.cjs
+END
+
+    if EM_PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig CONFIG_SITE=${PGROOT}/config.site emconfigure $CNF --with-template=emscripten
     then
         echo configure ok
     else
         echo configure failed
-        exit 262
+        exit 76
     fi
 
     if grep -q MAIN_MODULE ${PGSRC}/src/backend/Makefile
@@ -87,7 +92,7 @@ fi
     cat > bin/zic <<END
 #!/bin/bash
 #. /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
-TZ=UTC PGTZ=UTC node $(pwd)/src/timezone/zic \$@
+TZ=UTC PGTZ=UTC node $(pwd)/src/timezone/zic.cjs \$@
 END
 
     # --disable-shared not supported so be able to use a fake linker
@@ -123,19 +128,22 @@ END
     EMCC_ENV="${EMCC_NODE} -sERROR_ON_UNDEFINED_SYMBOLS"
 
     # only required for static initdb
-    EMCC_CFLAGS="-sERROR_ON_UNDEFINED_SYMBOLS=0 ${CC_PGLITE}"
+    EMCC_CFLAGS="-sERROR_ON_UNDEFINED_SYMBOLS=1 ${CC_PGLITE}"
     EMCC_CFLAGS="${EMCC_CFLAGS} -sTOTAL_MEMORY=${TOTAL_MEMORY} -sSTACK_SIZE=5MB -sALLOW_TABLE_GROWTH -sALLOW_MEMORY_GROWTH -sGLOBAL_BASE=${CMA_MB}MB"
     EMCC_CFLAGS="${EMCC_CFLAGS} -DPREFIX=${PGROOT}"
 
     export EMCC_CFLAGS="${EMCC_CFLAGS} -Wno-macro-redefined -Wno-unused-function"
 
-
-	if EMCC_CFLAGS="${EMCC_ENV} ${EMCC_CFLAGS}" emmake make ZIC=$ZIC -j $(nproc) 2>&1 > /tmp/build.log
+#ZIC=$ZIC
+	if EMCC_CFLAGS="${EMCC_ENV} ${EMCC_CFLAGS}" emmake make -j $(nproc) 2>&1 > /tmp/build.log
 	then
         echo build ok
+        cp -vf src/backend/postgres src/backend/postgres.cjs
+
         # for 32bits zic
         unset LD_PRELOAD
-        if EMCC_CFLAGS="${EMCC_ENV} ${EMCC_CFLAGS}" emmake make ZIC=$ZIC install 2>&1 > /tmp/install.log
+
+        if EMCC_CFLAGS="${EMCC_ENV} ${EMCC_CFLAGS}" emmake make install 2>&1 > /tmp/install.log
         then
             echo install ok
             pushd ${PGROOT}
@@ -155,12 +163,12 @@ END
         else
             cat /tmp/install.log
             echo "install failed"
-            exit 143
+            exit 164
         fi
     else
         cat /tmp/build.log
         echo "build failed"
-        exit 148
+        exit 169
 	fi
 
     # wip
@@ -168,20 +176,27 @@ END
     mv -vf ./src/bin/pg_dump/pg_restore.wasm ./src/bin/pg_dump/pg_dump.wasm ./src/bin/pg_dump/pg_dumpall.wasm ${PGROOT}/bin/
 	mv -vf ./src/bin/pg_resetwal/pg_resetwal.wasm  ./src/bin/initdb/initdb.wasm ./src/backend/postgres.wasm ${PGROOT}/bin/
 
-    mv -vf ${PGROOT}/bin/pg_config ${PGROOT}/bin/pg_config.js
-	mv -vf ./src/bin/initdb/initdb ${PGROOT}/bin/initdb.js
-	mv -vf ./src/bin/pg_resetwal/pg_resetwal ${PGROOT}/bin/pg_resetwal.js
-	mv -vf ./src/backend/postgres ${PGROOT}/bin/postgres.js
+#    mv -vf ${PGROOT}/bin/pg_config ${PGROOT}/bin/pg_config.js
+#	mv -vf ./src/bin/initdb/initdb ${PGROOT}/bin/initdb.js
+#	mv -vf ./src/bin/pg_resetwal/pg_resetwal ${PGROOT}/bin/pg_resetwal.js
+#	mv -vf ./src/backend/postgres ${PGROOT}/bin/postgres.js
+
+    if [ -f $PGROOT/bin/pg_config.wasm ]
+    then
+        echo pg_config installed
+    else
+        echo "pg_config build failed"; exit 186
+    fi
 
     cat > ${PGROOT}/bin/pg_config <<END
 #!/bin/bash
-node ${PGROOT}/bin/pg_config.js \$@
+$(which node) ${PGROOT}/bin/pg_config.cjs \$@
 END
 
     cat  > ${PGROOT}/postgres <<END
 #!/bin/bash
 . /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
-TZ=UTC PGTZ=UTC PGDATA=${PGDATA} node ${PGROOT}/bin/postgres.js \$@
+TZ=UTC PGTZ=UTC PGDATA=${PGDATA} $(which node) ${PGROOT}/bin/postgres.cjs \$@
 END
 
 # remove the abort but stall prompt
@@ -193,7 +208,7 @@ END
 	cat  > ${PGROOT}/initdb <<END
 #!/bin/bash
 . /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
-TZ=UTC PGTZ=UTC node ${PGROOT}/bin/initdb.js \$@
+TZ=UTC PGTZ=UTC $(which node) ${PGROOT}/bin/initdb.cjs \$@
 END
 
     chmod +x ${PGROOT}/postgres ${PGROOT}/bin/postgres
