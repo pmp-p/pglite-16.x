@@ -191,7 +191,7 @@
             var data = null
             switch (test_step) {
                 case 0:
-                    data = "SHOW client_encoding;";
+                    data = "SHOW client_encoding;CREATE EXTENSION IF NOT EXISTS postgis;";
                     break
 
                 case 1:
@@ -311,6 +311,7 @@
             */
             console.error("TODO: load ext from pg_extensions")
             //await Module.load_package("vector", "vector.tar.gz")
+            await Module.load_package("postgis", "postgis-3.tar.gz")
             //await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
 
             vm._setenv(vm.stringToUTF8OnStack("REPL"),vm.stringToUTF8OnStack("Y"),1)
@@ -335,12 +336,14 @@
                     if (idb & (0b0100|0b1000)) {
                         console.log(" #3 found db+user : switch user")
                         // switch role
-                        vm.readline("SET ROLE test_user;");
+                        // vm.readline("SET ROLE test_user;");
                     }
                     console.error("Invalid user ?");
                 } else {
                     console.warn(" TODO:  create db+user here / callback / throw ")
+/*
                     vm.readline(`
+CREATE EXTENSION IF NOT EXISTS postgis;
 CREATE USER test_user WITH PASSWORD 'md5abdbecd56d5fbd2cdaee3d0fa9e4f434';
 CREATE TABLE IF NOT EXISTS test (
       id SERIAL PRIMARY KEY,
@@ -350,6 +353,7 @@ CREATE TABLE IF NOT EXISTS test (
     ALTER TABLE test OWNER TO test_user;
 SET ROLE test_user;
 `);
+*/
                 }
             }
             vm._pg_repl_raf()

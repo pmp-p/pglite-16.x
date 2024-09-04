@@ -47,7 +47,7 @@ else
         XML2="--with-zlib --with-libxml --with-libxslt"
     fi
     UUID="--with-uuid=ossp"
-    BUILD=emsdk
+    BUILD=emscripten
 fi
 # --with-libxml does not fit with --without-zlib
 
@@ -72,7 +72,7 @@ fi
 ac_cv_exeext=.cjs
 END
 
-    if EM_PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig CONFIG_SITE=${PGROOT}/config.site emconfigure $CNF --with-template=emscripten
+    if EM_PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig CONFIG_SITE=${PGROOT}/config.site emconfigure $CNF --with-template=$BUILD
     then
         echo configure ok
     else
@@ -133,6 +133,8 @@ END
     EMCC_CFLAGS="${EMCC_CFLAGS} -DPREFIX=${PGROOT}"
 
     export EMCC_CFLAGS="${EMCC_CFLAGS} -Wno-macro-redefined -Wno-unused-function"
+
+    export WASI_CFLAGS="${CC_PGLITE}-DPREFIX=${PGROOT} -Wno-macro-redefined -Wno-unused-function"
 
 #ZIC=$ZIC
 	if EMCC_CFLAGS="${EMCC_ENV} ${EMCC_CFLAGS}" emmake make -j $(nproc) 2>&1 > /tmp/build.log

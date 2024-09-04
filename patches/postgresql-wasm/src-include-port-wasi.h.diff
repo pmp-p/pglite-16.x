@@ -1,6 +1,6 @@
 --- postgresql/src/include/port/wasi.h
 +++ postgresql-wasm/src/include/port/wasi.h
-@@ -0,0 +1,195 @@
+@@ -0,0 +1,211 @@
 +#ifndef I_WASI
 +#define I_WASI
 +
@@ -157,32 +157,33 @@
 +
 +static int
 +sigemptyset(sigset_t *set) {
-+    puts("sigemptyset -1");
++    puts("# 157: sigemptyset -1");
 +    return -1;
 +}
 +
 +static int
 +sigfillset(sigset_t *set) {
-+    puts("sigfillset -1");
++    puts("# 163: sigfillset -1");
 +    return -1;
 +}
 +static int
 +sigdelset(sigset_t *set, int signum) {
-+    puts("sigdelset -1");
++    puts("# 168: sigdelset -1");
 +    return -1;
 +}
 +
 +static int
 +sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
-+    puts("sigaction 0");
++    puts("# 174: sigaction 0");
 +    return 0;
 +}
 +static int
 +sigprocmask(int how, const sigset_t *_Nullable restrict set, sigset_t *_Nullable restrict oldset) {
-+    puts("sigprocmask 0");
++    puts("# 179: sigprocmask 0");
 +    return 0;
 +}
 +
++// WIP :
 +
 +#include <unistd.h>
 +static uid_t
@@ -190,6 +191,21 @@
 +    return 1000;
 +}
 +
++static int
++dup(int fd) {
++    puts("# 193: dup");
++    return -1;
++}
++static int
++dup2(int old, int new) {
++    puts("# 198: dup2");
++    return -1;
++}
++static int
++pipe(int fd[2]) {
++    puts("# 199: pipe");
++    return -1;
++}
 +#include <sys/resource.h>
 +#define RLIMIT_NOFILE 7
 +

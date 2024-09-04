@@ -26,6 +26,8 @@ export WASI=${WASI:-false}
 # exit on error
 EOE=false
 
+mkdir -p /tmp/sdk
+
 # the default is a user writeable path.
 if mkdir -p ${PGROOT}/sdk
 then
@@ -99,14 +101,16 @@ else
     # pass the "kernel" contiguous memory zone size to the C compiler.
     CC_PGLITE="-DCMA_MB=${CMA_MB}"
 
-    # these are files that shadow original portion of pg core, with minimal changes
-    # to original code
-    # some may be included multiple time
-    CC_PGLITE="-DPATCH_MAIN=${WORKSPACE}/patches/pg_main.c ${CC_PGLITE}"
-    CC_PGLITE="-DPATCH_LOOP=${WORKSPACE}/patches/interactive_one.c ${CC_PGLITE}"
-    CC_PGLITE="-DPATCH_PLUGIN=${WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
-    CC_PGLITE="-DPATCH_PG_DEBUG=${PG_DEBUG_HEADER} ${CC_PGLITE}"
 fi
+
+# these are files that shadow original portion of pg core, with minimal changes
+# to original code
+# some may be included multiple time
+CC_PGLITE="-DPATCH_MAIN=${WORKSPACE}/patches/pg_main.c ${CC_PGLITE}"
+CC_PGLITE="-DPATCH_LOOP=${WORKSPACE}/patches/interactive_one.c ${CC_PGLITE}"
+CC_PGLITE="-DPATCH_PLUGIN=${WORKSPACE}/patches/pg_plugin.h ${CC_PGLITE}"
+CC_PGLITE="-DPATCH_PG_DEBUG=${PG_DEBUG_HEADER} ${CC_PGLITE}"
+
 
 export CC_PGLITE
 export PGPRELOAD="\
@@ -437,35 +441,43 @@ do
                 mkdir -p $PGLITE/release
                 rm $PGLITE/release/* 2>/dev/null
 
+
                 # copy packed extensions for dist
-                cp ${WEBROOT}/*.tar.gz ${PGLITE}/release/
+                echo "
+
+__________________________ enabled extensions (dlfcn)_____________________________
+"
+    cp -vf ${WEBROOT}/*.tar.gz ${PGLITE}/release/
+echo "
+__________________________________________________________________________________
+"
 
                 # copy wasm web prebuilt artifacts to release folder
                 # TODO: get them from web for nosdk systems.
 
-                cp ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
+                cp -vf ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
 
                 # debug CI does not use pnpm/npm for building pg, so call the typescript build
                 # part from here
                 pnpm --filter "pglite^..." build || exit 450
 
-                mkdir -p /tmp/sdk
                 pnpm pack || exit 31
                 packed=$(echo -n electric-sql-pglite-*.tgz)
 
                 mv $packed /tmp/sdk/pg${PG_VERSION}-${packed}
 
                 # for repl demo
-                mkdir -p /tmp/web/pglite
-                cp -r ${PGLITE}/dist ${WEBROOT}/pglite/
-                cp -r ${PGLITE}/examples ${WEBROOT}/pglite/
+#                mkdir -p /tmp/web/pglite
 
-                for dir in /tmp/web ${WEBROOT}/pglite/examples
-                do
-                    pushd "$dir"
-                    cp ${PGLITE}/dist/postgres.data ./
-                    popd
-                done
+                #cp -r ${PGLITE}/dist ${WEBROOT}/pglite/
+                #cp -r ${PGLITE}/examples ${WEBROOT}/pglite/
+
+#                for dir in /tmp/web ${WEBROOT}/pglite/examples
+#                do
+#                    pushd "$dir"
+#                    cp ${PGLITE}/dist/postgres.data ./
+#                    popd
+#                done
 
                 echo "<html>
                 <body>
