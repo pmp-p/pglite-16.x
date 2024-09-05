@@ -450,7 +450,6 @@ _XLogRegisterData
 _XactIsoLevel
 __Z22__throw_bad_alloc_shimv
 __ZNKSt3__214error_categoryeqB8nn180100ERKS0_
-__ZNSt13runtime_errorD1Ev
 __ZNSt3__210moneypunctIcLb0EE2idE
 __ZNSt3__210moneypunctIcLb1EE2idE
 __ZNSt3__210moneypunctIwLb0EE2idE

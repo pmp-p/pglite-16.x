@@ -2,6 +2,7 @@
 PGVERSION=${PGVERSION:-16.4}
 tar xfz ../postgresql-${PGVERSION}.tar.gz
 pushd postgresql-${PGVERSION}
+> ./src/include/port/wasm_common.h
 > ./src/template/emscripten
 > ./src/include/port/emscripten.h
 > ./src/makefiles/Makefile.emscripten
@@ -14,8 +15,9 @@ popd
 mkdir -p postgresql-${PGVERSION}-wasm
 cp -rf ../postgresql-${PGVERSION}/* postgresql-${PGVERSION}-wasm/
 
-ln -sf postgresql-${PGVERSION} postgresql
-ln -sf postgresql-${PGVERSION}-wasm postgresql-wasm
+rm postgresql postgresql-wasm
+ln -s postgresql-${PGVERSION} postgresql
+ln -s postgresql-${PGVERSION}-wasm postgresql-wasm
 [ -d postgresql-wasm.patchset ] && rm postgresql-wasm.patchset/*
 
 echo | /data/cross/pydk/makediff.sh postgresql postgresql-wasm

@@ -38,6 +38,7 @@ then
     XML2=""
     UUID=""
     BUILD=wasi
+    export MAIN_MODULE=""
 else
     if $CI
     then
@@ -48,11 +49,14 @@ else
     fi
     UUID="--with-uuid=ossp"
     BUILD=emscripten
+    export MAIN_MODULE="-sMAIN_MODULE=1"
 fi
 # --with-libxml does not fit with --without-zlib
 
     export XML2_CONFIG=$PREFIX/bin/xml2-config
     export ZIC=$(pwd)/bin/zic
+
+    cp ${PGSRC}/./src/include/port/wasm_common.h /tmp/pglite/include/wasm_common.h
 
     CNF="${PGSRC}/configure --prefix=${PGROOT} \
  --cache-file=${PGROOT}/config.cache.${BUILD} \
@@ -87,6 +91,7 @@ END
         echo "missing server dyld patch"
         exit 273
     fi
+
     mkdir -p bin
 
     cat > bin/zic <<END
