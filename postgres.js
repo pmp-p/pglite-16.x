@@ -53,7 +53,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpj4rzis_h.js
+// include: /tmp/tmpuxa7octy.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -279,7 +279,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmpj4rzis_h.js
+// end include: /tmp/tmpuxa7octy.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -1346,7 +1346,7 @@ is_web_env.sig = 'i';
   
   /** @type {WebAssembly.Table} */
   var wasmTable = new WebAssembly.Table({
-    'initial': 5395,
+    'initial': 5383,
     'element': 'anyfunc'
   });
   ;
@@ -10400,7 +10400,7 @@ var _pg_initdb = Module['_pg_initdb'] = () => (_pg_initdb = Module['_pg_initdb']
 var _pg_initdb_main = Module['_pg_initdb_main'] = () => (_pg_initdb_main = Module['_pg_initdb_main'] = wasmExports['pg_initdb_main'])();
 var _dup = Module['_dup'] = (a0) => (_dup = Module['_dup'] = wasmExports['dup'])(a0);
 var ___cxa_throw = Module['___cxa_throw'] = (a0, a1, a2) => (___cxa_throw = Module['___cxa_throw'] = wasmExports['__cxa_throw'])(a0, a1, a2);
-var _main_repl = Module['_main_repl'] = (a0) => (_main_repl = Module['_main_repl'] = wasmExports['main_repl'])(a0);
+var _main_repl = Module['_main_repl'] = () => (_main_repl = Module['_main_repl'] = wasmExports['main_repl'])();
 var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
 var _scanner_init = Module['_scanner_init'] = (a0, a1, a2, a3) => (_scanner_init = Module['_scanner_init'] = wasmExports['scanner_init'])(a0, a1, a2, a3);
 var _scanner_finish = Module['_scanner_finish'] = (a0) => (_scanner_finish = Module['_scanner_finish'] = wasmExports['scanner_finish'])(a0);
@@ -10996,7 +10996,7 @@ var _maintenance_work_mem = Module['_maintenance_work_mem'] = 69016208;
 var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 69016212;
 var _NBuffers = Module['_NBuffers'] = 69016216;
 var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69276720;
-var _pg_crc32_table = Module['_pg_crc32_table'] = 67932880;
+var _pg_crc32_table = Module['_pg_crc32_table'] = 67933792;
 var _stdin = Module['_stdin'] = 69132664;
 var _SPI_result = Module['_SPI_result'] = 69168084;
 var _SPI_processed = Module['_SPI_processed'] = 69168072;
@@ -11042,7 +11042,7 @@ var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69169680;
 var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69169684;
 var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69170088;
 var _RmgrTable = Module['_RmgrTable'] = 69097616;
-var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68457728;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458640;
 var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69170540;
 var _planner_hook = Module['_planner_hook'] = 69170552;
 var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69175996;
