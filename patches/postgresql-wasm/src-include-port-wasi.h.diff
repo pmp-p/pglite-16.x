@@ -1,6 +1,6 @@
 --- postgresql/src/include/port/wasi.h
 +++ postgresql-wasm/src/include/port/wasi.h
-@@ -0,0 +1,263 @@
+@@ -0,0 +1,258 @@
 +#ifndef I_WASI
 +#define I_WASI
 +
@@ -221,11 +221,6 @@
 +}
 +
 +
-+
-+
-+
-+
-+
 +static void *
 +mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
 +    puts("# 221: mmap");
@@ -250,17 +245,17 @@
 +    return -1;
 +}
 +
-+/*
 +
-+wasm-ld: error: tcop/postgres.o: undefined symbol: pq_recvbuf_fill
-+wasm-ld: error: utils/error/elog.o: undefined symbol: siglongjmp
-+wasm-ld: error: utils/error/elog.o: undefined symbol: siglongjmp
-+wasm-ld: error: ../../src/common/libpgcommon_srv.a(ip_srv.o): undefined symbol: getnameinfo
++// initdb chmod
++#if defined(__wasi__)
++    #define chmod(...) 0
++#endif
 +
-+
-+*/
-+
-+
++// popen
++extern int pg_pclose(FILE *stream);
++extern FILE * pg_popen(const char *command, const char *type);
++#define popen(command, mode) pg_popen(command, mode)
++#define pclose(stream) pg_pclose(stream)
 +
 +#endif // I_WASI
 +
