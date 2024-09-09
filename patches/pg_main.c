@@ -793,6 +793,7 @@ extern void proc_exit(int code);
 
 extern volatile int pg_idb_status;
 #if PGDEBUG
+void print_bits(size_t const size, void const * const ptr);
 void print_bits(size_t const size, void const * const ptr)
 {
     unsigned char *b = (unsigned char*) ptr;
@@ -881,7 +882,11 @@ pg_initdb() {
         optind = 1;
         BootstrapModeMain(boot_argc, boot_argv, false);
         fclose(stdin);
+#if PGDEBUG
+        puts("# 886: keep " IDB_PIPE_BOOT );
+#else
         remove(IDB_PIPE_BOOT);
+#endif
         stdin = fdopen(saved_stdin, "r");
         /* fake a shutdown to comlplete WAL/OID states */
         proc_exit(66);
@@ -1138,7 +1143,7 @@ void main_post() {
          */
         unsetenv("LC_ALL");
 }
-
+EMSCRIPTEN_KEEPALIVE void __cxa_throw(void *thrown_exception, void *tinfo, void *dest);
 EMSCRIPTEN_KEEPALIVE void
 __cxa_throw(void *thrown_exception, void *tinfo, void *dest) {}
 
@@ -1154,10 +1159,14 @@ extern void AsyncPostgresSingleUserMain(int single_argc, char *single_argv[], co
 
 
 #if defined(__wasi__)
+
+#include "../patches/wasi_signal.c"
+
+/*
 static void
 __SIG_IGN(int) {
 }
-
+*/
 #define PG_INITDB_MAIN
 #define PG_MAIN
 

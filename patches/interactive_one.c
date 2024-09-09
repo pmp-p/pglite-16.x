@@ -344,7 +344,6 @@ PDEBUG("# 324 : TODO: set a pg_main started flag");
                     if (!firstchar || (firstchar==112)) {
                         PDEBUG("# 351: handshake/auth skip");
                         goto wire_flush;
-//                        return;
                     }
 
                     /* else it is wire msg */
@@ -532,16 +531,18 @@ incoming:
 
     if (is_wire) {
 wire_flush:
-        if (SOCKET_DATA>0) {
-            if (!ClientAuthInProgress) {
-                PDEBUG("# 537: end packet - sending rfq");
-                if (send_ready_for_query) {
-                    ReadyForQuery(DestRemote);
-                }
-            } else {
-                PDEBUG("# 542: end packet (ClientAuthInProgress - no rfq) ");
-            }
 
+        if (!ClientAuthInProgress) {
+            PDEBUG("# 537: end packet - sending rfq");
+            if (send_ready_for_query) {
+                ReadyForQuery(DestRemote);
+                send_ready_for_query = false;
+            }
+        } else {
+            PDEBUG("# 542: end packet (ClientAuthInProgress - no rfq) ");
+        }
+
+        if (SOCKET_DATA>0) {
             if (sockfiles) {
                 if (cma_wsize)
                     puts("ERROR: cma was not flushed before socketfile interface");
@@ -561,7 +562,7 @@ wire_flush:
                     c_lock = fopen(PGS_OLOCK, "w");
                     fclose(c_lock);
                 }
-// CHECK ME 320 / 538 . only initially or after error
+// CHECK ME 320 / 540 . only initially or after error
                 // send_ready_for_query = true;
             }
 

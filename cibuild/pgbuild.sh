@@ -38,7 +38,8 @@ then
     XML2=""
     UUID=""
     BUILD=wasi
-    export MAIN_MODULE=""
+    export MAIN_MODULE="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks"
+
 else
     if $CI
     then
