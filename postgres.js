@@ -53,7 +53,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpp00y5emv.js
+// include: /tmp/tmp5numdg2a.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -279,7 +279,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmpp00y5emv.js
+// end include: /tmp/tmp5numdg2a.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -10996,7 +10996,7 @@ var _maintenance_work_mem = Module['_maintenance_work_mem'] = 69016208;
 var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 69016212;
 var _NBuffers = Module['_NBuffers'] = 69016216;
 var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69276720;
-var _pg_crc32_table = Module['_pg_crc32_table'] = 67933792;
+var _pg_crc32_table = Module['_pg_crc32_table'] = 67933808;
 var _stdin = Module['_stdin'] = 69132664;
 var _SPI_result = Module['_SPI_result'] = 69168084;
 var _SPI_processed = Module['_SPI_processed'] = 69168072;
@@ -11042,7 +11042,7 @@ var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69169680;
 var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69169684;
 var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69170088;
 var _RmgrTable = Module['_RmgrTable'] = 69097616;
-var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458640;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458656;
 var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69170540;
 var _planner_hook = Module['_planner_hook'] = 69170552;
 var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69175996;
