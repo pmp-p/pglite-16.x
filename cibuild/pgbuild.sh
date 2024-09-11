@@ -39,7 +39,6 @@ then
     UUID=""
     BUILD=wasi
     export MAIN_MODULE="-lwasi-emulated-getpid -lwasi-emulated-mman -lwasi-emulated-signal -lwasi-emulated-process-clocks"
-
 else
     if $CI
     then
@@ -92,6 +91,12 @@ END
         echo "missing server dyld patch"
         exit 273
     fi
+
+    if $WASI
+    then
+        sed -i 's|-pthread||g' ./src/Makefile.global
+    fi
+
 
     mkdir -p bin
 

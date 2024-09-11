@@ -1,6 +1,6 @@
 --- postgresql/src/include/port/wasi.h
 +++ postgresql-wasm/src/include/port/wasi.h
-@@ -0,0 +1,258 @@
+@@ -0,0 +1,241 @@
 +#ifndef I_WASI
 +#define I_WASI
 +
@@ -54,83 +54,48 @@
 +}
 +
 +
-+// WIP: signal here
-+// ==================================================================
++// ======== signal ========================
++#define SA_RESTART 4
++#define SIG_SETMASK   2
 +
-+#define SA_RESTART 0x10000000
-+#define SIG_BLOCK     0      /* Block signals.  */
-+#define SIG_UNBLOCK   1      /* Unblock signals.  */
-+#define SIG_SETMASK   2      /* Set the set of blocked signals.  */
++#define SIG_BLOCK     0
++#define SIG_UNBLOCK   1
 +
-+/* Type of a signal handler.  */
-+typedef void (*__sighandler_t) (int);
-+# define _SIGSET_NWORDS        (1024 / (8 * sizeof (unsigned long int)))
-+/*
-+typedef struct {
-+    unsigned long int __val[_SIGSET_NWORDS];
-+} __sigset_t;
-+
-+typedef struct {
-+    unsigned long sig[_SIGSET_NWORDS];
-+} sigset_t;
-+*/
-+
++/* A signal handler.  */
++typedef void (*handler_t) (int signal);
 +typedef unsigned char sigset_t;
++typedef void (*__sighandler_t) (int);
++
 +struct sigaction {
 +    __sighandler_t sa_handler;
 +    unsigned long sa_flags;
 +#ifdef SA_RESTORER
 +    __sigrestore_t sa_restorer;
 +#endif
-+    sigset_t sa_mask;                /* mask last for extensibility */
++    sigset_t sa_mask;
 +};
++extern int sigemptyset(sigset_t *set);
++extern int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
++extern int sigdelset (sigset_t *set, int sig);
++extern int sigfillset (sigset_t *set);
++extern int sigprocmask (int operation, const sigset_t *set, sigset_t *old_set);
++extern int sigaddset (sigset_t *set, int sig);
 +
-+static int
-+sigemptyset(sigset_t *set) {
-+    puts("# 74: sigemptyset -1");
-+    return -1;
-+}
++// STUBS
++extern int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset);
++extern int sigismember(const sigset_t *set, int signum);
++extern int sigpending(sigset_t *set);
++extern int sigwait(const sigset_t *restrict set, int *restrict sig);
 +
-+static int
-+sigfillset(sigset_t *set) {
-+    puts("# 80: sigfillset -1");
-+    return -1;
-+}
-+static int
-+sigaddset(sigset_t *set, int signum) {
-+    return -1;
-+}
++// ====================================================
++// unistd
++extern unsigned int alarm(unsigned int seconds);
 +
-+static int
-+sigdelset(sigset_t *set, int signum) {
-+    //puts("# 90: sigdelset -1");
-+    return -1;
-+}
++// ====================================================
 +
-+static int
-+sigaction(int signum, const struct sigaction *act, struct sigaction *oldact) {
-+    puts("# 96: sigaction 0");
-+    return 0;
-+}
-+static int
-+sigprocmask(int how, const sigset_t *_Nullable restrict set, sigset_t *_Nullable restrict oldset) {
-+    puts("# 101: sigprocmask 0");
-+    return 0;
-+}
 +
 +#include <setjmp.h>
 +
-+/*
-+#include <bits/setjmp.h>
-+
-+typedef struct __jmp_buf_tag {
-+    __jmp_buf __jb;
-+    unsigned long __fl;
-+    unsigned long __ss[128/sizeof(long)];
-+} jmp_buf[1];
-+
-+typedef jmp_buf sigjmp_buf;
-+*/
 +static int
 +sigsetjmp(sigjmp_buf env, int savesigs) {
 +//    puts("# 120: sigsetjmp");
@@ -155,7 +120,7 @@
 +static int
 +dup(int fd) {
 +    puts("# 134: dup");
-+    return -1;
++    return fd;
 +}
 +static int
 +dup2(int old, int new) {
@@ -207,23 +172,36 @@
 +
 +static int
 +semctl(int semid, int semnum, int cmd, ...) {
-+    return -1;
++    return 0; // -1;
 +}
 +
 +static int
 +semget(key_t key, int nsems, int semflg) {
-+    return -1;
++#if PGDEBUG
++    printf("# 213: semget(key_t key = %d, int nsems=%d, int semflg=%d)\n", key, nsems, semflg);
++#endif
++    return 1;
 +}
 +
 +static int
 +semop(int semid, struct sembuf *sops, size_t nsops) {
-+    return -1;
++    return 0;  // -1;
 +}
 +
 +
++
++
++
++
++
++
++#include <sys/mman.h>
++/*
 +static void *
 +mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset) {
-+    puts("# 221: mmap");
++#if PGDEBUG
++    printf("# 227: mmap(void* %p, size_t length=%d, int prot=%d, int flags=%d, int fd=%d, off_t offset=%d)\n", addr, length,prot,flags,fd,offset);
++#endif
 +    return NULL;
 +
 +}
@@ -234,17 +212,22 @@
 +    return 0;
 +}
 +
++*/
 +static int
 +shm_open(const char *name, int oflag, mode_t mode) {
-+    puts("# 234: shm_open");
-+    return -1;
-+}
-+static int
-+shm_unlink(const char *name) {
-+    puts("# 239: shm_unlink");
-+    return -1;
++    char tmpnam[128];
++    snprintf(tmpnam, 128, "/tmp%s", name);
++    fprintf(stderr, "# 194: shm_open(%s)\n", tmpnam);
++    return fileno(fopen(tmpnam, "w+"));
 +}
 +
++static int
++shm_unlink(const char *name) {
++    char tmpnam[128];
++    snprintf(tmpnam, 128, "/tmp%s", name);
++    fprintf(stderr, "# 200: shm_unlink(%s) STUB\n", tmpnam);
++    return remove(tmpnam); // -1
++}
 +
 +// initdb chmod
 +#if defined(__wasi__)

@@ -1,6 +1,6 @@
 --- postgresql/src/include/port/wasm_common.h
 +++ postgresql-wasm/src/include/port/wasm_common.h
-@@ -0,0 +1,304 @@
+@@ -0,0 +1,307 @@
 +#define WAIT_USE_POLL 1
 +
 +#define HAVE_LINUX_EIDRM_BUG
@@ -17,6 +17,10 @@
 +#define WASM_USERNAME "postgres"
 +#endif
 +
++// MEMFS ok files
++#define IDB_PIPE_BOOT "/tmp/initdb.boot.txt"
++#define IDB_PIPE_SINGLE "/tmp/initdb.single.txt"
++
 +/* --------------- how to configure those when installed ? ---------------- */
 +
 +// socket emulation via file, need to go in PGDATA for nodefs mount in web mode
@@ -25,11 +29,7 @@
 +#define PGS_OLOCK "/tmp/pglite/base/.s.PGSQL.5432.lock.out"
 +#define PGS_OUT   "/tmp/pglite/base/.s.PGSQL.5432.out"
 +
-+// MEMFS ok files
 +
-+#define IDB_PIPE_FILE "/tmp/initdb.txt"
-+#define IDB_PIPE_BOOT "/tmp/initdb.boot.txt"
-+#define IDB_PIPE_SINGLE "/tmp/initdb.single.txt"
 +#define PG_DEBUG_HEADER <pg_debug.h>
 +
 +
@@ -49,6 +49,10 @@
 +
 +// #include PG_DEBUG_HEADER
 +#include "/tmp/pglite/include/pg_debug.h"
++
++
++
++
 +
 +// #define COPY_INTERNAL
 +#define COPY_OFF
@@ -104,7 +108,7 @@
 +
 +
 +/*
-+ * popen / pclose for initdb is routed to stderr
++ * popen is routed via pg_popen to stderr or a IDB_PIPE_* file
 + * link a pclose replacement when we are in exec.c ( PG_EXEC defined )
 + */
 +
@@ -125,11 +129,13 @@
 +EMSCRIPTEN_KEEPALIVE int
 +IDB_STAGE = 0;
 +
++int pg_pclose(FILE *stream);
++
 +int pg_pclose(FILE *stream) {
 +    if (IDB_STAGE==1)
-+        fprintf(stderr,"# pg_pclose(%s) 129:" __FILE__ "\n" , IDB_PIPE_BOOT);
++        fprintf(stderr,"# pg_pclose(%s) 133:" __FILE__ "\n" , IDB_PIPE_BOOT);
 +    if (IDB_STAGE==2)
-+        fprintf(stderr,"# pg_pclose(%s) 129:" __FILE__ "\n" , IDB_PIPE_SINGLE);
++        fprintf(stderr,"# pg_pclose(%s) 135:" __FILE__ "\n" , IDB_PIPE_SINGLE);
 +
 +    if (IDB_PIPE_FP) {
 +        fflush(IDB_PIPE_FP);
@@ -162,7 +168,9 @@
 +    const char *locale = "/locale";
 +    char *localefile = malloc( strlen(prefix) + strlen(locale) + 1 );
 +    localefile = strcat(prefix,locale);
-+    //fprintf(stderr, "# 232:%s: OpenPipeStream(command=%s, mode=%s)\n#\tredirected to %s\n", __FILE__, command, mode, localefile);
++#if PGDEBUG
++    fprintf(stderr, "# 232:%s: OpenPipeStream(command=%s, mode=%s)\n#\tredirected to %s\n", __FILE__, command, mode, localefile);
++#endif
 +    if (localefile) {
 +        if (access(localefile, F_OK) != 0) {
 +            FILE *fakeloc = fopen(localefile, "w");
@@ -180,14 +188,8 @@
 +    return result;
 +}
 +
-+/*int
-+wasm_ClosePipeStream(FILE *handle) {
-+    puts("wasm_ClosePipeStream");
-+}
-+*/
 +#else
 +#   define OpenPipeStream(cmd, mode) wasm_OpenPipeStream(cmd, mode)
-+/*#   define ClosePipeStream(handle) wasm_ClosePipeStream(handle)*/
 +#endif
 +
 +
@@ -233,7 +235,8 @@
 +        return FAKE_KEY;
 +    } else {
 +    	printf("# ERROR: int shmget (key_t __key=%d, size_t __size=%zu, int __shmflg=%d)\n", __key, __size, __shmflg);
-+        abort();
++        //abort();
++        return FAKE_KEY;
 +    }
 +	return -1;
 +}

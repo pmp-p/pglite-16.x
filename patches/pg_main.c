@@ -292,7 +292,7 @@ void
 RePostgresSingleUserMain(int single_argc, char *single_argv[], const char *username)
 {
 #if PGDEBUG
-printf("# 295: RePostgresSingleUserMain progname=%s for %s\n", progname, single_argv[0]);
+printf("# 295: RePostgresSingleUserMain progname=%s for %s feed=%s\n", progname, single_argv[0], IDB_PIPE_SINGLE);
 #endif
     single_mode_feed = fopen(IDB_PIPE_SINGLE, "r");
 
@@ -310,7 +310,6 @@ printf("# 306: dbname=%s\n", dbname);
     process_shared_preload_libraries();
 
 //	                InitializeMaxBackends();
-PDEBUG("# 313: ?");
 
 // ? IgnoreSystemIndexes = true;
 IgnoreSystemIndexes = false;
@@ -324,6 +323,8 @@ IgnoreSystemIndexes = false;
 
     SetProcessingMode(InitProcessing);
 PDEBUG("# 326: Re-InitPostgres");
+if (am_walsender)
+    PDEBUG("# 327: am_walsender == true");
 //      BaseInit();
 
     InitPostgres(dbname, InvalidOid,	/* database to connect to */
@@ -331,8 +332,9 @@ PDEBUG("# 326: Re-InitPostgres");
                  !am_walsender, /* honor session_preload_libraries? */
                  false,			/* don't ignore datallowconn */
                  NULL);			/* no out_dbname */
+
+PDEBUG("# 334");
 /*
-PDEBUG("# 335");
     if (PostmasterContext)
     {
         PDEBUG("# 103");
@@ -352,10 +354,7 @@ PDEBUG("# 335");
     /* Perform initialization specific to a WAL sender process. */
     if (am_walsender)
         InitWalSender();
-
-    /*
-     * Send this backend's cancellation info to the frontend.
-     */
+/*
     if (whereToSendOutput == DestRemote)
     {
         StringInfoData buf;
@@ -364,10 +363,13 @@ PDEBUG("# 335");
         pq_sendint32(&buf, (int32) MyProcPid);
         pq_sendint32(&buf, (int32) MyCancelKey);
         pq_endmessage(&buf);
-        /* Need not flush since ReadyForQuery will do it. */
+        // Need not flush since ReadyForQuery will do it.
     }
+*/
+#if PGDEBUG
+    whereToSendOutput = DestDebug;
+#endif
 
-    /* Welcome banner for standalone case */
     if (whereToSendOutput == DestDebug)
         printf("\nPostgreSQL stand-alone backend %s\n", PG_VERSION);
 
@@ -394,30 +396,8 @@ PDEBUG("# 335");
     initStringInfo(&row_description_buf);
     MemoryContextSwitchTo(TopMemoryContext);
 
-    /*
-     * POSTGRES main processing loop begins here
-     *
-     * If an exception is encountered, processing resumes here so we abort the
-     * current transaction and start a new one.
-     *
-     * You might wonder why this isn't coded as an infinite loop around a
-     * PG_TRY construct.  The reason is that this is the bottom of the
-     * exception stack, and so with PG_TRY there would be no exception handler
-     * in force at all during the CATCH part.  By leaving the outermost setjmp
-     * always active, we have at least some chance of recovering from an error
-     * during error recovery.  (If we get into an infinite loop thereby, it
-     * will soon be stopped by overflow of elog.c's internal state stack.)
-     *
-     * Note that we use sigsetjmp(..., 1), so that this function's signal mask
-     * (to wit, UnBlockSig) will be restored when longjmp'ing to here.  This
-     * is essential in case we longjmp'd out of a signal handler on a platform
-     * where that leaves the signal blocked.  It's not redundant with the
-     * unblock in AbortTransaction() because the latter is only called if we
-     * were inside a transaction.
-     */
-
-#if 0 //PGDEBUG
-    #warning "exception handler off"
+#if 1 //PGDEBUG
+    PDEBUG("# 415: exception handler off");
 #else
     if (sigsetjmp(local_sigjmp_buf, 1) != 0)
     {
@@ -535,10 +515,10 @@ PDEBUG("# 335");
     /* We can now handle ereport(ERROR) */
     PG_exception_stack = &local_sigjmp_buf;
 
+#endif
+
     if (!ignore_till_sync)
         send_ready_for_query = true;	/* initially, or after error */
-
-#endif
 
     if (!inloop) {
         inloop = true;
@@ -626,7 +606,14 @@ PDEBUG("# 618: pg_repl_raf(REPL)");
     }
 
     if (is_node) {
-PDEBUG("# 629: pg_repl_raf(NODE) EXIT!!!");
+#if defined(__wasi__)
+    PDEBUG("# 629: pg_repl_raf(WASI) endless loop");
+    while (1) {
+        interactive_one();
+    }
+#else
+    PDEBUG("# 629: pg_repl_raf(NODE) EXIT!!!");
+#endif
     }
 
 }
@@ -1179,23 +1166,45 @@ __SIG_IGN(int) {
     #include "../postgresql/src/interfaces/libpq/pqexpbuffer.c"
     #define fsync_pgdata(...)
 
+    unsigned int alarm(unsigned int seconds) {
+        return 0;
+    }
+
+
+
     #include <stdio.h> // FILE+fprintf
     extern FILE* IDB_PIPE_FP;
     extern FILE* SOCKET_FILE;
     extern int SOCKET_DATA;
     extern int IDB_STAGE;
+
+
+
+
+    static int
+    ends_with(const char *str, const char *suffix)
+    {
+        if (!str || !suffix)
+            return 0;
+        size_t lenstr = strlen(str);
+        size_t lensuffix = strlen(suffix);
+        if (lensuffix >  lenstr)
+            return 0;
+        return strncmp(str + lenstr - lensuffix, suffix, lensuffix) == 0;
+    }
+
     FILE *pg_popen(const char *command, const char *type) {
-        if (IDB_STAGE>1) {
-        	fprintf(stderr,"# popen[%s]\n", command);
+        if ( ends_with(command,"-V") || (IDB_STAGE>1)) {
+        	fprintf(stderr,"# wasi-popen[%s] STUB\n", command);
         	return stderr;
         }
 
         if (!IDB_STAGE) {
-            fprintf(stderr,"# popen[%s] (BOOT)\n", command);
+            fprintf(stderr,"# wasi-popen[%s] (BOOT)\n", command);
             IDB_PIPE_FP = fopen( IDB_PIPE_BOOT, "w");
             IDB_STAGE = 1;
         } else {
-            fprintf(stderr,"# popen[%s] (SINGLE)\n", command);
+            fprintf(stderr,"# wasi-popen[%s] (SINGLE)\n", command);
             IDB_PIPE_FP = fopen( IDB_PIPE_SINGLE, "w");
             IDB_STAGE = 2;
         }
@@ -1203,6 +1212,8 @@ __SIG_IGN(int) {
         return IDB_PIPE_FP;
 
     }
+    //void __SIG_IGN(int) {}
+    //void __SIG_ERR(int) {}
 
     #include "../postgresql/src/bin/initdb/initdb.c"
 
