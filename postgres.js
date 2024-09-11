@@ -53,7 +53,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmp5numdg2a.js
+// include: /tmp/tmp1py14b0s.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -279,7 +279,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmp5numdg2a.js
+// end include: /tmp/tmp1py14b0s.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -931,10 +931,10 @@ function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  69133124: ($0) => { Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope; Module.FD_BUFFER_MAX = $0; Module.emscripten_copy_to = console.warn; },  
- 69133297: () => { console.warn("prerun(C-node) worker=", Module.is_worker); Module['postMessage'] = function custom_postMessage(event) { console.log("# 1252: onCustomMessage:",__FILE__, event); }; },  
- 69133480: () => { console.warn("prerun(C-web) worker=", Module.is_worker); },  
- 69133541: () => { if (Module.is_worker) { console.log("Main: running in a worker, setting onCustomMessage"); function onCustomMessage(event) { console.log("onCustomMessage:", event); }; Module['onCustomMessage'] = onCustomMessage; } else { console.log("Running in main thread, faking onCustomMessage"); Module['postMessage'] = function custom_postMessage(event) { switch (event.type) { case "raw" : { stringToUTF8( event.data, shm_rawinput, Module.FD_BUFFER_MAX); break; } case "stdin" : { stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX); break; } case "rcon" : { stringToUTF8( event.data, shm_rcon, Module.FD_BUFFER_MAX); break; } default : console.warn("custom_postMessage?", event); } }; }; }
+  69133092: ($0) => { Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope; Module.FD_BUFFER_MAX = $0; Module.emscripten_copy_to = console.warn; },  
+ 69133265: () => { console.warn("prerun(C-node) worker=", Module.is_worker); Module['postMessage'] = function custom_postMessage(event) { console.log("# 1252: onCustomMessage:",__FILE__, event); }; },  
+ 69133448: () => { console.warn("prerun(C-web) worker=", Module.is_worker); },  
+ 69133509: () => { if (Module.is_worker) { console.log("Main: running in a worker, setting onCustomMessage"); function onCustomMessage(event) { console.log("onCustomMessage:", event); }; Module['onCustomMessage'] = onCustomMessage; } else { console.log("Running in main thread, faking onCustomMessage"); Module['postMessage'] = function custom_postMessage(event) { switch (event.type) { case "raw" : { stringToUTF8( event.data, shm_rawinput, Module.FD_BUFFER_MAX); break; } case "stdin" : { stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX); break; } case "rcon" : { stringToUTF8( event.data, shm_rcon, Module.FD_BUFFER_MAX); break; } default : console.warn("custom_postMessage?", event); } }; }; }
 };
 function peek_fd(fd) { return test_data.length; }
 function fnc_getfd(fd) { return fnc_stdin() }
@@ -1194,7 +1194,7 @@ is_web_env.sig = 'i';
   
   
   
-  var ___heap_base = 74533424;
+  var ___heap_base = 74533376;
   
   var zeroMemory = (address, size) => {
       HEAPU8.fill(0, address, address + size);
@@ -1346,7 +1346,7 @@ is_web_env.sig = 'i';
   
   /** @type {WebAssembly.Table} */
   var wasmTable = new WebAssembly.Table({
-    'initial': 5383,
+    'initial': 5370,
     'element': 'anyfunc'
   });
   ;
@@ -2043,7 +2043,7 @@ is_web_env.sig = 'i';
 
   var ___memory_base = new WebAssembly.Global({'value': 'i32', 'mutable': false}, 67108864);
 
-  var ___stack_pointer = new WebAssembly.Global({'value': 'i32', 'mutable': true}, 74533424);
+  var ___stack_pointer = new WebAssembly.Global({'value': 'i32', 'mutable': true}, 74533376);
 
   var PATH = {
   isAbs:(path) => path.charAt(0) === '/',
@@ -9353,8 +9353,6 @@ var wasmImports = {
   /** @export */
   invoke_ijiiiiii,
   /** @export */
-  invoke_j,
-  /** @export */
   invoke_ji,
   /** @export */
   invoke_jii,
@@ -10953,142 +10951,142 @@ var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExpor
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
 var ___cxa_is_pointer_type = (a0) => (___cxa_is_pointer_type = wasmExports['__cxa_is_pointer_type'])(a0);
-var _ScanKeywords = Module['_ScanKeywords'] = 69110084;
-var _stderr = Module['_stderr'] = 69132512;
-var _stdout = Module['_stdout'] = 69132816;
-var _CurrentMemoryContext = Module['_CurrentMemoryContext'] = 69147296;
+var _ScanKeywords = Module['_ScanKeywords'] = 69110052;
+var _stderr = Module['_stderr'] = 69132480;
+var _stdout = Module['_stdout'] = 69132784;
+var _CurrentMemoryContext = Module['_CurrentMemoryContext'] = 69147264;
 var _TTSOpsHeapTuple = Module['_TTSOpsHeapTuple'] = 69079092;
-var _TopTransactionContext = Module['_TopTransactionContext'] = 69147320;
-var _old_snapshot_threshold = Module['_old_snapshot_threshold'] = 69134372;
-var _oldSnapshotControl = Module['_oldSnapshotControl'] = 69134376;
-var _MyProc = Module['_MyProc'] = 69177432;
-var _XactIsoLevel = Module['_XactIsoLevel'] = 69106124;
-var _CurrentResourceOwner = Module['_CurrentResourceOwner'] = 69134596;
-var _MyProcPid = Module['_MyProcPid'] = 69140828;
-var _MyDatabaseId = Module['_MyDatabaseId'] = 69140744;
-var _wal_level = Module['_wal_level'] = 69105828;
-var _MainLWLockArray = Module['_MainLWLockArray'] = 69177468;
+var _TopTransactionContext = Module['_TopTransactionContext'] = 69147288;
+var _old_snapshot_threshold = Module['_old_snapshot_threshold'] = 69134340;
+var _oldSnapshotControl = Module['_oldSnapshotControl'] = 69134344;
+var _MyProc = Module['_MyProc'] = 69177400;
+var _XactIsoLevel = Module['_XactIsoLevel'] = 69106092;
+var _CurrentResourceOwner = Module['_CurrentResourceOwner'] = 69134564;
+var _MyProcPid = Module['_MyProcPid'] = 69140796;
+var _MyDatabaseId = Module['_MyDatabaseId'] = 69140712;
+var _wal_level = Module['_wal_level'] = 69105796;
+var _MainLWLockArray = Module['_MainLWLockArray'] = 69177436;
 var _SnapshotAnyData = Module['_SnapshotAnyData'] = 68968040;
-var _InterruptPending = Module['_InterruptPending'] = 69140688;
-var _TopMemoryContext = Module['_TopMemoryContext'] = 69147300;
-var _TopTransactionResourceOwner = Module['_TopTransactionResourceOwner'] = 69134604;
-var _CacheMemoryContext = Module['_CacheMemoryContext'] = 69147312;
+var _InterruptPending = Module['_InterruptPending'] = 69140656;
+var _TopMemoryContext = Module['_TopMemoryContext'] = 69147268;
+var _TopTransactionResourceOwner = Module['_TopTransactionResourceOwner'] = 69134572;
+var _CacheMemoryContext = Module['_CacheMemoryContext'] = 69147280;
 var _cpu_operator_cost = Module['_cpu_operator_cost'] = 69090800;
-var _CritSectionCount = Module['_CritSectionCount'] = 69140736;
-var ___THREW__ = Module['___THREW__'] = 69290468;
-var ___threwValue = Module['___threwValue'] = 69290472;
-var _error_context_stack = Module['_error_context_stack'] = 69167204;
-var _PG_exception_stack = Module['_PG_exception_stack'] = 69167208;
-var _ParallelWorkerNumber = Module['_ParallelWorkerNumber'] = 69097592;
+var _CritSectionCount = Module['_CritSectionCount'] = 69140704;
+var ___THREW__ = Module['___THREW__'] = 69290420;
+var ___threwValue = Module['___threwValue'] = 69290424;
+var _error_context_stack = Module['_error_context_stack'] = 69167172;
+var _PG_exception_stack = Module['_PG_exception_stack'] = 69167176;
+var _ParallelWorkerNumber = Module['_ParallelWorkerNumber'] = 69097560;
 var _seq_page_cost = Module['_seq_page_cost'] = 69090768;
-var _IsUnderPostmaster = Module['_IsUnderPostmaster'] = 69140761;
-var _MyLatch = Module['_MyLatch'] = 69140860;
-var _DataDir = Module['_DataDir'] = 69140740;
-var _MyStartTime = Module['_MyStartTime'] = 69140832;
-var _process_shared_preload_libraries_in_progress = Module['_process_shared_preload_libraries_in_progress'] = 69140676;
-var _shmem_request_hook = Module['_shmem_request_hook'] = 69140680;
-var _MyProcPort = Module['_MyProcPort'] = 69140848;
-var _InterruptHoldoffCount = Module['_InterruptHoldoffCount'] = 69140728;
+var _IsUnderPostmaster = Module['_IsUnderPostmaster'] = 69140729;
+var _MyLatch = Module['_MyLatch'] = 69140828;
+var _DataDir = Module['_DataDir'] = 69140708;
+var _MyStartTime = Module['_MyStartTime'] = 69140800;
+var _process_shared_preload_libraries_in_progress = Module['_process_shared_preload_libraries_in_progress'] = 69140644;
+var _shmem_request_hook = Module['_shmem_request_hook'] = 69140648;
+var _MyProcPort = Module['_MyProcPort'] = 69140816;
+var _InterruptHoldoffCount = Module['_InterruptHoldoffCount'] = 69140696;
 var _DateStyle = Module['_DateStyle'] = 69016180;
-var _IntervalStyle = Module['_IntervalStyle'] = 69140768;
+var _IntervalStyle = Module['_IntervalStyle'] = 69140736;
 var _work_mem = Module['_work_mem'] = 69016192;
 var _maintenance_work_mem = Module['_maintenance_work_mem'] = 69016208;
 var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 69016212;
 var _NBuffers = Module['_NBuffers'] = 69016216;
-var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69276720;
-var _pg_crc32_table = Module['_pg_crc32_table'] = 67933808;
-var _stdin = Module['_stdin'] = 69132664;
-var _SPI_result = Module['_SPI_result'] = 69168084;
-var _SPI_processed = Module['_SPI_processed'] = 69168072;
-var _SPI_tuptable = Module['_SPI_tuptable'] = 69168080;
+var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69276672;
+var _pg_crc32_table = Module['_pg_crc32_table'] = 67933824;
+var _stdin = Module['_stdin'] = 69132632;
+var _SPI_result = Module['_SPI_result'] = 69168052;
+var _SPI_processed = Module['_SPI_processed'] = 69168040;
+var _SPI_tuptable = Module['_SPI_tuptable'] = 69168048;
 var _TTSOpsVirtual = Module['_TTSOpsVirtual'] = 69079044;
-var _xmlStructuredError = Module['_xmlStructuredError'] = 69277084;
-var _xmlStructuredErrorContext = Module['_xmlStructuredErrorContext'] = 69277092;
-var _xmlGenericErrorContext = Module['_xmlGenericErrorContext'] = 69277088;
-var _xmlGenericError = Module['_xmlGenericError'] = 69114388;
-var _xmlIsBaseCharGroup = Module['_xmlIsBaseCharGroup'] = 69114152;
-var _xmlIsDigitGroup = Module['_xmlIsDigitGroup'] = 69114184;
-var _xmlIsCombiningGroup = Module['_xmlIsCombiningGroup'] = 69114168;
-var _xmlIsExtenderGroup = Module['_xmlIsExtenderGroup'] = 69114200;
-var _xmlFree = Module['_xmlFree'] = 69114352;
-var _quote_all_identifiers = Module['_quote_all_identifiers'] = 69169149;
+var _xmlStructuredError = Module['_xmlStructuredError'] = 69277036;
+var _xmlStructuredErrorContext = Module['_xmlStructuredErrorContext'] = 69277044;
+var _xmlGenericErrorContext = Module['_xmlGenericErrorContext'] = 69277040;
+var _xmlGenericError = Module['_xmlGenericError'] = 69114356;
+var _xmlIsBaseCharGroup = Module['_xmlIsBaseCharGroup'] = 69114120;
+var _xmlIsDigitGroup = Module['_xmlIsDigitGroup'] = 69114152;
+var _xmlIsCombiningGroup = Module['_xmlIsCombiningGroup'] = 69114136;
+var _xmlIsExtenderGroup = Module['_xmlIsExtenderGroup'] = 69114168;
+var _xmlFree = Module['_xmlFree'] = 69114320;
+var _quote_all_identifiers = Module['_quote_all_identifiers'] = 69169117;
 var _extra_float_digits = Module['_extra_float_digits'] = 69020964;
 var _TTSOpsMinimalTuple = Module['_TTSOpsMinimalTuple'] = 69079140;
-var _debug_query_string = Module['_debug_query_string'] = 69169356;
-var _Log_directory = Module['_Log_directory'] = 69169612;
+var _debug_query_string = Module['_debug_query_string'] = 69169340;
+var _Log_directory = Module['_Log_directory'] = 69169572;
 var _pg_number_of_ones = Module['_pg_number_of_ones'] = 68773200;
-var _ShmemVariableCache = Module['_ShmemVariableCache'] = 69190044;
+var _ShmemVariableCache = Module['_ShmemVariableCache'] = 69190012;
 var _check_function_bodies = Module['_check_function_bodies'] = 69027777;
 var _cluster_name = Module['_cluster_name'] = 69027828;
-var _wal_segment_size = Module['_wal_segment_size'] = 69105848;
+var _wal_segment_size = Module['_wal_segment_size'] = 69105816;
 var _cpu_tuple_cost = Module['_cpu_tuple_cost'] = 69090784;
-var _application_name = Module['_application_name'] = 69148332;
-var _Log_filename = Module['_Log_filename'] = 69169616;
-var _GUC_check_errdetail_string = Module['_GUC_check_errdetail_string'] = 69149000;
-var _pgBufferUsage = Module['_pgBufferUsage'] = 69168944;
-var _pgWalUsage = Module['_pgWalUsage'] = 69169056;
-var _ExecutorStart_hook = Module['_ExecutorStart_hook'] = 69169080;
-var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69169084;
-var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69169088;
-var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69169092;
-var _progname = Module['_progname'] = 69169144;
-var _single_mode_feed = Module['_single_mode_feed'] = 69169160;
-var _SOCKET_DATA = Module['_SOCKET_DATA'] = 69194728;
-var _SOCKET_FILE = Module['_SOCKET_FILE'] = 69194724;
-var _cma_rsize = Module['_cma_rsize'] = 69169364;
-var _cma_wsize = Module['_cma_wsize'] = 69169368;
-var _ProcessUtility_hook = Module['_ProcessUtility_hook'] = 69169564;
-var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69169680;
-var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69169684;
-var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69170088;
-var _RmgrTable = Module['_RmgrTable'] = 69097616;
-var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458656;
-var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69170540;
-var _planner_hook = Module['_planner_hook'] = 69170552;
-var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69175996;
-var _BufferBlocks = Module['_BufferBlocks'] = 69170748;
-var _BufferDescriptors = Module['_BufferDescriptors'] = 69170744;
-var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69177384;
-var _ClientAuthentication_hook = Module['_ClientAuthentication_hook'] = 69180004;
-var _check_password_hook = Module['_check_password_hook'] = 69191244;
-var _IDB_STAGE = Module['_IDB_STAGE'] = 69194736;
-var _IDB_PIPE_FP = Module['_IDB_PIPE_FP'] = 69194732;
-var _pg_scram_mech = Module['_pg_scram_mech'] = 69114096;
-var _pg_g_threadlock = Module['_pg_g_threadlock'] = 69112200;
-var _pgresStatus = Module['_pgresStatus'] = 69113888;
+var _application_name = Module['_application_name'] = 69148300;
+var _Log_filename = Module['_Log_filename'] = 69169576;
+var _GUC_check_errdetail_string = Module['_GUC_check_errdetail_string'] = 69148968;
+var _pgBufferUsage = Module['_pgBufferUsage'] = 69168912;
+var _pgWalUsage = Module['_pgWalUsage'] = 69169024;
+var _ExecutorStart_hook = Module['_ExecutorStart_hook'] = 69169048;
+var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69169052;
+var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69169056;
+var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69169060;
+var _progname = Module['_progname'] = 69169112;
+var _single_mode_feed = Module['_single_mode_feed'] = 69169128;
+var _SOCKET_DATA = Module['_SOCKET_DATA'] = 69194680;
+var _SOCKET_FILE = Module['_SOCKET_FILE'] = 69194676;
+var _cma_rsize = Module['_cma_rsize'] = 69169160;
+var _cma_wsize = Module['_cma_wsize'] = 69169168;
+var _ProcessUtility_hook = Module['_ProcessUtility_hook'] = 69169524;
+var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69169640;
+var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69169644;
+var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69170056;
+var _RmgrTable = Module['_RmgrTable'] = 69097584;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458672;
+var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69170508;
+var _planner_hook = Module['_planner_hook'] = 69170520;
+var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69175964;
+var _BufferBlocks = Module['_BufferBlocks'] = 69170716;
+var _BufferDescriptors = Module['_BufferDescriptors'] = 69170712;
+var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69177352;
+var _ClientAuthentication_hook = Module['_ClientAuthentication_hook'] = 69179972;
+var _check_password_hook = Module['_check_password_hook'] = 69191212;
+var _IDB_STAGE = Module['_IDB_STAGE'] = 69194688;
+var _IDB_PIPE_FP = Module['_IDB_PIPE_FP'] = 69194684;
+var _pg_scram_mech = Module['_pg_scram_mech'] = 69114064;
+var _pg_g_threadlock = Module['_pg_g_threadlock'] = 69112168;
+var _pgresStatus = Module['_pgresStatus'] = 69113856;
 var _xmlIsPubidChar_tab = Module['_xmlIsPubidChar_tab'] = 68773488;
-var _xmlGetWarningsDefaultValue = Module['_xmlGetWarningsDefaultValue'] = 69114380;
-var _xmlMalloc = Module['_xmlMalloc'] = 69114356;
-var _xmlRealloc = Module['_xmlRealloc'] = 69114364;
-var _xmlLastError = Module['_xmlLastError'] = 69277104;
-var _xmlMallocAtomic = Module['_xmlMallocAtomic'] = 69114360;
-var _xmlMemStrdup = Module['_xmlMemStrdup'] = 69114368;
-var _xmlBufferAllocScheme = Module['_xmlBufferAllocScheme'] = 69114372;
-var _xmlDefaultBufferSize = Module['_xmlDefaultBufferSize'] = 69114376;
-var _xmlParserDebugEntities = Module['_xmlParserDebugEntities'] = 69277044;
-var _xmlDoValidityCheckingDefaultValue = Module['_xmlDoValidityCheckingDefaultValue'] = 69277048;
-var _xmlLoadExtDtdDefaultValue = Module['_xmlLoadExtDtdDefaultValue'] = 69277052;
-var _xmlPedanticParserDefaultValue = Module['_xmlPedanticParserDefaultValue'] = 69277056;
-var _xmlLineNumbersDefaultValue = Module['_xmlLineNumbersDefaultValue'] = 69277060;
-var _xmlKeepBlanksDefaultValue = Module['_xmlKeepBlanksDefaultValue'] = 69114384;
-var _xmlSubstituteEntitiesDefaultValue = Module['_xmlSubstituteEntitiesDefaultValue'] = 69277064;
-var _xmlRegisterNodeDefaultValue = Module['_xmlRegisterNodeDefaultValue'] = 69277068;
-var _xmlDeregisterNodeDefaultValue = Module['_xmlDeregisterNodeDefaultValue'] = 69277072;
-var _xmlParserInputBufferCreateFilenameValue = Module['_xmlParserInputBufferCreateFilenameValue'] = 69277076;
-var _xmlOutputBufferCreateFilenameValue = Module['_xmlOutputBufferCreateFilenameValue'] = 69277080;
-var _xmlIndentTreeOutput = Module['_xmlIndentTreeOutput'] = 69114392;
-var _xmlTreeIndentString = Module['_xmlTreeIndentString'] = 69114396;
-var _xmlSaveNoEmptyTags = Module['_xmlSaveNoEmptyTags'] = 69277096;
-var _xmlDefaultSAXHandler = Module['_xmlDefaultSAXHandler'] = 69114400;
-var _xmlDefaultSAXLocator = Module['_xmlDefaultSAXLocator'] = 69114512;
-var _xmlParserMaxDepth = Module['_xmlParserMaxDepth'] = 69115172;
+var _xmlGetWarningsDefaultValue = Module['_xmlGetWarningsDefaultValue'] = 69114348;
+var _xmlMalloc = Module['_xmlMalloc'] = 69114324;
+var _xmlRealloc = Module['_xmlRealloc'] = 69114332;
+var _xmlLastError = Module['_xmlLastError'] = 69277056;
+var _xmlMallocAtomic = Module['_xmlMallocAtomic'] = 69114328;
+var _xmlMemStrdup = Module['_xmlMemStrdup'] = 69114336;
+var _xmlBufferAllocScheme = Module['_xmlBufferAllocScheme'] = 69114340;
+var _xmlDefaultBufferSize = Module['_xmlDefaultBufferSize'] = 69114344;
+var _xmlParserDebugEntities = Module['_xmlParserDebugEntities'] = 69276996;
+var _xmlDoValidityCheckingDefaultValue = Module['_xmlDoValidityCheckingDefaultValue'] = 69277000;
+var _xmlLoadExtDtdDefaultValue = Module['_xmlLoadExtDtdDefaultValue'] = 69277004;
+var _xmlPedanticParserDefaultValue = Module['_xmlPedanticParserDefaultValue'] = 69277008;
+var _xmlLineNumbersDefaultValue = Module['_xmlLineNumbersDefaultValue'] = 69277012;
+var _xmlKeepBlanksDefaultValue = Module['_xmlKeepBlanksDefaultValue'] = 69114352;
+var _xmlSubstituteEntitiesDefaultValue = Module['_xmlSubstituteEntitiesDefaultValue'] = 69277016;
+var _xmlRegisterNodeDefaultValue = Module['_xmlRegisterNodeDefaultValue'] = 69277020;
+var _xmlDeregisterNodeDefaultValue = Module['_xmlDeregisterNodeDefaultValue'] = 69277024;
+var _xmlParserInputBufferCreateFilenameValue = Module['_xmlParserInputBufferCreateFilenameValue'] = 69277028;
+var _xmlOutputBufferCreateFilenameValue = Module['_xmlOutputBufferCreateFilenameValue'] = 69277032;
+var _xmlIndentTreeOutput = Module['_xmlIndentTreeOutput'] = 69114360;
+var _xmlTreeIndentString = Module['_xmlTreeIndentString'] = 69114364;
+var _xmlSaveNoEmptyTags = Module['_xmlSaveNoEmptyTags'] = 69277048;
+var _xmlDefaultSAXHandler = Module['_xmlDefaultSAXHandler'] = 69114368;
+var _xmlDefaultSAXLocator = Module['_xmlDefaultSAXLocator'] = 69114480;
+var _xmlParserMaxDepth = Module['_xmlParserMaxDepth'] = 69115140;
 var _xmlStringText = Module['_xmlStringText'] = 68775296;
 var _xmlStringComment = Module['_xmlStringComment'] = 68775311;
 var _xmlStringTextNoenc = Module['_xmlStringTextNoenc'] = 68775301;
-var _xmlXPathNAN = Module['_xmlXPathNAN'] = 69277768;
-var _xmlXPathNINF = Module['_xmlXPathNINF'] = 69277784;
-var _xmlXPathPINF = Module['_xmlXPathPINF'] = 69277776;
-var _z_errmsg = Module['_z_errmsg'] = 69131728;
+var _xmlXPathNAN = Module['_xmlXPathNAN'] = 69277720;
+var _xmlXPathNINF = Module['_xmlXPathNINF'] = 69277736;
+var _xmlXPathPINF = Module['_xmlXPathPINF'] = 69277728;
+var _z_errmsg = Module['_z_errmsg'] = 69131696;
 var __length_code = Module['__length_code'] = 68794960;
 var __dist_code = Module['__dist_code'] = 68794448;
 function invoke_iiii(index,a1,a2,a3) {
@@ -11319,18 +11317,6 @@ function invoke_iiij(index,a1,a2,a3) {
     stackRestore(sp);
     if (e !== e+0) throw e;
     _setThrew(1, 0);
-  }
-}
-
-function invoke_j(index) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)();
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
   }
 }
 
