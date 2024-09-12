@@ -53,7 +53,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpp8x45__2.js
+// include: /tmp/tmpyq7ln6zl.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -279,7 +279,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmpp8x45__2.js
+// end include: /tmp/tmpyq7ln6zl.js
 
 
 // Sometimes an existing Module object exists with properties
