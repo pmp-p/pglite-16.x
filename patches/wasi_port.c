@@ -317,6 +317,21 @@ system_wasi(const char *command) {
     return -1;
 }
 
+// pthread.h
+
+
+int pthread_create(pthread_t *restrict thread,
+                          const pthread_attr_t *restrict attr,
+                          void *(*start_routine)(void *),
+                          void *restrict arg) {
+    puts("# 327: pthread_create STUB");
+    return 0;
+}
+
+int pthread_join(pthread_t thread, void **retval) {
+    return 0;
+}
+
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
     return 0;
 }
@@ -328,5 +343,20 @@ int pthread_mutex_unlock(pthread_mutex_t *mutex) {
 void wait();
 
 // present in share/wasi-sysroot/lib/wasm32-wasi/libwasi-emulated-signal.a(signal.o)
-//void __SIG_IGN(int param) { }
+// void __SIG_IGN(int param) { }
+
+
+FILE *tmpfile(void) {
+    return fopen(mktemp("/tmp/tmpfile"),"w");
+}
+
+
+
+
+
+
+
+
+
+
 

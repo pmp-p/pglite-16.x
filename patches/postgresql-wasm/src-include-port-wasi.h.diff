@@ -3,7 +3,7 @@
 @@ -0,0 +1,271 @@
 +#ifndef I_WASI
 +#define I_WASI
-+/*
++
 +#if defined(HAVE_SETSID)
 +#undef HAVE_SETSID
 +#endif
@@ -11,7 +11,7 @@
 +#if defined(HAVE_GETRLIMIT)
 +#undef HAVE_GETRLIMIT
 +#endif
-+*/
++
 +
 +#define PLATFORM_DEFAULT_SYNC_METHOD    SYNC_METHOD_FDATASYNC
 +
