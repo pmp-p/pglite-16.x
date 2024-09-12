@@ -127,7 +127,7 @@ echo ===========================================================================
 END
 
 
-    ZIC=${ZIC:-$(realpath bin/zic)}
+
     chmod +x bin/zic bin/wasi-shared bin/emsdk-shared
 
     # for zic and emsdk-shared/wasi-shared called from makefile
@@ -153,9 +153,10 @@ END
 
     export EMCC_CFLAGS="${EMCC_CFLAGS} -Wno-macro-redefined -Wno-unused-function"
 
-    export WASI_CFLAGS="${CC_PGLITE}-DPREFIX=${PGROOT} -Wno-macro-redefined -Wno-unused-function"
+    export WASI_CFLAGS="${CC_PGLITE}-DPREFIX=${PGROOT} -Wno-declaration-after-statement -Wno-macro-redefined -Wno-unused-function -Wno-missing-prototypes -Wno-incompatible-pointer-types"
 
-#ZIC=$ZIC
+    ZIC=${ZIC:-$(realpath bin/zic)}
+
 	if EMCC_CFLAGS="${EMCC_ENV} ${EMCC_CFLAGS}" emmake make -j $(nproc) 2>&1 > /tmp/build.log
 	then
         echo build ok
@@ -168,7 +169,7 @@ END
         then
             echo install ok
             pushd ${PGROOT}
-            #find ./lib/postgresql ./share/postgresql/extension -type f > ${PGROOT}/pg.installed
+
             find . -type f | grep -v plpgsql > ${PGROOT}/pg.installed
             popd
 
