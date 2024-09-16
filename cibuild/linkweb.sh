@@ -18,6 +18,13 @@ linkweb:begin
 
 mkdir -p $WEBROOT
 
+if $WASI
+then
+    echo "no wasi web linking yet"
+    exit 0
+fi
+
+
 NOWARN="-Wno-missing-prototypes -Wno-unused-function -Wno-declaration-after-statement -Wno-incompatible-pointer-types-discards-qualifiers"
 
 # client lib ( eg psycopg ) for websocketed pg server
