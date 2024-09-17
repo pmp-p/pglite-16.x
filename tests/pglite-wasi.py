@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import asyncio
+
 class wasm_import:
     import os
     os.environ["WASMTIME_BACKTRACE_DETAILS"] = "1"
@@ -33,9 +35,8 @@ class wasm_import:
     config.argv = ["--single","postgres"]
     #config.inherit_argv()
 
-    config.env = [
+    env = [
         ['ENVIRONMENT', 'wasi-embed'],
-        ['REPL', 'N'],
     ]
 
     #config.inherit_env()
@@ -50,9 +51,14 @@ class wasm_import:
     linker.define_wasi()
 
     store = Store(linker.engine)
-    store.set_wasi(config)
 
-    def __init__(self, alias, wasmfile):
+
+    def __init__(self, alias, wasmfile, **env):
+        for k,v in env.items():
+            self.env.append( [k,v] )
+        self.config.env = self.env
+        self.store.set_wasi(self.config)
+
         import sys
         py_mod = type(sys)(alias)
         wasm_mod =  self.__module(self, wasmfile)
@@ -67,6 +73,7 @@ class wasm_import:
                     return self.mod.mem.size(self.mod.store)
                 if attr=='data_len':
                     return self.mod.mem.data_len(self.mod.store)
+                return object.__getattr__(self, attr)
 
 #        def getter(attr):
 #            return wasm_mod.get(attr)
@@ -85,14 +92,6 @@ class wasm_import:
 def SI(n):
     intn=int(n)
     n=float(n)
-    trail=''
-    if intn<0:
-        print(f"""
-
-        ERROR SI round(n)<0 : {n}
-
-        """)
-
     if intn<1024:
         return '%3.0f B'%n
 
@@ -110,10 +109,9 @@ def SI(n):
     return n
 
 
-wasm_import("pglite", "/tmp/pglite/bin/postgres.wasi")
+wasm_import("pglite", "/tmp/pglite/bin/postgres.wasi", **{ "REPL":"N", "PGUSER":"postgres", "PGDATABASE":"postgres"} )
 
 import pglite
-
 
 
 rv = pglite.pg_initdb()
@@ -122,12 +120,22 @@ print(f"""
 
 initdb returned : {bin(rv)}
 
-{pglite=} {type(pglite)=}
-
 {SI(pglite.Memory.size)=}
 {SI(pglite.Memory.data_len)=}
 
+{pglite=}
 """)
+for k in dir(pglite):
+    print("\t", k)
+
+async def main():
+    pglite.use_socketfile()
+    while True:
+        pglite.interactive_one()
+        await asyncio.sleep(0.016)
+
+
+asyncio.run(main())
 
 
 
