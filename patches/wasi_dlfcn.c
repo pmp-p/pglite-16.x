@@ -95,33 +95,6 @@ dlerror(void) {
     return (char *)dlerror;
 }
 
-/*
-typedef struct
-{
-	int			len;
-	int			version;
-	int			funcmaxargs;
-	int			indexmaxkeys;
-	int			namedatalen;
-	int			float8byval;
-	char		abi_extra[32];
-} Pg_magic_struct;
-
-
-#define PG_MODULE_MAGIC_DATA \
-{ \
-	sizeof(Pg_magic_struct), \
-	PG_VERSION_NUM / 100, \
-	FUNC_MAX_ARGS, \
-	INDEX_MAX_KEYS, \
-	NAMEDATALEN, \
-	FLOAT8PASSBYVAL, \
-	FMGR_ABI_EXTRA, \
-}
-*/
-
-//extern Pg_magic_struct *STUB_Pg_magic_func(void);
-
 static const Pg_magic_struct Pg_magic_data = PG_MODULE_MAGIC_DATA;
 
 const Pg_magic_struct *
@@ -139,6 +112,20 @@ STUB__PG_fini(void) {
 #define PG_FUNCTION_ARGS FunctionCallInfo fcinfo
 
 extern Datum dsnowball_init(PG_FUNCTION_ARGS);
+extern void pg_finfo_dsnowball_init(void);
+extern void pg_finfo_dsnowball_lexize(void);
+
+extern void pg_finfo_plpgsql_call_handler(void);
+extern void pg_finfo_plpgsql_inline_handler(void);
+extern void pg_finfo_plpgsql_validator(void);
+
+// listed in .sql
+extern void plpgsql_call_handler(void);
+extern void plpgsql_inline_handler(void);
+extern void plpgsql_validator(void);
+
+extern void _PG_init(void);
+
 
 void *
 dlopen(const char *filename, int flags) {
@@ -149,6 +136,11 @@ dlopen(const char *filename, int flags) {
             return (void *)i;
     }
     printf("dlopen: new lib '%s'\n", filename );
+    if ( ends_with(filename,"/plpgsql.so") ){
+        puts(" ========= CALLING _PG_init =========");
+        _PG_init();
+    }
+
     tab = dict_new();
     dict_add(tab, filename, dltab_index++ );
     dltab[dltab_index] = tab;
@@ -160,13 +152,43 @@ void *
 dlsym(void *__restrict handle, const char *__restrict symbol) {
     void *sym = NULL;
     if ( !strcmp(symbol, "Pg_magic_func") )
-        sym = &STUB_Pg_magic_func;
+        //sym = &STUB_Pg_magic_func;
+        return &STUB_Pg_magic_func;
 
     if ( !strcmp(symbol, "_PG_init") )
-        sym = &STUB__PG_init;
+        // sym = &STUB__PG_init;
+        return &STUB__PG_init;
 
     if ( !strcmp(symbol, "dsnowball_init") )
-        sym = &dsnowball_init;
+        //sym = &dsnowball_init;
+        return  &dsnowball_init;
+
+    if ( !strcmp(symbol, "pg_finfo_dsnowball_init") )
+        return  &pg_finfo_dsnowball_init;
+
+    if ( !strcmp(symbol, "pg_finfo_dsnowball_lexize") )
+        return  &pg_finfo_dsnowball_lexize;
+
+    if ( !strcmp(symbol, "pg_finfo_plpgsql_call_handler") )
+        return  &pg_finfo_plpgsql_call_handler;
+
+    if ( !strcmp(symbol, "pg_finfo_plpgsql_inline_handler") )
+        return  &pg_finfo_plpgsql_inline_handler;
+
+    if ( !strcmp(symbol, "pg_finfo_plpgsql_validator") )
+        return  &pg_finfo_plpgsql_validator;
+
+    if ( !strcmp(symbol, "plpgsql_call_handler") )
+        return  &plpgsql_call_handler;
+
+    if ( !strcmp(symbol, "plpgsql_inline_handler") )
+        return  &plpgsql_inline_handler;
+
+    if ( !strcmp(symbol, "plpgsql_validator") ) {
+        return  &plpgsql_validator;
+    }
+
+
     fprintf(stderr, "void *dlsym(void *handle = %p, const char *symbol = %s) => %p\n", handle, symbol, sym);
     return sym;
 }
