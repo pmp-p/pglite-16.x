@@ -34,11 +34,3 @@
  
  	/*
  	 * Adjust row-security mode, if supported.
-@@ -2208,6 +2215,7 @@
- 		 * Finally, call gettimeofday again to save the 'last sleep time'.
- 		 * ----------
- 		 */
-+
- 	}
- 	archprintf(fout, "\\.\n\n\n");
- 
