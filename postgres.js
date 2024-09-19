@@ -53,7 +53,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpaw6ndl_z.js
+// include: /tmp/tmpxh5f4aus.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -94,51 +94,68 @@ var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
           });
           return;
         }
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', packageName, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onprogress = (event) => {
-          var url = packageName;
-          var size = packageSize;
-          if (event.total) size = event.total;
-          if (event.loaded) {
-            if (!xhr.addedTotal) {
-              xhr.addedTotal = true;
-              if (!Module['dataFileDownloads']) Module['dataFileDownloads'] = {};
-              Module['dataFileDownloads'][url] = {
-                loaded: event.loaded,
-                total: size
-              };
-            } else {
-              Module['dataFileDownloads'][url].loaded = event.loaded;
+        Module.dataFileDownloads ??= {};
+        fetch(packageName)
+          .catch((cause) => Promise.reject(new Error(`Network Error: ${packageName}`, {cause}))) // If fetch fails, rewrite the error to include the failing URL & the cause.
+          .then((response) => {
+
+            let loaded = 0;
+
+            if (!response.ok) {
+              return Promise.reject(new Error(`${response.status}: ${response.url}`));
             }
-            var total = 0;
-            var loaded = 0;
-            var num = 0;
-            for (var download in Module['dataFileDownloads']) {
-            var data = Module['dataFileDownloads'][download];
-              total += data.total;
-              loaded += data.loaded;
-              num++;
+
+            // If we're using the polyfill, readers won't be available...
+            if (!response.body && response.arrayBuffer) {
+              response.arrayBuffer().then(callback);
+              return;
             }
-            total = Math.ceil(total * Module['expectedDataFileDownloads']/num);
-            Module['setStatus']?.(`Downloading data... (${loaded}/${total})`);
-          } else if (!Module['dataFileDownloads']) {
-            Module['setStatus']?.('Downloading data...');
-          }
-        };
-        xhr.onerror = (event) => {
-          throw new Error("NetworkError for: " + packageName);
-        }
-        xhr.onload = (event) => {
-          if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
-            var packageData = xhr.response;
-            callback(packageData);
-          } else {
-            throw new Error(xhr.statusText + " : " + xhr.responseURL);
-          }
-        };
-        xhr.send(null);
+
+            const reader = response.body.getReader();
+            const headers = response.headers;
+
+            const size = headers.get('Content-Length') ?? packageSize;
+            const chunks = [];
+
+            const iterate = () => reader.read().then(handleChunk).catch((cause) => {
+              return Promise.reject(new Error(`Unexpected error while handling : ${response.url} ${cause}`, {cause}));
+            });
+
+            const handleChunk = ({done, value}) => {
+              if (!done) {
+                chunks.push(value);
+                loaded += value.length;
+                Module.dataFileDownloads[packageName] = Module.dataFileDownloads[packageName] ?? {};
+                Module.dataFileDownloads[packageName].loaded = loaded;
+                Module.dataFileDownloads[packageName].total = size;
+
+                let totalLoaded = 0;
+                let totalSize = 0;
+
+                for (const dowload of Object.values(Module.dataFileDownloads)) {
+                  totalLoaded += dowload.loaded;
+                  totalSize += dowload.total;
+                }
+
+                if (totalSize) {
+                  if (Module['setStatus']) Module['setStatus'](`Downloading data... (${totalLoaded}/${totalSize})`);
+                } else {
+                  if (Module['setStatus']) Module['setStatus']('Downloading data...');
+                }
+                return iterate();
+              } else {
+                const packageData = new Uint8Array(chunks.map((c) => c.length).reduce((a, b) => a + b, 0));
+                let offset = 0;
+                for (const chunk of chunks) {
+                  packageData.set(chunk, offset);
+                  offset += chunk.length;
+                }
+
+                callback(packageData.buffer);
+              }
+            };
+            return iterate();
+          });
       };
 
       function handleError(error) {
@@ -245,12 +262,8 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
         // Reuse the bytearray from the XHR as the source for file reads.
           DataRequest.prototype.byteArray = byteArray;
           var files = metadata['files'];
-          function make_callback(i) {
-            var req = DataRequest.prototype.requests[files[i].filename];
-            return () => {req.onload()};
-          }
           for (var i = 0; i < files.length; ++i) {
-            setTimeout(make_callback(i));
+            DataRequest.prototype.requests[files[i].filename].onload();
           }          Module['removeRunDependency']('datafile_postgres.data');
 
       };
@@ -275,11 +288,11 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
     }
 
     }
-    loadPackage({"files": [{"filename": "/home/web_user/.pgpass", "start": 0, "end": 135}, {"filename": "/tmp/pglite/bin/initdb", "start": 135, "end": 147}, {"filename": "/tmp/pglite/bin/postgres", "start": 147, "end": 159}, {"filename": "/tmp/pglite/lib/postgresql/cyrillic_and_mic.so", "start": 159, "end": 5738}, {"filename": "/tmp/pglite/lib/postgresql/dict_snowball.so", "start": 5738, "end": 580838}, {"filename": "/tmp/pglite/lib/postgresql/euc2004_sjis2004.so", "start": 580838, "end": 583216}, {"filename": "/tmp/pglite/lib/postgresql/euc_cn_and_mic.so", "start": 583216, "end": 584483}, {"filename": "/tmp/pglite/lib/postgresql/euc_jp_and_sjis.so", "start": 584483, "end": 592246}, {"filename": "/tmp/pglite/lib/postgresql/euc_kr_and_mic.so", "start": 592246, "end": 593553}, {"filename": "/tmp/pglite/lib/postgresql/euc_tw_and_big5.so", "start": 593553, "end": 598668}, {"filename": "/tmp/pglite/lib/postgresql/latin2_and_win1250.so", "start": 598668, "end": 600613}, {"filename": "/tmp/pglite/lib/postgresql/latin_and_mic.so", "start": 600613, "end": 602086}, {"filename": "/tmp/pglite/lib/postgresql/libpqwalreceiver.so", "start": 602086, "end": 725291}, {"filename": "/tmp/pglite/lib/postgresql/pgoutput.so", "start": 725291, "end": 741389}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/config/install-sh", "start": 741389, "end": 755386}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/config/missing", "start": 755386, "end": 756734}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/Makefile.global", "start": 756734, "end": 792886}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/Makefile.port", "start": 792886, "end": 793162}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/Makefile.shlib", "start": 793162, "end": 809200}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/makefiles/pgxs.mk", "start": 809200, "end": 824128}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/nls-global.mk", "start": 824128, "end": 831013}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/test/isolation/isolationtester.cjs", "start": 831013, "end": 927330}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/test/isolation/pg_isolation_regress.cjs", "start": 927330, "end": 1003883}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/test/regress/pg_regress.cjs", "start": 1003883, "end": 1080426}, {"filename": "/tmp/pglite/lib/postgresql/plpgsql.so", "start": 1080426, "end": 1239614}, {"filename": "/tmp/pglite/password", "start": 1239614, "end": 1239623}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/legacy.sql", "start": 1239623, "end": 1299893}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/legacy_gist.sql", "start": 1299893, "end": 1301118}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/legacy_minimal.sql", "start": 1301118, "end": 1303580}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/postgis.sql", "start": 1303580, "end": 1601367}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/postgis_comments.sql", "start": 1601367, "end": 1652423}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/postgis_upgrade.sql", "start": 1652423, "end": 2008739}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/raster_comments.sql", "start": 2008739, "end": 2104012}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/sfcgal_comments.sql", "start": 2104012, "end": 2106883}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/spatial_ref_sys.sql", "start": 2106883, "end": 9273437}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/topology_comments.sql", "start": 9273437, "end": 9291246}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/uninstall_legacy.sql", "start": 9291246, "end": 9307739}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/uninstall_postgis.sql", "start": 9307739, "end": 9373733}, {"filename": "/tmp/pglite/share/postgresql/errcodes.txt", "start": 9373733, "end": 9407191}, {"filename": "/tmp/pglite/share/postgresql/extension/plpgsql--1.0.sql", "start": 9407191, "end": 9407849}, {"filename": "/tmp/pglite/share/postgresql/extension/plpgsql.control", "start": 9407849, "end": 9408042}, {"filename": "/tmp/pglite/share/postgresql/fix-CVE-2024-4317.sql", "start": 9408042, "end": 9413807}, {"filename": "/tmp/pglite/share/postgresql/information_schema.sql", "start": 9413807, "end": 9528782}, {"filename": "/tmp/pglite/share/postgresql/pg_hba.conf.sample", "start": 9528782, "end": 9534407}, {"filename": "/tmp/pglite/share/postgresql/pg_ident.conf.sample", "start": 9534407, "end": 9537047}, {"filename": "/tmp/pglite/share/postgresql/pg_service.conf.sample", "start": 9537047, "end": 9537651}, {"filename": "/tmp/pglite/share/postgresql/postgres.bki", "start": 9537651, "end": 10481755}, {"filename": "/tmp/pglite/share/postgresql/postgresql.conf.sample", "start": 10481755, "end": 10511402}, {"filename": "/tmp/pglite/share/postgresql/psqlrc.sample", "start": 10511402, "end": 10511680}, {"filename": "/tmp/pglite/share/postgresql/snowball_create.sql", "start": 10511680, "end": 10555856}, {"filename": "/tmp/pglite/share/postgresql/sql_features.txt", "start": 10555856, "end": 10591537}, {"filename": "/tmp/pglite/share/postgresql/system_constraints.sql", "start": 10591537, "end": 10600432}, {"filename": "/tmp/pglite/share/postgresql/system_functions.sql", "start": 10600432, "end": 10623747}, {"filename": "/tmp/pglite/share/postgresql/system_views.sql", "start": 10623747, "end": 10674020}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Abidjan", "start": 10674020, "end": 10674150}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Accra", "start": 10674150, "end": 10674280}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Addis_Ababa", "start": 10674280, "end": 10674471}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Algiers", "start": 10674471, "end": 10674941}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Asmara", "start": 10674941, "end": 10675132}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Asmera", "start": 10675132, "end": 10675323}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bamako", "start": 10675323, "end": 10675453}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bangui", "start": 10675453, "end": 10675633}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Banjul", "start": 10675633, "end": 10675763}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bissau", "start": 10675763, "end": 10675912}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Blantyre", "start": 10675912, "end": 10676043}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Brazzaville", "start": 10676043, "end": 10676223}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bujumbura", "start": 10676223, "end": 10676354}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Cairo", "start": 10676354, "end": 10677663}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Casablanca", "start": 10677663, "end": 10679582}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Ceuta", "start": 10679582, "end": 10680144}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Conakry", "start": 10680144, "end": 10680274}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Dakar", "start": 10680274, "end": 10680404}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Dar_es_Salaam", "start": 10680404, "end": 10680595}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Djibouti", "start": 10680595, "end": 10680786}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Douala", "start": 10680786, "end": 10680966}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/El_Aaiun", "start": 10680966, "end": 10682796}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Freetown", "start": 10682796, "end": 10682926}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Gaborone", "start": 10682926, "end": 10683057}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Harare", "start": 10683057, "end": 10683188}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Johannesburg", "start": 10683188, "end": 10683378}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Juba", "start": 10683378, "end": 10683836}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Kampala", "start": 10683836, "end": 10684027}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Khartoum", "start": 10684027, "end": 10684485}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Kigali", "start": 10684485, "end": 10684616}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Kinshasa", "start": 10684616, "end": 10684796}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lagos", "start": 10684796, "end": 10684976}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Libreville", "start": 10684976, "end": 10685156}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lome", "start": 10685156, "end": 10685286}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Luanda", "start": 10685286, "end": 10685466}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lubumbashi", "start": 10685466, "end": 10685597}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lusaka", "start": 10685597, "end": 10685728}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Malabo", "start": 10685728, "end": 10685908}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Maputo", "start": 10685908, "end": 10686039}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Maseru", "start": 10686039, "end": 10686229}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Mbabane", "start": 10686229, "end": 10686419}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Mogadishu", "start": 10686419, "end": 10686610}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Monrovia", "start": 10686610, "end": 10686774}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Nairobi", "start": 10686774, "end": 10686965}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Ndjamena", "start": 10686965, "end": 10687125}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Niamey", "start": 10687125, "end": 10687305}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Nouakchott", "start": 10687305, "end": 10687435}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Ouagadougou", "start": 10687435, "end": 10687565}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Porto-Novo", "start": 10687565, "end": 10687745}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Sao_Tome", "start": 10687745, "end": 10687918}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Timbuktu", "start": 10687918, "end": 10688048}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Tripoli", "start": 10688048, "end": 10688479}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Tunis", "start": 10688479, "end": 10688928}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Windhoek", "start": 10688928, "end": 10689566}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Adak", "start": 10689566, "end": 10690535}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Anchorage", "start": 10690535, "end": 10691512}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Anguilla", "start": 10691512, "end": 10691689}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Antigua", "start": 10691689, "end": 10691866}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Araguaina", "start": 10691866, "end": 10692458}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Buenos_Aires", "start": 10692458, "end": 10693166}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Catamarca", "start": 10693166, "end": 10693874}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/ComodRivadavia", "start": 10693874, "end": 10694582}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Cordoba", "start": 10694582, "end": 10695290}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Jujuy", "start": 10695290, "end": 10695980}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/La_Rioja", "start": 10695980, "end": 10696697}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Mendoza", "start": 10696697, "end": 10697405}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Rio_Gallegos", "start": 10697405, "end": 10698113}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Salta", "start": 10698113, "end": 10698803}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/San_Juan", "start": 10698803, "end": 10699520}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/San_Luis", "start": 10699520, "end": 10700237}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Tucuman", "start": 10700237, "end": 10700963}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Ushuaia", "start": 10700963, "end": 10701671}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Aruba", "start": 10701671, "end": 10701848}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Asuncion", "start": 10701848, "end": 10702732}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Atikokan", "start": 10702732, "end": 10702881}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Atka", "start": 10702881, "end": 10703850}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Bahia", "start": 10703850, "end": 10704532}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Bahia_Banderas", "start": 10704532, "end": 10705260}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Barbados", "start": 10705260, "end": 10705538}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Belem", "start": 10705538, "end": 10705932}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Belize", "start": 10705932, "end": 10706977}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Blanc-Sablon", "start": 10706977, "end": 10707154}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Boa_Vista", "start": 10707154, "end": 10707584}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Bogota", "start": 10707584, "end": 10707763}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Boise", "start": 10707763, "end": 10708762}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Buenos_Aires", "start": 10708762, "end": 10709470}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cambridge_Bay", "start": 10709470, "end": 10710353}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Campo_Grande", "start": 10710353, "end": 10711305}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cancun", "start": 10711305, "end": 10711834}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Caracas", "start": 10711834, "end": 10712024}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Catamarca", "start": 10712024, "end": 10712732}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cayenne", "start": 10712732, "end": 10712883}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cayman", "start": 10712883, "end": 10713032}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Chicago", "start": 10713032, "end": 10714786}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Chihuahua", "start": 10714786, "end": 10715477}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Ciudad_Juarez", "start": 10715477, "end": 10716195}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Coral_Harbour", "start": 10716195, "end": 10716344}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cordoba", "start": 10716344, "end": 10717052}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Costa_Rica", "start": 10717052, "end": 10717284}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Creston", "start": 10717284, "end": 10717524}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cuiaba", "start": 10717524, "end": 10718458}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Curacao", "start": 10718458, "end": 10718635}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Danmarkshavn", "start": 10718635, "end": 10719082}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Dawson", "start": 10719082, "end": 10720111}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Dawson_Creek", "start": 10720111, "end": 10720794}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Denver", "start": 10720794, "end": 10721836}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Detroit", "start": 10721836, "end": 10722735}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Dominica", "start": 10722735, "end": 10722912}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Edmonton", "start": 10722912, "end": 10723882}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Eirunepe", "start": 10723882, "end": 10724318}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/El_Salvador", "start": 10724318, "end": 10724494}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Ensenada", "start": 10724494, "end": 10725519}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Fort_Nelson", "start": 10725519, "end": 10726967}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Fort_Wayne", "start": 10726967, "end": 10727498}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Fortaleza", "start": 10727498, "end": 10727982}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Glace_Bay", "start": 10727982, "end": 10728862}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Godthab", "start": 10728862, "end": 10729827}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Goose_Bay", "start": 10729827, "end": 10731407}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Grand_Turk", "start": 10731407, "end": 10732260}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Grenada", "start": 10732260, "end": 10732437}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guadeloupe", "start": 10732437, "end": 10732614}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guatemala", "start": 10732614, "end": 10732826}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guayaquil", "start": 10732826, "end": 10733005}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guyana", "start": 10733005, "end": 10733186}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Halifax", "start": 10733186, "end": 10734858}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Havana", "start": 10734858, "end": 10735975}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Hermosillo", "start": 10735975, "end": 10736261}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Indianapolis", "start": 10736261, "end": 10736792}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Knox", "start": 10736792, "end": 10737808}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Marengo", "start": 10737808, "end": 10738375}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Petersburg", "start": 10738375, "end": 10739058}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Tell_City", "start": 10739058, "end": 10739580}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Vevay", "start": 10739580, "end": 10739949}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Vincennes", "start": 10739949, "end": 10740507}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Winamac", "start": 10740507, "end": 10741119}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indianapolis", "start": 10741119, "end": 10741650}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Inuvik", "start": 10741650, "end": 10742467}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Iqaluit", "start": 10742467, "end": 10743322}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Jamaica", "start": 10743322, "end": 10743661}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Jujuy", "start": 10743661, "end": 10744351}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Juneau", "start": 10744351, "end": 10745317}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Kentucky/Louisville", "start": 10745317, "end": 10746559}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Kentucky/Monticello", "start": 10746559, "end": 10747531}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Knox_IN", "start": 10747531, "end": 10748547}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Kralendijk", "start": 10748547, "end": 10748724}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/La_Paz", "start": 10748724, "end": 10748894}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Lima", "start": 10748894, "end": 10749177}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Los_Angeles", "start": 10749177, "end": 10750471}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Louisville", "start": 10750471, "end": 10751713}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Lower_Princes", "start": 10751713, "end": 10751890}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Maceio", "start": 10751890, "end": 10752392}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Managua", "start": 10752392, "end": 10752687}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Manaus", "start": 10752687, "end": 10753099}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Marigot", "start": 10753099, "end": 10753276}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Martinique", "start": 10753276, "end": 10753454}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Matamoros", "start": 10753454, "end": 10753891}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Mazatlan", "start": 10753891, "end": 10754609}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Mendoza", "start": 10754609, "end": 10755317}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Menominee", "start": 10755317, "end": 10756234}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Merida", "start": 10756234, "end": 10756888}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Metlakatla", "start": 10756888, "end": 10757483}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Mexico_City", "start": 10757483, "end": 10758256}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Miquelon", "start": 10758256, "end": 10758806}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Moncton", "start": 10758806, "end": 10760299}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Monterrey", "start": 10760299, "end": 10760943}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Montevideo", "start": 10760943, "end": 10761912}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Montreal", "start": 10761912, "end": 10763629}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Montserrat", "start": 10763629, "end": 10763806}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nassau", "start": 10763806, "end": 10765523}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/New_York", "start": 10765523, "end": 10767267}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nipigon", "start": 10767267, "end": 10768984}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nome", "start": 10768984, "end": 10769959}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Noronha", "start": 10769959, "end": 10770443}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/North_Dakota/Beulah", "start": 10770443, "end": 10771486}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/North_Dakota/Center", "start": 10771486, "end": 10772476}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/North_Dakota/New_Salem", "start": 10772476, "end": 10773466}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nuuk", "start": 10773466, "end": 10774431}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Ojinaga", "start": 10774431, "end": 10775140}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Panama", "start": 10775140, "end": 10775289}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Pangnirtung", "start": 10775289, "end": 10776144}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Paramaribo", "start": 10776144, "end": 10776331}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Phoenix", "start": 10776331, "end": 10776571}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Port-au-Prince", "start": 10776571, "end": 10777136}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Port_of_Spain", "start": 10777136, "end": 10777313}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Porto_Acre", "start": 10777313, "end": 10777731}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Porto_Velho", "start": 10777731, "end": 10778125}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Puerto_Rico", "start": 10778125, "end": 10778302}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Punta_Arenas", "start": 10778302, "end": 10779520}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rainy_River", "start": 10779520, "end": 10780814}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rankin_Inlet", "start": 10780814, "end": 10781621}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Recife", "start": 10781621, "end": 10782105}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Regina", "start": 10782105, "end": 10782743}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Resolute", "start": 10782743, "end": 10783550}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rio_Branco", "start": 10783550, "end": 10783968}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rosario", "start": 10783968, "end": 10784676}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santa_Isabel", "start": 10784676, "end": 10785701}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santarem", "start": 10785701, "end": 10786110}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santiago", "start": 10786110, "end": 10787464}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santo_Domingo", "start": 10787464, "end": 10787781}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Sao_Paulo", "start": 10787781, "end": 10788733}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Scoresbysund", "start": 10788733, "end": 10789717}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Shiprock", "start": 10789717, "end": 10790759}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Sitka", "start": 10790759, "end": 10791715}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Barthelemy", "start": 10791715, "end": 10791892}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Johns", "start": 10791892, "end": 10793770}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Kitts", "start": 10793770, "end": 10793947}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Lucia", "start": 10793947, "end": 10794124}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Thomas", "start": 10794124, "end": 10794301}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Vincent", "start": 10794301, "end": 10794478}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Swift_Current", "start": 10794478, "end": 10794846}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Tegucigalpa", "start": 10794846, "end": 10795040}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Thule", "start": 10795040, "end": 10795495}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Thunder_Bay", "start": 10795495, "end": 10797212}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Tijuana", "start": 10797212, "end": 10798237}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Toronto", "start": 10798237, "end": 10799954}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Tortola", "start": 10799954, "end": 10800131}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Vancouver", "start": 10800131, "end": 10801461}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Virgin", "start": 10801461, "end": 10801638}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Whitehorse", "start": 10801638, "end": 10802667}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Winnipeg", "start": 10802667, "end": 10803961}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Yakutat", "start": 10803961, "end": 10804907}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Yellowknife", "start": 10804907, "end": 10805877}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Casey", "start": 10805877, "end": 10806164}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Davis", "start": 10806164, "end": 10806361}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/DumontDUrville", "start": 10806361, "end": 10806515}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Macquarie", "start": 10806515, "end": 10807491}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Mawson", "start": 10807491, "end": 10807643}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/McMurdo", "start": 10807643, "end": 10808686}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Palmer", "start": 10808686, "end": 10809573}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Rothera", "start": 10809573, "end": 10809705}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/South_Pole", "start": 10809705, "end": 10810748}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Syowa", "start": 10810748, "end": 10810881}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Troll", "start": 10810881, "end": 10811058}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Vostok", "start": 10811058, "end": 10811228}, {"filename": "/tmp/pglite/share/postgresql/timezone/Arctic/Longyearbyen", "start": 10811228, "end": 10811933}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Aden", "start": 10811933, "end": 10812066}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Almaty", "start": 10812066, "end": 10812684}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Amman", "start": 10812684, "end": 10813612}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Anadyr", "start": 10813612, "end": 10814355}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Aqtau", "start": 10814355, "end": 10814961}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Aqtobe", "start": 10814961, "end": 10815576}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ashgabat", "start": 10815576, "end": 10815951}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ashkhabad", "start": 10815951, "end": 10816326}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Atyrau", "start": 10816326, "end": 10816942}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Baghdad", "start": 10816942, "end": 10817572}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Bahrain", "start": 10817572, "end": 10817724}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Baku", "start": 10817724, "end": 10818468}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Bangkok", "start": 10818468, "end": 10818620}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Barnaul", "start": 10818620, "end": 10819373}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Beirut", "start": 10819373, "end": 10820105}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Bishkek", "start": 10820105, "end": 10820723}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Brunei", "start": 10820723, "end": 10821043}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Calcutta", "start": 10821043, "end": 10821263}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Chita", "start": 10821263, "end": 10822013}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Choibalsan", "start": 10822013, "end": 10822632}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Chongqing", "start": 10822632, "end": 10823025}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Chungking", "start": 10823025, "end": 10823418}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Colombo", "start": 10823418, "end": 10823665}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dacca", "start": 10823665, "end": 10823896}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Damascus", "start": 10823896, "end": 10825130}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dhaka", "start": 10825130, "end": 10825361}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dili", "start": 10825361, "end": 10825531}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dubai", "start": 10825531, "end": 10825664}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dushanbe", "start": 10825664, "end": 10826030}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Famagusta", "start": 10826030, "end": 10826970}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Gaza", "start": 10826970, "end": 10829416}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Harbin", "start": 10829416, "end": 10829809}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Hebron", "start": 10829809, "end": 10832273}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ho_Chi_Minh", "start": 10832273, "end": 10832509}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Hong_Kong", "start": 10832509, "end": 10833284}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Hovd", "start": 10833284, "end": 10833878}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Irkutsk", "start": 10833878, "end": 10834638}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Istanbul", "start": 10834638, "end": 10835838}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Jakarta", "start": 10835838, "end": 10836086}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Jayapura", "start": 10836086, "end": 10836257}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Jerusalem", "start": 10836257, "end": 10837331}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kabul", "start": 10837331, "end": 10837490}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kamchatka", "start": 10837490, "end": 10838217}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Karachi", "start": 10838217, "end": 10838483}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kashgar", "start": 10838483, "end": 10838616}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kathmandu", "start": 10838616, "end": 10838777}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Katmandu", "start": 10838777, "end": 10838938}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Khandyga", "start": 10838938, "end": 10839713}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kolkata", "start": 10839713, "end": 10839933}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Krasnoyarsk", "start": 10839933, "end": 10840674}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kuala_Lumpur", "start": 10840674, "end": 10840930}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kuching", "start": 10840930, "end": 10841250}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kuwait", "start": 10841250, "end": 10841383}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Macao", "start": 10841383, "end": 10842174}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Macau", "start": 10842174, "end": 10842965}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Magadan", "start": 10842965, "end": 10843716}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Makassar", "start": 10843716, "end": 10843906}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Manila", "start": 10843906, "end": 10844144}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Muscat", "start": 10844144, "end": 10844277}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Nicosia", "start": 10844277, "end": 10844874}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Novokuznetsk", "start": 10844874, "end": 10845600}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Novosibirsk", "start": 10845600, "end": 10846353}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Omsk", "start": 10846353, "end": 10847094}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Oral", "start": 10847094, "end": 10847719}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Phnom_Penh", "start": 10847719, "end": 10847871}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Pontianak", "start": 10847871, "end": 10848118}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Pyongyang", "start": 10848118, "end": 10848301}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Qatar", "start": 10848301, "end": 10848453}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Qostanay", "start": 10848453, "end": 10849077}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Qyzylorda", "start": 10849077, "end": 10849701}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Rangoon", "start": 10849701, "end": 10849888}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Riyadh", "start": 10849888, "end": 10850021}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Saigon", "start": 10850021, "end": 10850257}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Sakhalin", "start": 10850257, "end": 10851012}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Samarkand", "start": 10851012, "end": 10851378}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Seoul", "start": 10851378, "end": 10851793}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Shanghai", "start": 10851793, "end": 10852186}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Singapore", "start": 10852186, "end": 10852442}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Srednekolymsk", "start": 10852442, "end": 10853184}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Taipei", "start": 10853184, "end": 10853695}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tashkent", "start": 10853695, "end": 10854061}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tbilisi", "start": 10854061, "end": 10854690}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tehran", "start": 10854690, "end": 10855502}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tel_Aviv", "start": 10855502, "end": 10856576}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Thimbu", "start": 10856576, "end": 10856730}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Thimphu", "start": 10856730, "end": 10856884}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tokyo", "start": 10856884, "end": 10857097}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tomsk", "start": 10857097, "end": 10857850}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ujung_Pandang", "start": 10857850, "end": 10858040}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ulaanbaatar", "start": 10858040, "end": 10858634}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ulan_Bator", "start": 10858634, "end": 10859228}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Urumqi", "start": 10859228, "end": 10859361}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ust-Nera", "start": 10859361, "end": 10860132}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Vientiane", "start": 10860132, "end": 10860284}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Vladivostok", "start": 10860284, "end": 10861026}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yakutsk", "start": 10861026, "end": 10861767}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yangon", "start": 10861767, "end": 10861954}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yekaterinburg", "start": 10861954, "end": 10862714}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yerevan", "start": 10862714, "end": 10863422}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Azores", "start": 10863422, "end": 10864875}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Bermuda", "start": 10864875, "end": 10865899}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Canary", "start": 10865899, "end": 10866377}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Cape_Verde", "start": 10866377, "end": 10866552}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Faeroe", "start": 10866552, "end": 10866993}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Faroe", "start": 10866993, "end": 10867434}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Jan_Mayen", "start": 10867434, "end": 10868139}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Madeira", "start": 10868139, "end": 10869592}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Reykjavik", "start": 10869592, "end": 10869722}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/South_Georgia", "start": 10869722, "end": 10869854}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/St_Helena", "start": 10869854, "end": 10869984}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Stanley", "start": 10869984, "end": 10870773}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/ACT", "start": 10870773, "end": 10871677}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Adelaide", "start": 10871677, "end": 10872598}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Brisbane", "start": 10872598, "end": 10872887}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Broken_Hill", "start": 10872887, "end": 10873828}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Canberra", "start": 10873828, "end": 10874732}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Currie", "start": 10874732, "end": 10875735}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Darwin", "start": 10875735, "end": 10875969}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Eucla", "start": 10875969, "end": 10876283}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Hobart", "start": 10876283, "end": 10877286}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/LHI", "start": 10877286, "end": 10877978}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Lindeman", "start": 10877978, "end": 10878303}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Lord_Howe", "start": 10878303, "end": 10878995}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Melbourne", "start": 10878995, "end": 10879899}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/NSW", "start": 10879899, "end": 10880803}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/North", "start": 10880803, "end": 10881037}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Perth", "start": 10881037, "end": 10881343}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Queensland", "start": 10881343, "end": 10881632}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/South", "start": 10881632, "end": 10882553}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Sydney", "start": 10882553, "end": 10883457}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Tasmania", "start": 10883457, "end": 10884460}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Victoria", "start": 10884460, "end": 10885364}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/West", "start": 10885364, "end": 10885670}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Yancowinna", "start": 10885670, "end": 10886611}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/Acre", "start": 10886611, "end": 10887029}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/DeNoronha", "start": 10887029, "end": 10887513}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/East", "start": 10887513, "end": 10888465}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/West", "start": 10888465, "end": 10888877}, {"filename": "/tmp/pglite/share/postgresql/timezone/CET", "start": 10888877, "end": 10889498}, {"filename": "/tmp/pglite/share/postgresql/timezone/CST6CDT", "start": 10889498, "end": 10890449}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Atlantic", "start": 10890449, "end": 10892121}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Central", "start": 10892121, "end": 10893415}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Eastern", "start": 10893415, "end": 10895132}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Mountain", "start": 10895132, "end": 10896102}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Newfoundland", "start": 10896102, "end": 10897980}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Pacific", "start": 10897980, "end": 10899310}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Saskatchewan", "start": 10899310, "end": 10899948}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Yukon", "start": 10899948, "end": 10900977}, {"filename": "/tmp/pglite/share/postgresql/timezone/Chile/Continental", "start": 10900977, "end": 10902331}, {"filename": "/tmp/pglite/share/postgresql/timezone/Chile/EasterIsland", "start": 10902331, "end": 10903505}, {"filename": "/tmp/pglite/share/postgresql/timezone/Cuba", "start": 10903505, "end": 10904622}, {"filename": "/tmp/pglite/share/postgresql/timezone/EET", "start": 10904622, "end": 10905119}, {"filename": "/tmp/pglite/share/postgresql/timezone/EST", "start": 10905119, "end": 10905230}, {"filename": "/tmp/pglite/share/postgresql/timezone/EST5EDT", "start": 10905230, "end": 10906181}, {"filename": "/tmp/pglite/share/postgresql/timezone/Egypt", "start": 10906181, "end": 10907490}, {"filename": "/tmp/pglite/share/postgresql/timezone/Eire", "start": 10907490, "end": 10908986}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT", "start": 10908986, "end": 10909097}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+0", "start": 10909097, "end": 10909208}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+1", "start": 10909208, "end": 10909321}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+10", "start": 10909321, "end": 10909435}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+11", "start": 10909435, "end": 10909549}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+12", "start": 10909549, "end": 10909663}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+2", "start": 10909663, "end": 10909776}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+3", "start": 10909776, "end": 10909889}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+4", "start": 10909889, "end": 10910002}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+5", "start": 10910002, "end": 10910115}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+6", "start": 10910115, "end": 10910228}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+7", "start": 10910228, "end": 10910341}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+8", "start": 10910341, "end": 10910454}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+9", "start": 10910454, "end": 10910567}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-0", "start": 10910567, "end": 10910678}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-1", "start": 10910678, "end": 10910792}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-10", "start": 10910792, "end": 10910907}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-11", "start": 10910907, "end": 10911022}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-12", "start": 10911022, "end": 10911137}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-13", "start": 10911137, "end": 10911252}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-14", "start": 10911252, "end": 10911367}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-2", "start": 10911367, "end": 10911481}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-3", "start": 10911481, "end": 10911595}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-4", "start": 10911595, "end": 10911709}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-5", "start": 10911709, "end": 10911823}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-6", "start": 10911823, "end": 10911937}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-7", "start": 10911937, "end": 10912051}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-8", "start": 10912051, "end": 10912165}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-9", "start": 10912165, "end": 10912279}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT0", "start": 10912279, "end": 10912390}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/Greenwich", "start": 10912390, "end": 10912501}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/UCT", "start": 10912501, "end": 10912612}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/UTC", "start": 10912612, "end": 10912723}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/Universal", "start": 10912723, "end": 10912834}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/Zulu", "start": 10912834, "end": 10912945}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Amsterdam", "start": 10912945, "end": 10914048}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Andorra", "start": 10914048, "end": 10914437}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Astrakhan", "start": 10914437, "end": 10915163}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Athens", "start": 10915163, "end": 10915845}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Belfast", "start": 10915845, "end": 10917444}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Belgrade", "start": 10917444, "end": 10917922}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Berlin", "start": 10917922, "end": 10918627}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Bratislava", "start": 10918627, "end": 10919350}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Brussels", "start": 10919350, "end": 10920453}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Bucharest", "start": 10920453, "end": 10921114}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Budapest", "start": 10921114, "end": 10921880}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Busingen", "start": 10921880, "end": 10922377}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Chisinau", "start": 10922377, "end": 10923132}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Copenhagen", "start": 10923132, "end": 10923837}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Dublin", "start": 10923837, "end": 10925333}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Gibraltar", "start": 10925333, "end": 10926553}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Guernsey", "start": 10926553, "end": 10928152}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Helsinki", "start": 10928152, "end": 10928633}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Isle_of_Man", "start": 10928633, "end": 10930232}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Istanbul", "start": 10930232, "end": 10931432}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Jersey", "start": 10931432, "end": 10933031}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kaliningrad", "start": 10933031, "end": 10933935}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kiev", "start": 10933935, "end": 10934493}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kirov", "start": 10934493, "end": 10935228}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kyiv", "start": 10935228, "end": 10935786}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Lisbon", "start": 10935786, "end": 10937240}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Ljubljana", "start": 10937240, "end": 10937718}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/London", "start": 10937718, "end": 10939317}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Luxembourg", "start": 10939317, "end": 10940420}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Madrid", "start": 10940420, "end": 10941317}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Malta", "start": 10941317, "end": 10942245}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Mariehamn", "start": 10942245, "end": 10942726}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Minsk", "start": 10942726, "end": 10943534}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Monaco", "start": 10943534, "end": 10944639}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Moscow", "start": 10944639, "end": 10945547}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Nicosia", "start": 10945547, "end": 10946144}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Oslo", "start": 10946144, "end": 10946849}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Paris", "start": 10946849, "end": 10947954}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Podgorica", "start": 10947954, "end": 10948432}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Prague", "start": 10948432, "end": 10949155}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Riga", "start": 10949155, "end": 10949849}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Rome", "start": 10949849, "end": 10950796}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Samara", "start": 10950796, "end": 10951528}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/San_Marino", "start": 10951528, "end": 10952475}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Sarajevo", "start": 10952475, "end": 10952953}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Saratov", "start": 10952953, "end": 10953679}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Simferopol", "start": 10953679, "end": 10954544}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Skopje", "start": 10954544, "end": 10955022}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Sofia", "start": 10955022, "end": 10955614}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Stockholm", "start": 10955614, "end": 10956319}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Tallinn", "start": 10956319, "end": 10956994}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Tirane", "start": 10956994, "end": 10957598}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Tiraspol", "start": 10957598, "end": 10958353}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Ulyanovsk", "start": 10958353, "end": 10959113}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Uzhgorod", "start": 10959113, "end": 10959671}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vaduz", "start": 10959671, "end": 10960168}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vatican", "start": 10960168, "end": 10961115}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vienna", "start": 10961115, "end": 10961773}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vilnius", "start": 10961773, "end": 10962449}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Volgograd", "start": 10962449, "end": 10963202}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Warsaw", "start": 10963202, "end": 10964125}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Zagreb", "start": 10964125, "end": 10964603}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Zaporozhye", "start": 10964603, "end": 10965161}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Zurich", "start": 10965161, "end": 10965658}, {"filename": "/tmp/pglite/share/postgresql/timezone/Factory", "start": 10965658, "end": 10965771}, {"filename": "/tmp/pglite/share/postgresql/timezone/GB", "start": 10965771, "end": 10967370}, {"filename": "/tmp/pglite/share/postgresql/timezone/GB-Eire", "start": 10967370, "end": 10968969}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT", "start": 10968969, "end": 10969080}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT+0", "start": 10969080, "end": 10969191}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT-0", "start": 10969191, "end": 10969302}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT0", "start": 10969302, "end": 10969413}, {"filename": "/tmp/pglite/share/postgresql/timezone/Greenwich", "start": 10969413, "end": 10969524}, {"filename": "/tmp/pglite/share/postgresql/timezone/HST", "start": 10969524, "end": 10969636}, {"filename": "/tmp/pglite/share/postgresql/timezone/Hongkong", "start": 10969636, "end": 10970411}, {"filename": "/tmp/pglite/share/postgresql/timezone/Iceland", "start": 10970411, "end": 10970541}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Antananarivo", "start": 10970541, "end": 10970732}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Chagos", "start": 10970732, "end": 10970884}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Christmas", "start": 10970884, "end": 10971036}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Cocos", "start": 10971036, "end": 10971223}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Comoro", "start": 10971223, "end": 10971414}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Kerguelen", "start": 10971414, "end": 10971566}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Mahe", "start": 10971566, "end": 10971699}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Maldives", "start": 10971699, "end": 10971851}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Mauritius", "start": 10971851, "end": 10972030}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Mayotte", "start": 10972030, "end": 10972221}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Reunion", "start": 10972221, "end": 10972354}, {"filename": "/tmp/pglite/share/postgresql/timezone/Iran", "start": 10972354, "end": 10973166}, {"filename": "/tmp/pglite/share/postgresql/timezone/Israel", "start": 10973166, "end": 10974240}, {"filename": "/tmp/pglite/share/postgresql/timezone/Jamaica", "start": 10974240, "end": 10974579}, {"filename": "/tmp/pglite/share/postgresql/timezone/Japan", "start": 10974579, "end": 10974792}, {"filename": "/tmp/pglite/share/postgresql/timezone/Kwajalein", "start": 10974792, "end": 10975011}, {"filename": "/tmp/pglite/share/postgresql/timezone/Libya", "start": 10975011, "end": 10975442}, {"filename": "/tmp/pglite/share/postgresql/timezone/MET", "start": 10975442, "end": 10976063}, {"filename": "/tmp/pglite/share/postgresql/timezone/MST", "start": 10976063, "end": 10976174}, {"filename": "/tmp/pglite/share/postgresql/timezone/MST7MDT", "start": 10976174, "end": 10977125}, {"filename": "/tmp/pglite/share/postgresql/timezone/Mexico/BajaNorte", "start": 10977125, "end": 10978150}, {"filename": "/tmp/pglite/share/postgresql/timezone/Mexico/BajaSur", "start": 10978150, "end": 10978868}, {"filename": "/tmp/pglite/share/postgresql/timezone/Mexico/General", "start": 10978868, "end": 10979641}, {"filename": "/tmp/pglite/share/postgresql/timezone/NZ", "start": 10979641, "end": 10980684}, {"filename": "/tmp/pglite/share/postgresql/timezone/NZ-CHAT", "start": 10980684, "end": 10981492}, {"filename": "/tmp/pglite/share/postgresql/timezone/Navajo", "start": 10981492, "end": 10982534}, {"filename": "/tmp/pglite/share/postgresql/timezone/PRC", "start": 10982534, "end": 10982927}, {"filename": "/tmp/pglite/share/postgresql/timezone/PST8PDT", "start": 10982927, "end": 10983878}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Apia", "start": 10983878, "end": 10984285}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Auckland", "start": 10984285, "end": 10985328}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Bougainville", "start": 10985328, "end": 10985529}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Chatham", "start": 10985529, "end": 10986337}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Chuuk", "start": 10986337, "end": 10986491}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Easter", "start": 10986491, "end": 10987665}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Efate", "start": 10987665, "end": 10988007}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Enderbury", "start": 10988007, "end": 10988179}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Fakaofo", "start": 10988179, "end": 10988332}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Fiji", "start": 10988332, "end": 10988728}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Funafuti", "start": 10988728, "end": 10988862}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Galapagos", "start": 10988862, "end": 10989037}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Gambier", "start": 10989037, "end": 10989169}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Guadalcanal", "start": 10989169, "end": 10989303}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Guam", "start": 10989303, "end": 10989653}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Honolulu", "start": 10989653, "end": 10989874}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Johnston", "start": 10989874, "end": 10990095}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kanton", "start": 10990095, "end": 10990267}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kiritimati", "start": 10990267, "end": 10990441}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kosrae", "start": 10990441, "end": 10990683}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kwajalein", "start": 10990683, "end": 10990902}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Majuro", "start": 10990902, "end": 10991036}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Marquesas", "start": 10991036, "end": 10991175}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Midway", "start": 10991175, "end": 10991321}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Nauru", "start": 10991321, "end": 10991504}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Niue", "start": 10991504, "end": 10991658}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Norfolk", "start": 10991658, "end": 10991905}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Noumea", "start": 10991905, "end": 10992103}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Pago_Pago", "start": 10992103, "end": 10992249}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Palau", "start": 10992249, "end": 10992397}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Pitcairn", "start": 10992397, "end": 10992550}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Pohnpei", "start": 10992550, "end": 10992684}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Ponape", "start": 10992684, "end": 10992818}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Port_Moresby", "start": 10992818, "end": 10992972}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Rarotonga", "start": 10992972, "end": 10993378}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Saipan", "start": 10993378, "end": 10993728}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Samoa", "start": 10993728, "end": 10993874}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Tahiti", "start": 10993874, "end": 10994007}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Tarawa", "start": 10994007, "end": 10994141}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Tongatapu", "start": 10994141, "end": 10994378}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Truk", "start": 10994378, "end": 10994532}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Wake", "start": 10994532, "end": 10994666}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Wallis", "start": 10994666, "end": 10994800}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Yap", "start": 10994800, "end": 10994954}, {"filename": "/tmp/pglite/share/postgresql/timezone/Poland", "start": 10994954, "end": 10995877}, {"filename": "/tmp/pglite/share/postgresql/timezone/Portugal", "start": 10995877, "end": 10997331}, {"filename": "/tmp/pglite/share/postgresql/timezone/ROC", "start": 10997331, "end": 10997842}, {"filename": "/tmp/pglite/share/postgresql/timezone/ROK", "start": 10997842, "end": 10998257}, {"filename": "/tmp/pglite/share/postgresql/timezone/Singapore", "start": 10998257, "end": 10998513}, {"filename": "/tmp/pglite/share/postgresql/timezone/Turkey", "start": 10998513, "end": 10999713}, {"filename": "/tmp/pglite/share/postgresql/timezone/UCT", "start": 10999713, "end": 10999824}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Alaska", "start": 10999824, "end": 11000801}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Aleutian", "start": 11000801, "end": 11001770}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Arizona", "start": 11001770, "end": 11002010}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Central", "start": 11002010, "end": 11003764}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/East-Indiana", "start": 11003764, "end": 11004295}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Eastern", "start": 11004295, "end": 11006039}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Hawaii", "start": 11006039, "end": 11006260}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Indiana-Starke", "start": 11006260, "end": 11007276}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Michigan", "start": 11007276, "end": 11008175}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Mountain", "start": 11008175, "end": 11009217}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Pacific", "start": 11009217, "end": 11010511}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Samoa", "start": 11010511, "end": 11010657}, {"filename": "/tmp/pglite/share/postgresql/timezone/UTC", "start": 11010657, "end": 11010768}, {"filename": "/tmp/pglite/share/postgresql/timezone/Universal", "start": 11010768, "end": 11010879}, {"filename": "/tmp/pglite/share/postgresql/timezone/W-SU", "start": 11010879, "end": 11011787}, {"filename": "/tmp/pglite/share/postgresql/timezone/WET", "start": 11011787, "end": 11012281}, {"filename": "/tmp/pglite/share/postgresql/timezone/Zulu", "start": 11012281, "end": 11012392}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Africa.txt", "start": 11012392, "end": 11019365}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/America.txt", "start": 11019365, "end": 11030372}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Antarctica.txt", "start": 11030372, "end": 11031506}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Asia.txt", "start": 11031506, "end": 11039817}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Atlantic.txt", "start": 11039817, "end": 11043350}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Australia", "start": 11043350, "end": 11044485}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Australia.txt", "start": 11044485, "end": 11047869}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Default", "start": 11047869, "end": 11075119}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Etc.txt", "start": 11075119, "end": 11076369}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Europe.txt", "start": 11076369, "end": 11085151}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/India", "start": 11085151, "end": 11085744}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Indian.txt", "start": 11085744, "end": 11087005}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Pacific.txt", "start": 11087005, "end": 11090773}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/danish.stop", "start": 11090773, "end": 11091197}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/dutch.stop", "start": 11091197, "end": 11091650}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/english.stop", "start": 11091650, "end": 11092272}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/finnish.stop", "start": 11092272, "end": 11093851}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/french.stop", "start": 11093851, "end": 11094656}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/german.stop", "start": 11094656, "end": 11096005}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hungarian.stop", "start": 11096005, "end": 11097232}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample.affix", "start": 11097232, "end": 11097475}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_long.affix", "start": 11097475, "end": 11098108}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_long.dict", "start": 11098108, "end": 11098206}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_num.affix", "start": 11098206, "end": 11098668}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_num.dict", "start": 11098668, "end": 11098797}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/ispell_sample.affix", "start": 11098797, "end": 11099262}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/ispell_sample.dict", "start": 11099262, "end": 11099343}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/italian.stop", "start": 11099343, "end": 11100997}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/nepali.stop", "start": 11100997, "end": 11105258}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/norwegian.stop", "start": 11105258, "end": 11106109}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/portuguese.stop", "start": 11106109, "end": 11107376}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/russian.stop", "start": 11107376, "end": 11108611}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/spanish.stop", "start": 11108611, "end": 11110789}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/swedish.stop", "start": 11110789, "end": 11111348}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/synonym_sample.syn", "start": 11111348, "end": 11111421}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/thesaurus_sample.ths", "start": 11111421, "end": 11111894}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/turkish.stop", "start": 11111894, "end": 11112154}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/unaccent.rules", "start": 11112154, "end": 11122093}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/xsyn_sample.rules", "start": 11122093, "end": 11122232}], "remote_package_size": 11122232});
+    loadPackage({"files": [{"filename": "/home/web_user/.pgpass", "start": 0, "end": 135}, {"filename": "/tmp/pglite/bin/initdb", "start": 135, "end": 147}, {"filename": "/tmp/pglite/bin/postgres", "start": 147, "end": 159}, {"filename": "/tmp/pglite/lib/postgresql/cyrillic_and_mic.so", "start": 159, "end": 5738}, {"filename": "/tmp/pglite/lib/postgresql/dict_snowball.so", "start": 5738, "end": 580838}, {"filename": "/tmp/pglite/lib/postgresql/euc2004_sjis2004.so", "start": 580838, "end": 583216}, {"filename": "/tmp/pglite/lib/postgresql/euc_cn_and_mic.so", "start": 583216, "end": 584483}, {"filename": "/tmp/pglite/lib/postgresql/euc_jp_and_sjis.so", "start": 584483, "end": 592246}, {"filename": "/tmp/pglite/lib/postgresql/euc_kr_and_mic.so", "start": 592246, "end": 593553}, {"filename": "/tmp/pglite/lib/postgresql/euc_tw_and_big5.so", "start": 593553, "end": 598668}, {"filename": "/tmp/pglite/lib/postgresql/latin2_and_win1250.so", "start": 598668, "end": 600613}, {"filename": "/tmp/pglite/lib/postgresql/latin_and_mic.so", "start": 600613, "end": 602086}, {"filename": "/tmp/pglite/lib/postgresql/libpqwalreceiver.so", "start": 602086, "end": 725291}, {"filename": "/tmp/pglite/lib/postgresql/pgoutput.so", "start": 725291, "end": 741389}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/config/install-sh", "start": 741389, "end": 755386}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/config/missing", "start": 755386, "end": 756734}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/Makefile.global", "start": 756734, "end": 792886}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/Makefile.port", "start": 792886, "end": 793162}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/Makefile.shlib", "start": 793162, "end": 809200}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/makefiles/pgxs.mk", "start": 809200, "end": 824128}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/nls-global.mk", "start": 824128, "end": 831013}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/test/isolation/isolationtester.cjs", "start": 831013, "end": 927272}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/test/isolation/pg_isolation_regress.cjs", "start": 927272, "end": 1003767}, {"filename": "/tmp/pglite/lib/postgresql/pgxs/src/test/regress/pg_regress.cjs", "start": 1003767, "end": 1080252}, {"filename": "/tmp/pglite/lib/postgresql/plpgsql.so", "start": 1080252, "end": 1239440}, {"filename": "/tmp/pglite/password", "start": 1239440, "end": 1239449}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/legacy.sql", "start": 1239449, "end": 1299719}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/legacy_gist.sql", "start": 1299719, "end": 1300944}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/legacy_minimal.sql", "start": 1300944, "end": 1303406}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/postgis.sql", "start": 1303406, "end": 1601193}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/postgis_comments.sql", "start": 1601193, "end": 1652249}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/postgis_upgrade.sql", "start": 1652249, "end": 2008565}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/raster_comments.sql", "start": 2008565, "end": 2103838}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/sfcgal_comments.sql", "start": 2103838, "end": 2106709}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/spatial_ref_sys.sql", "start": 2106709, "end": 9273263}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/topology_comments.sql", "start": 9273263, "end": 9291072}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/uninstall_legacy.sql", "start": 9291072, "end": 9307565}, {"filename": "/tmp/pglite/share/postgresql/contrib/postgis-3.4/uninstall_postgis.sql", "start": 9307565, "end": 9373559}, {"filename": "/tmp/pglite/share/postgresql/errcodes.txt", "start": 9373559, "end": 9407017}, {"filename": "/tmp/pglite/share/postgresql/extension/plpgsql--1.0.sql", "start": 9407017, "end": 9407675}, {"filename": "/tmp/pglite/share/postgresql/extension/plpgsql.control", "start": 9407675, "end": 9407868}, {"filename": "/tmp/pglite/share/postgresql/fix-CVE-2024-4317.sql", "start": 9407868, "end": 9413633}, {"filename": "/tmp/pglite/share/postgresql/information_schema.sql", "start": 9413633, "end": 9528608}, {"filename": "/tmp/pglite/share/postgresql/pg_hba.conf.sample", "start": 9528608, "end": 9534233}, {"filename": "/tmp/pglite/share/postgresql/pg_ident.conf.sample", "start": 9534233, "end": 9536873}, {"filename": "/tmp/pglite/share/postgresql/pg_service.conf.sample", "start": 9536873, "end": 9537477}, {"filename": "/tmp/pglite/share/postgresql/postgres.bki", "start": 9537477, "end": 10481581}, {"filename": "/tmp/pglite/share/postgresql/postgresql.conf.sample", "start": 10481581, "end": 10511228}, {"filename": "/tmp/pglite/share/postgresql/psqlrc.sample", "start": 10511228, "end": 10511506}, {"filename": "/tmp/pglite/share/postgresql/snowball_create.sql", "start": 10511506, "end": 10555682}, {"filename": "/tmp/pglite/share/postgresql/sql_features.txt", "start": 10555682, "end": 10591363}, {"filename": "/tmp/pglite/share/postgresql/system_constraints.sql", "start": 10591363, "end": 10600258}, {"filename": "/tmp/pglite/share/postgresql/system_functions.sql", "start": 10600258, "end": 10623573}, {"filename": "/tmp/pglite/share/postgresql/system_views.sql", "start": 10623573, "end": 10673846}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Abidjan", "start": 10673846, "end": 10673976}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Accra", "start": 10673976, "end": 10674106}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Addis_Ababa", "start": 10674106, "end": 10674297}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Algiers", "start": 10674297, "end": 10674767}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Asmara", "start": 10674767, "end": 10674958}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Asmera", "start": 10674958, "end": 10675149}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bamako", "start": 10675149, "end": 10675279}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bangui", "start": 10675279, "end": 10675459}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Banjul", "start": 10675459, "end": 10675589}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bissau", "start": 10675589, "end": 10675738}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Blantyre", "start": 10675738, "end": 10675869}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Brazzaville", "start": 10675869, "end": 10676049}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Bujumbura", "start": 10676049, "end": 10676180}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Cairo", "start": 10676180, "end": 10677489}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Casablanca", "start": 10677489, "end": 10679408}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Ceuta", "start": 10679408, "end": 10679970}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Conakry", "start": 10679970, "end": 10680100}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Dakar", "start": 10680100, "end": 10680230}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Dar_es_Salaam", "start": 10680230, "end": 10680421}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Djibouti", "start": 10680421, "end": 10680612}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Douala", "start": 10680612, "end": 10680792}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/El_Aaiun", "start": 10680792, "end": 10682622}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Freetown", "start": 10682622, "end": 10682752}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Gaborone", "start": 10682752, "end": 10682883}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Harare", "start": 10682883, "end": 10683014}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Johannesburg", "start": 10683014, "end": 10683204}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Juba", "start": 10683204, "end": 10683662}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Kampala", "start": 10683662, "end": 10683853}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Khartoum", "start": 10683853, "end": 10684311}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Kigali", "start": 10684311, "end": 10684442}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Kinshasa", "start": 10684442, "end": 10684622}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lagos", "start": 10684622, "end": 10684802}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Libreville", "start": 10684802, "end": 10684982}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lome", "start": 10684982, "end": 10685112}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Luanda", "start": 10685112, "end": 10685292}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lubumbashi", "start": 10685292, "end": 10685423}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Lusaka", "start": 10685423, "end": 10685554}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Malabo", "start": 10685554, "end": 10685734}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Maputo", "start": 10685734, "end": 10685865}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Maseru", "start": 10685865, "end": 10686055}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Mbabane", "start": 10686055, "end": 10686245}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Mogadishu", "start": 10686245, "end": 10686436}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Monrovia", "start": 10686436, "end": 10686600}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Nairobi", "start": 10686600, "end": 10686791}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Ndjamena", "start": 10686791, "end": 10686951}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Niamey", "start": 10686951, "end": 10687131}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Nouakchott", "start": 10687131, "end": 10687261}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Ouagadougou", "start": 10687261, "end": 10687391}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Porto-Novo", "start": 10687391, "end": 10687571}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Sao_Tome", "start": 10687571, "end": 10687744}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Timbuktu", "start": 10687744, "end": 10687874}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Tripoli", "start": 10687874, "end": 10688305}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Tunis", "start": 10688305, "end": 10688754}, {"filename": "/tmp/pglite/share/postgresql/timezone/Africa/Windhoek", "start": 10688754, "end": 10689392}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Adak", "start": 10689392, "end": 10690361}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Anchorage", "start": 10690361, "end": 10691338}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Anguilla", "start": 10691338, "end": 10691515}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Antigua", "start": 10691515, "end": 10691692}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Araguaina", "start": 10691692, "end": 10692284}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Buenos_Aires", "start": 10692284, "end": 10692992}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Catamarca", "start": 10692992, "end": 10693700}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/ComodRivadavia", "start": 10693700, "end": 10694408}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Cordoba", "start": 10694408, "end": 10695116}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Jujuy", "start": 10695116, "end": 10695806}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/La_Rioja", "start": 10695806, "end": 10696523}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Mendoza", "start": 10696523, "end": 10697231}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Rio_Gallegos", "start": 10697231, "end": 10697939}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Salta", "start": 10697939, "end": 10698629}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/San_Juan", "start": 10698629, "end": 10699346}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/San_Luis", "start": 10699346, "end": 10700063}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Tucuman", "start": 10700063, "end": 10700789}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Argentina/Ushuaia", "start": 10700789, "end": 10701497}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Aruba", "start": 10701497, "end": 10701674}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Asuncion", "start": 10701674, "end": 10702558}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Atikokan", "start": 10702558, "end": 10702707}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Atka", "start": 10702707, "end": 10703676}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Bahia", "start": 10703676, "end": 10704358}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Bahia_Banderas", "start": 10704358, "end": 10705086}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Barbados", "start": 10705086, "end": 10705364}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Belem", "start": 10705364, "end": 10705758}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Belize", "start": 10705758, "end": 10706803}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Blanc-Sablon", "start": 10706803, "end": 10706980}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Boa_Vista", "start": 10706980, "end": 10707410}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Bogota", "start": 10707410, "end": 10707589}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Boise", "start": 10707589, "end": 10708588}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Buenos_Aires", "start": 10708588, "end": 10709296}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cambridge_Bay", "start": 10709296, "end": 10710179}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Campo_Grande", "start": 10710179, "end": 10711131}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cancun", "start": 10711131, "end": 10711660}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Caracas", "start": 10711660, "end": 10711850}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Catamarca", "start": 10711850, "end": 10712558}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cayenne", "start": 10712558, "end": 10712709}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cayman", "start": 10712709, "end": 10712858}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Chicago", "start": 10712858, "end": 10714612}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Chihuahua", "start": 10714612, "end": 10715303}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Ciudad_Juarez", "start": 10715303, "end": 10716021}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Coral_Harbour", "start": 10716021, "end": 10716170}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cordoba", "start": 10716170, "end": 10716878}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Costa_Rica", "start": 10716878, "end": 10717110}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Creston", "start": 10717110, "end": 10717350}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Cuiaba", "start": 10717350, "end": 10718284}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Curacao", "start": 10718284, "end": 10718461}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Danmarkshavn", "start": 10718461, "end": 10718908}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Dawson", "start": 10718908, "end": 10719937}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Dawson_Creek", "start": 10719937, "end": 10720620}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Denver", "start": 10720620, "end": 10721662}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Detroit", "start": 10721662, "end": 10722561}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Dominica", "start": 10722561, "end": 10722738}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Edmonton", "start": 10722738, "end": 10723708}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Eirunepe", "start": 10723708, "end": 10724144}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/El_Salvador", "start": 10724144, "end": 10724320}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Ensenada", "start": 10724320, "end": 10725345}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Fort_Nelson", "start": 10725345, "end": 10726793}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Fort_Wayne", "start": 10726793, "end": 10727324}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Fortaleza", "start": 10727324, "end": 10727808}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Glace_Bay", "start": 10727808, "end": 10728688}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Godthab", "start": 10728688, "end": 10729653}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Goose_Bay", "start": 10729653, "end": 10731233}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Grand_Turk", "start": 10731233, "end": 10732086}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Grenada", "start": 10732086, "end": 10732263}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guadeloupe", "start": 10732263, "end": 10732440}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guatemala", "start": 10732440, "end": 10732652}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guayaquil", "start": 10732652, "end": 10732831}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Guyana", "start": 10732831, "end": 10733012}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Halifax", "start": 10733012, "end": 10734684}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Havana", "start": 10734684, "end": 10735801}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Hermosillo", "start": 10735801, "end": 10736087}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Indianapolis", "start": 10736087, "end": 10736618}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Knox", "start": 10736618, "end": 10737634}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Marengo", "start": 10737634, "end": 10738201}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Petersburg", "start": 10738201, "end": 10738884}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Tell_City", "start": 10738884, "end": 10739406}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Vevay", "start": 10739406, "end": 10739775}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Vincennes", "start": 10739775, "end": 10740333}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indiana/Winamac", "start": 10740333, "end": 10740945}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Indianapolis", "start": 10740945, "end": 10741476}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Inuvik", "start": 10741476, "end": 10742293}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Iqaluit", "start": 10742293, "end": 10743148}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Jamaica", "start": 10743148, "end": 10743487}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Jujuy", "start": 10743487, "end": 10744177}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Juneau", "start": 10744177, "end": 10745143}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Kentucky/Louisville", "start": 10745143, "end": 10746385}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Kentucky/Monticello", "start": 10746385, "end": 10747357}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Knox_IN", "start": 10747357, "end": 10748373}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Kralendijk", "start": 10748373, "end": 10748550}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/La_Paz", "start": 10748550, "end": 10748720}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Lima", "start": 10748720, "end": 10749003}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Los_Angeles", "start": 10749003, "end": 10750297}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Louisville", "start": 10750297, "end": 10751539}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Lower_Princes", "start": 10751539, "end": 10751716}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Maceio", "start": 10751716, "end": 10752218}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Managua", "start": 10752218, "end": 10752513}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Manaus", "start": 10752513, "end": 10752925}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Marigot", "start": 10752925, "end": 10753102}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Martinique", "start": 10753102, "end": 10753280}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Matamoros", "start": 10753280, "end": 10753717}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Mazatlan", "start": 10753717, "end": 10754435}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Mendoza", "start": 10754435, "end": 10755143}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Menominee", "start": 10755143, "end": 10756060}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Merida", "start": 10756060, "end": 10756714}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Metlakatla", "start": 10756714, "end": 10757309}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Mexico_City", "start": 10757309, "end": 10758082}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Miquelon", "start": 10758082, "end": 10758632}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Moncton", "start": 10758632, "end": 10760125}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Monterrey", "start": 10760125, "end": 10760769}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Montevideo", "start": 10760769, "end": 10761738}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Montreal", "start": 10761738, "end": 10763455}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Montserrat", "start": 10763455, "end": 10763632}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nassau", "start": 10763632, "end": 10765349}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/New_York", "start": 10765349, "end": 10767093}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nipigon", "start": 10767093, "end": 10768810}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nome", "start": 10768810, "end": 10769785}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Noronha", "start": 10769785, "end": 10770269}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/North_Dakota/Beulah", "start": 10770269, "end": 10771312}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/North_Dakota/Center", "start": 10771312, "end": 10772302}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/North_Dakota/New_Salem", "start": 10772302, "end": 10773292}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Nuuk", "start": 10773292, "end": 10774257}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Ojinaga", "start": 10774257, "end": 10774966}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Panama", "start": 10774966, "end": 10775115}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Pangnirtung", "start": 10775115, "end": 10775970}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Paramaribo", "start": 10775970, "end": 10776157}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Phoenix", "start": 10776157, "end": 10776397}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Port-au-Prince", "start": 10776397, "end": 10776962}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Port_of_Spain", "start": 10776962, "end": 10777139}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Porto_Acre", "start": 10777139, "end": 10777557}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Porto_Velho", "start": 10777557, "end": 10777951}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Puerto_Rico", "start": 10777951, "end": 10778128}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Punta_Arenas", "start": 10778128, "end": 10779346}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rainy_River", "start": 10779346, "end": 10780640}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rankin_Inlet", "start": 10780640, "end": 10781447}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Recife", "start": 10781447, "end": 10781931}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Regina", "start": 10781931, "end": 10782569}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Resolute", "start": 10782569, "end": 10783376}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rio_Branco", "start": 10783376, "end": 10783794}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Rosario", "start": 10783794, "end": 10784502}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santa_Isabel", "start": 10784502, "end": 10785527}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santarem", "start": 10785527, "end": 10785936}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santiago", "start": 10785936, "end": 10787290}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Santo_Domingo", "start": 10787290, "end": 10787607}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Sao_Paulo", "start": 10787607, "end": 10788559}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Scoresbysund", "start": 10788559, "end": 10789543}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Shiprock", "start": 10789543, "end": 10790585}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Sitka", "start": 10790585, "end": 10791541}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Barthelemy", "start": 10791541, "end": 10791718}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Johns", "start": 10791718, "end": 10793596}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Kitts", "start": 10793596, "end": 10793773}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Lucia", "start": 10793773, "end": 10793950}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Thomas", "start": 10793950, "end": 10794127}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/St_Vincent", "start": 10794127, "end": 10794304}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Swift_Current", "start": 10794304, "end": 10794672}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Tegucigalpa", "start": 10794672, "end": 10794866}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Thule", "start": 10794866, "end": 10795321}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Thunder_Bay", "start": 10795321, "end": 10797038}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Tijuana", "start": 10797038, "end": 10798063}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Toronto", "start": 10798063, "end": 10799780}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Tortola", "start": 10799780, "end": 10799957}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Vancouver", "start": 10799957, "end": 10801287}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Virgin", "start": 10801287, "end": 10801464}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Whitehorse", "start": 10801464, "end": 10802493}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Winnipeg", "start": 10802493, "end": 10803787}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Yakutat", "start": 10803787, "end": 10804733}, {"filename": "/tmp/pglite/share/postgresql/timezone/America/Yellowknife", "start": 10804733, "end": 10805703}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Casey", "start": 10805703, "end": 10805990}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Davis", "start": 10805990, "end": 10806187}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/DumontDUrville", "start": 10806187, "end": 10806341}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Macquarie", "start": 10806341, "end": 10807317}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Mawson", "start": 10807317, "end": 10807469}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/McMurdo", "start": 10807469, "end": 10808512}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Palmer", "start": 10808512, "end": 10809399}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Rothera", "start": 10809399, "end": 10809531}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/South_Pole", "start": 10809531, "end": 10810574}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Syowa", "start": 10810574, "end": 10810707}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Troll", "start": 10810707, "end": 10810884}, {"filename": "/tmp/pglite/share/postgresql/timezone/Antarctica/Vostok", "start": 10810884, "end": 10811054}, {"filename": "/tmp/pglite/share/postgresql/timezone/Arctic/Longyearbyen", "start": 10811054, "end": 10811759}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Aden", "start": 10811759, "end": 10811892}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Almaty", "start": 10811892, "end": 10812510}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Amman", "start": 10812510, "end": 10813438}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Anadyr", "start": 10813438, "end": 10814181}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Aqtau", "start": 10814181, "end": 10814787}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Aqtobe", "start": 10814787, "end": 10815402}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ashgabat", "start": 10815402, "end": 10815777}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ashkhabad", "start": 10815777, "end": 10816152}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Atyrau", "start": 10816152, "end": 10816768}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Baghdad", "start": 10816768, "end": 10817398}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Bahrain", "start": 10817398, "end": 10817550}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Baku", "start": 10817550, "end": 10818294}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Bangkok", "start": 10818294, "end": 10818446}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Barnaul", "start": 10818446, "end": 10819199}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Beirut", "start": 10819199, "end": 10819931}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Bishkek", "start": 10819931, "end": 10820549}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Brunei", "start": 10820549, "end": 10820869}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Calcutta", "start": 10820869, "end": 10821089}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Chita", "start": 10821089, "end": 10821839}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Choibalsan", "start": 10821839, "end": 10822458}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Chongqing", "start": 10822458, "end": 10822851}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Chungking", "start": 10822851, "end": 10823244}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Colombo", "start": 10823244, "end": 10823491}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dacca", "start": 10823491, "end": 10823722}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Damascus", "start": 10823722, "end": 10824956}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dhaka", "start": 10824956, "end": 10825187}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dili", "start": 10825187, "end": 10825357}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dubai", "start": 10825357, "end": 10825490}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Dushanbe", "start": 10825490, "end": 10825856}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Famagusta", "start": 10825856, "end": 10826796}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Gaza", "start": 10826796, "end": 10829242}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Harbin", "start": 10829242, "end": 10829635}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Hebron", "start": 10829635, "end": 10832099}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ho_Chi_Minh", "start": 10832099, "end": 10832335}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Hong_Kong", "start": 10832335, "end": 10833110}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Hovd", "start": 10833110, "end": 10833704}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Irkutsk", "start": 10833704, "end": 10834464}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Istanbul", "start": 10834464, "end": 10835664}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Jakarta", "start": 10835664, "end": 10835912}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Jayapura", "start": 10835912, "end": 10836083}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Jerusalem", "start": 10836083, "end": 10837157}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kabul", "start": 10837157, "end": 10837316}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kamchatka", "start": 10837316, "end": 10838043}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Karachi", "start": 10838043, "end": 10838309}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kashgar", "start": 10838309, "end": 10838442}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kathmandu", "start": 10838442, "end": 10838603}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Katmandu", "start": 10838603, "end": 10838764}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Khandyga", "start": 10838764, "end": 10839539}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kolkata", "start": 10839539, "end": 10839759}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Krasnoyarsk", "start": 10839759, "end": 10840500}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kuala_Lumpur", "start": 10840500, "end": 10840756}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kuching", "start": 10840756, "end": 10841076}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Kuwait", "start": 10841076, "end": 10841209}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Macao", "start": 10841209, "end": 10842000}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Macau", "start": 10842000, "end": 10842791}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Magadan", "start": 10842791, "end": 10843542}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Makassar", "start": 10843542, "end": 10843732}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Manila", "start": 10843732, "end": 10843970}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Muscat", "start": 10843970, "end": 10844103}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Nicosia", "start": 10844103, "end": 10844700}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Novokuznetsk", "start": 10844700, "end": 10845426}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Novosibirsk", "start": 10845426, "end": 10846179}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Omsk", "start": 10846179, "end": 10846920}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Oral", "start": 10846920, "end": 10847545}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Phnom_Penh", "start": 10847545, "end": 10847697}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Pontianak", "start": 10847697, "end": 10847944}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Pyongyang", "start": 10847944, "end": 10848127}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Qatar", "start": 10848127, "end": 10848279}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Qostanay", "start": 10848279, "end": 10848903}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Qyzylorda", "start": 10848903, "end": 10849527}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Rangoon", "start": 10849527, "end": 10849714}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Riyadh", "start": 10849714, "end": 10849847}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Saigon", "start": 10849847, "end": 10850083}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Sakhalin", "start": 10850083, "end": 10850838}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Samarkand", "start": 10850838, "end": 10851204}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Seoul", "start": 10851204, "end": 10851619}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Shanghai", "start": 10851619, "end": 10852012}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Singapore", "start": 10852012, "end": 10852268}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Srednekolymsk", "start": 10852268, "end": 10853010}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Taipei", "start": 10853010, "end": 10853521}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tashkent", "start": 10853521, "end": 10853887}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tbilisi", "start": 10853887, "end": 10854516}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tehran", "start": 10854516, "end": 10855328}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tel_Aviv", "start": 10855328, "end": 10856402}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Thimbu", "start": 10856402, "end": 10856556}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Thimphu", "start": 10856556, "end": 10856710}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tokyo", "start": 10856710, "end": 10856923}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Tomsk", "start": 10856923, "end": 10857676}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ujung_Pandang", "start": 10857676, "end": 10857866}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ulaanbaatar", "start": 10857866, "end": 10858460}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ulan_Bator", "start": 10858460, "end": 10859054}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Urumqi", "start": 10859054, "end": 10859187}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Ust-Nera", "start": 10859187, "end": 10859958}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Vientiane", "start": 10859958, "end": 10860110}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Vladivostok", "start": 10860110, "end": 10860852}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yakutsk", "start": 10860852, "end": 10861593}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yangon", "start": 10861593, "end": 10861780}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yekaterinburg", "start": 10861780, "end": 10862540}, {"filename": "/tmp/pglite/share/postgresql/timezone/Asia/Yerevan", "start": 10862540, "end": 10863248}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Azores", "start": 10863248, "end": 10864701}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Bermuda", "start": 10864701, "end": 10865725}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Canary", "start": 10865725, "end": 10866203}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Cape_Verde", "start": 10866203, "end": 10866378}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Faeroe", "start": 10866378, "end": 10866819}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Faroe", "start": 10866819, "end": 10867260}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Jan_Mayen", "start": 10867260, "end": 10867965}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Madeira", "start": 10867965, "end": 10869418}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Reykjavik", "start": 10869418, "end": 10869548}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/South_Georgia", "start": 10869548, "end": 10869680}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/St_Helena", "start": 10869680, "end": 10869810}, {"filename": "/tmp/pglite/share/postgresql/timezone/Atlantic/Stanley", "start": 10869810, "end": 10870599}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/ACT", "start": 10870599, "end": 10871503}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Adelaide", "start": 10871503, "end": 10872424}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Brisbane", "start": 10872424, "end": 10872713}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Broken_Hill", "start": 10872713, "end": 10873654}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Canberra", "start": 10873654, "end": 10874558}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Currie", "start": 10874558, "end": 10875561}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Darwin", "start": 10875561, "end": 10875795}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Eucla", "start": 10875795, "end": 10876109}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Hobart", "start": 10876109, "end": 10877112}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/LHI", "start": 10877112, "end": 10877804}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Lindeman", "start": 10877804, "end": 10878129}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Lord_Howe", "start": 10878129, "end": 10878821}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Melbourne", "start": 10878821, "end": 10879725}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/NSW", "start": 10879725, "end": 10880629}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/North", "start": 10880629, "end": 10880863}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Perth", "start": 10880863, "end": 10881169}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Queensland", "start": 10881169, "end": 10881458}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/South", "start": 10881458, "end": 10882379}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Sydney", "start": 10882379, "end": 10883283}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Tasmania", "start": 10883283, "end": 10884286}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Victoria", "start": 10884286, "end": 10885190}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/West", "start": 10885190, "end": 10885496}, {"filename": "/tmp/pglite/share/postgresql/timezone/Australia/Yancowinna", "start": 10885496, "end": 10886437}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/Acre", "start": 10886437, "end": 10886855}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/DeNoronha", "start": 10886855, "end": 10887339}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/East", "start": 10887339, "end": 10888291}, {"filename": "/tmp/pglite/share/postgresql/timezone/Brazil/West", "start": 10888291, "end": 10888703}, {"filename": "/tmp/pglite/share/postgresql/timezone/CET", "start": 10888703, "end": 10889324}, {"filename": "/tmp/pglite/share/postgresql/timezone/CST6CDT", "start": 10889324, "end": 10890275}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Atlantic", "start": 10890275, "end": 10891947}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Central", "start": 10891947, "end": 10893241}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Eastern", "start": 10893241, "end": 10894958}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Mountain", "start": 10894958, "end": 10895928}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Newfoundland", "start": 10895928, "end": 10897806}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Pacific", "start": 10897806, "end": 10899136}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Saskatchewan", "start": 10899136, "end": 10899774}, {"filename": "/tmp/pglite/share/postgresql/timezone/Canada/Yukon", "start": 10899774, "end": 10900803}, {"filename": "/tmp/pglite/share/postgresql/timezone/Chile/Continental", "start": 10900803, "end": 10902157}, {"filename": "/tmp/pglite/share/postgresql/timezone/Chile/EasterIsland", "start": 10902157, "end": 10903331}, {"filename": "/tmp/pglite/share/postgresql/timezone/Cuba", "start": 10903331, "end": 10904448}, {"filename": "/tmp/pglite/share/postgresql/timezone/EET", "start": 10904448, "end": 10904945}, {"filename": "/tmp/pglite/share/postgresql/timezone/EST", "start": 10904945, "end": 10905056}, {"filename": "/tmp/pglite/share/postgresql/timezone/EST5EDT", "start": 10905056, "end": 10906007}, {"filename": "/tmp/pglite/share/postgresql/timezone/Egypt", "start": 10906007, "end": 10907316}, {"filename": "/tmp/pglite/share/postgresql/timezone/Eire", "start": 10907316, "end": 10908812}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT", "start": 10908812, "end": 10908923}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+0", "start": 10908923, "end": 10909034}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+1", "start": 10909034, "end": 10909147}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+10", "start": 10909147, "end": 10909261}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+11", "start": 10909261, "end": 10909375}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+12", "start": 10909375, "end": 10909489}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+2", "start": 10909489, "end": 10909602}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+3", "start": 10909602, "end": 10909715}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+4", "start": 10909715, "end": 10909828}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+5", "start": 10909828, "end": 10909941}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+6", "start": 10909941, "end": 10910054}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+7", "start": 10910054, "end": 10910167}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+8", "start": 10910167, "end": 10910280}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT+9", "start": 10910280, "end": 10910393}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-0", "start": 10910393, "end": 10910504}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-1", "start": 10910504, "end": 10910618}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-10", "start": 10910618, "end": 10910733}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-11", "start": 10910733, "end": 10910848}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-12", "start": 10910848, "end": 10910963}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-13", "start": 10910963, "end": 10911078}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-14", "start": 10911078, "end": 10911193}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-2", "start": 10911193, "end": 10911307}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-3", "start": 10911307, "end": 10911421}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-4", "start": 10911421, "end": 10911535}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-5", "start": 10911535, "end": 10911649}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-6", "start": 10911649, "end": 10911763}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-7", "start": 10911763, "end": 10911877}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-8", "start": 10911877, "end": 10911991}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT-9", "start": 10911991, "end": 10912105}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/GMT0", "start": 10912105, "end": 10912216}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/Greenwich", "start": 10912216, "end": 10912327}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/UCT", "start": 10912327, "end": 10912438}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/UTC", "start": 10912438, "end": 10912549}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/Universal", "start": 10912549, "end": 10912660}, {"filename": "/tmp/pglite/share/postgresql/timezone/Etc/Zulu", "start": 10912660, "end": 10912771}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Amsterdam", "start": 10912771, "end": 10913874}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Andorra", "start": 10913874, "end": 10914263}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Astrakhan", "start": 10914263, "end": 10914989}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Athens", "start": 10914989, "end": 10915671}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Belfast", "start": 10915671, "end": 10917270}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Belgrade", "start": 10917270, "end": 10917748}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Berlin", "start": 10917748, "end": 10918453}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Bratislava", "start": 10918453, "end": 10919176}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Brussels", "start": 10919176, "end": 10920279}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Bucharest", "start": 10920279, "end": 10920940}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Budapest", "start": 10920940, "end": 10921706}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Busingen", "start": 10921706, "end": 10922203}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Chisinau", "start": 10922203, "end": 10922958}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Copenhagen", "start": 10922958, "end": 10923663}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Dublin", "start": 10923663, "end": 10925159}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Gibraltar", "start": 10925159, "end": 10926379}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Guernsey", "start": 10926379, "end": 10927978}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Helsinki", "start": 10927978, "end": 10928459}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Isle_of_Man", "start": 10928459, "end": 10930058}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Istanbul", "start": 10930058, "end": 10931258}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Jersey", "start": 10931258, "end": 10932857}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kaliningrad", "start": 10932857, "end": 10933761}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kiev", "start": 10933761, "end": 10934319}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kirov", "start": 10934319, "end": 10935054}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Kyiv", "start": 10935054, "end": 10935612}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Lisbon", "start": 10935612, "end": 10937066}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Ljubljana", "start": 10937066, "end": 10937544}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/London", "start": 10937544, "end": 10939143}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Luxembourg", "start": 10939143, "end": 10940246}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Madrid", "start": 10940246, "end": 10941143}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Malta", "start": 10941143, "end": 10942071}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Mariehamn", "start": 10942071, "end": 10942552}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Minsk", "start": 10942552, "end": 10943360}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Monaco", "start": 10943360, "end": 10944465}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Moscow", "start": 10944465, "end": 10945373}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Nicosia", "start": 10945373, "end": 10945970}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Oslo", "start": 10945970, "end": 10946675}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Paris", "start": 10946675, "end": 10947780}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Podgorica", "start": 10947780, "end": 10948258}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Prague", "start": 10948258, "end": 10948981}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Riga", "start": 10948981, "end": 10949675}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Rome", "start": 10949675, "end": 10950622}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Samara", "start": 10950622, "end": 10951354}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/San_Marino", "start": 10951354, "end": 10952301}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Sarajevo", "start": 10952301, "end": 10952779}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Saratov", "start": 10952779, "end": 10953505}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Simferopol", "start": 10953505, "end": 10954370}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Skopje", "start": 10954370, "end": 10954848}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Sofia", "start": 10954848, "end": 10955440}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Stockholm", "start": 10955440, "end": 10956145}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Tallinn", "start": 10956145, "end": 10956820}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Tirane", "start": 10956820, "end": 10957424}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Tiraspol", "start": 10957424, "end": 10958179}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Ulyanovsk", "start": 10958179, "end": 10958939}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Uzhgorod", "start": 10958939, "end": 10959497}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vaduz", "start": 10959497, "end": 10959994}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vatican", "start": 10959994, "end": 10960941}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vienna", "start": 10960941, "end": 10961599}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Vilnius", "start": 10961599, "end": 10962275}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Volgograd", "start": 10962275, "end": 10963028}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Warsaw", "start": 10963028, "end": 10963951}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Zagreb", "start": 10963951, "end": 10964429}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Zaporozhye", "start": 10964429, "end": 10964987}, {"filename": "/tmp/pglite/share/postgresql/timezone/Europe/Zurich", "start": 10964987, "end": 10965484}, {"filename": "/tmp/pglite/share/postgresql/timezone/Factory", "start": 10965484, "end": 10965597}, {"filename": "/tmp/pglite/share/postgresql/timezone/GB", "start": 10965597, "end": 10967196}, {"filename": "/tmp/pglite/share/postgresql/timezone/GB-Eire", "start": 10967196, "end": 10968795}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT", "start": 10968795, "end": 10968906}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT+0", "start": 10968906, "end": 10969017}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT-0", "start": 10969017, "end": 10969128}, {"filename": "/tmp/pglite/share/postgresql/timezone/GMT0", "start": 10969128, "end": 10969239}, {"filename": "/tmp/pglite/share/postgresql/timezone/Greenwich", "start": 10969239, "end": 10969350}, {"filename": "/tmp/pglite/share/postgresql/timezone/HST", "start": 10969350, "end": 10969462}, {"filename": "/tmp/pglite/share/postgresql/timezone/Hongkong", "start": 10969462, "end": 10970237}, {"filename": "/tmp/pglite/share/postgresql/timezone/Iceland", "start": 10970237, "end": 10970367}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Antananarivo", "start": 10970367, "end": 10970558}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Chagos", "start": 10970558, "end": 10970710}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Christmas", "start": 10970710, "end": 10970862}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Cocos", "start": 10970862, "end": 10971049}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Comoro", "start": 10971049, "end": 10971240}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Kerguelen", "start": 10971240, "end": 10971392}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Mahe", "start": 10971392, "end": 10971525}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Maldives", "start": 10971525, "end": 10971677}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Mauritius", "start": 10971677, "end": 10971856}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Mayotte", "start": 10971856, "end": 10972047}, {"filename": "/tmp/pglite/share/postgresql/timezone/Indian/Reunion", "start": 10972047, "end": 10972180}, {"filename": "/tmp/pglite/share/postgresql/timezone/Iran", "start": 10972180, "end": 10972992}, {"filename": "/tmp/pglite/share/postgresql/timezone/Israel", "start": 10972992, "end": 10974066}, {"filename": "/tmp/pglite/share/postgresql/timezone/Jamaica", "start": 10974066, "end": 10974405}, {"filename": "/tmp/pglite/share/postgresql/timezone/Japan", "start": 10974405, "end": 10974618}, {"filename": "/tmp/pglite/share/postgresql/timezone/Kwajalein", "start": 10974618, "end": 10974837}, {"filename": "/tmp/pglite/share/postgresql/timezone/Libya", "start": 10974837, "end": 10975268}, {"filename": "/tmp/pglite/share/postgresql/timezone/MET", "start": 10975268, "end": 10975889}, {"filename": "/tmp/pglite/share/postgresql/timezone/MST", "start": 10975889, "end": 10976000}, {"filename": "/tmp/pglite/share/postgresql/timezone/MST7MDT", "start": 10976000, "end": 10976951}, {"filename": "/tmp/pglite/share/postgresql/timezone/Mexico/BajaNorte", "start": 10976951, "end": 10977976}, {"filename": "/tmp/pglite/share/postgresql/timezone/Mexico/BajaSur", "start": 10977976, "end": 10978694}, {"filename": "/tmp/pglite/share/postgresql/timezone/Mexico/General", "start": 10978694, "end": 10979467}, {"filename": "/tmp/pglite/share/postgresql/timezone/NZ", "start": 10979467, "end": 10980510}, {"filename": "/tmp/pglite/share/postgresql/timezone/NZ-CHAT", "start": 10980510, "end": 10981318}, {"filename": "/tmp/pglite/share/postgresql/timezone/Navajo", "start": 10981318, "end": 10982360}, {"filename": "/tmp/pglite/share/postgresql/timezone/PRC", "start": 10982360, "end": 10982753}, {"filename": "/tmp/pglite/share/postgresql/timezone/PST8PDT", "start": 10982753, "end": 10983704}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Apia", "start": 10983704, "end": 10984111}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Auckland", "start": 10984111, "end": 10985154}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Bougainville", "start": 10985154, "end": 10985355}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Chatham", "start": 10985355, "end": 10986163}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Chuuk", "start": 10986163, "end": 10986317}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Easter", "start": 10986317, "end": 10987491}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Efate", "start": 10987491, "end": 10987833}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Enderbury", "start": 10987833, "end": 10988005}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Fakaofo", "start": 10988005, "end": 10988158}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Fiji", "start": 10988158, "end": 10988554}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Funafuti", "start": 10988554, "end": 10988688}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Galapagos", "start": 10988688, "end": 10988863}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Gambier", "start": 10988863, "end": 10988995}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Guadalcanal", "start": 10988995, "end": 10989129}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Guam", "start": 10989129, "end": 10989479}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Honolulu", "start": 10989479, "end": 10989700}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Johnston", "start": 10989700, "end": 10989921}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kanton", "start": 10989921, "end": 10990093}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kiritimati", "start": 10990093, "end": 10990267}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kosrae", "start": 10990267, "end": 10990509}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Kwajalein", "start": 10990509, "end": 10990728}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Majuro", "start": 10990728, "end": 10990862}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Marquesas", "start": 10990862, "end": 10991001}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Midway", "start": 10991001, "end": 10991147}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Nauru", "start": 10991147, "end": 10991330}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Niue", "start": 10991330, "end": 10991484}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Norfolk", "start": 10991484, "end": 10991731}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Noumea", "start": 10991731, "end": 10991929}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Pago_Pago", "start": 10991929, "end": 10992075}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Palau", "start": 10992075, "end": 10992223}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Pitcairn", "start": 10992223, "end": 10992376}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Pohnpei", "start": 10992376, "end": 10992510}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Ponape", "start": 10992510, "end": 10992644}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Port_Moresby", "start": 10992644, "end": 10992798}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Rarotonga", "start": 10992798, "end": 10993204}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Saipan", "start": 10993204, "end": 10993554}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Samoa", "start": 10993554, "end": 10993700}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Tahiti", "start": 10993700, "end": 10993833}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Tarawa", "start": 10993833, "end": 10993967}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Tongatapu", "start": 10993967, "end": 10994204}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Truk", "start": 10994204, "end": 10994358}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Wake", "start": 10994358, "end": 10994492}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Wallis", "start": 10994492, "end": 10994626}, {"filename": "/tmp/pglite/share/postgresql/timezone/Pacific/Yap", "start": 10994626, "end": 10994780}, {"filename": "/tmp/pglite/share/postgresql/timezone/Poland", "start": 10994780, "end": 10995703}, {"filename": "/tmp/pglite/share/postgresql/timezone/Portugal", "start": 10995703, "end": 10997157}, {"filename": "/tmp/pglite/share/postgresql/timezone/ROC", "start": 10997157, "end": 10997668}, {"filename": "/tmp/pglite/share/postgresql/timezone/ROK", "start": 10997668, "end": 10998083}, {"filename": "/tmp/pglite/share/postgresql/timezone/Singapore", "start": 10998083, "end": 10998339}, {"filename": "/tmp/pglite/share/postgresql/timezone/Turkey", "start": 10998339, "end": 10999539}, {"filename": "/tmp/pglite/share/postgresql/timezone/UCT", "start": 10999539, "end": 10999650}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Alaska", "start": 10999650, "end": 11000627}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Aleutian", "start": 11000627, "end": 11001596}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Arizona", "start": 11001596, "end": 11001836}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Central", "start": 11001836, "end": 11003590}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/East-Indiana", "start": 11003590, "end": 11004121}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Eastern", "start": 11004121, "end": 11005865}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Hawaii", "start": 11005865, "end": 11006086}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Indiana-Starke", "start": 11006086, "end": 11007102}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Michigan", "start": 11007102, "end": 11008001}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Mountain", "start": 11008001, "end": 11009043}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Pacific", "start": 11009043, "end": 11010337}, {"filename": "/tmp/pglite/share/postgresql/timezone/US/Samoa", "start": 11010337, "end": 11010483}, {"filename": "/tmp/pglite/share/postgresql/timezone/UTC", "start": 11010483, "end": 11010594}, {"filename": "/tmp/pglite/share/postgresql/timezone/Universal", "start": 11010594, "end": 11010705}, {"filename": "/tmp/pglite/share/postgresql/timezone/W-SU", "start": 11010705, "end": 11011613}, {"filename": "/tmp/pglite/share/postgresql/timezone/WET", "start": 11011613, "end": 11012107}, {"filename": "/tmp/pglite/share/postgresql/timezone/Zulu", "start": 11012107, "end": 11012218}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Africa.txt", "start": 11012218, "end": 11019191}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/America.txt", "start": 11019191, "end": 11030198}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Antarctica.txt", "start": 11030198, "end": 11031332}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Asia.txt", "start": 11031332, "end": 11039643}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Atlantic.txt", "start": 11039643, "end": 11043176}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Australia", "start": 11043176, "end": 11044311}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Australia.txt", "start": 11044311, "end": 11047695}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Default", "start": 11047695, "end": 11074945}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Etc.txt", "start": 11074945, "end": 11076195}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Europe.txt", "start": 11076195, "end": 11084977}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/India", "start": 11084977, "end": 11085570}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Indian.txt", "start": 11085570, "end": 11086831}, {"filename": "/tmp/pglite/share/postgresql/timezonesets/Pacific.txt", "start": 11086831, "end": 11090599}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/danish.stop", "start": 11090599, "end": 11091023}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/dutch.stop", "start": 11091023, "end": 11091476}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/english.stop", "start": 11091476, "end": 11092098}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/finnish.stop", "start": 11092098, "end": 11093677}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/french.stop", "start": 11093677, "end": 11094482}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/german.stop", "start": 11094482, "end": 11095831}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hungarian.stop", "start": 11095831, "end": 11097058}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample.affix", "start": 11097058, "end": 11097301}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_long.affix", "start": 11097301, "end": 11097934}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_long.dict", "start": 11097934, "end": 11098032}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_num.affix", "start": 11098032, "end": 11098494}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/hunspell_sample_num.dict", "start": 11098494, "end": 11098623}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/ispell_sample.affix", "start": 11098623, "end": 11099088}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/ispell_sample.dict", "start": 11099088, "end": 11099169}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/italian.stop", "start": 11099169, "end": 11100823}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/nepali.stop", "start": 11100823, "end": 11105084}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/norwegian.stop", "start": 11105084, "end": 11105935}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/portuguese.stop", "start": 11105935, "end": 11107202}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/russian.stop", "start": 11107202, "end": 11108437}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/spanish.stop", "start": 11108437, "end": 11110615}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/swedish.stop", "start": 11110615, "end": 11111174}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/synonym_sample.syn", "start": 11111174, "end": 11111247}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/thesaurus_sample.ths", "start": 11111247, "end": 11111720}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/turkish.stop", "start": 11111720, "end": 11111980}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/unaccent.rules", "start": 11111980, "end": 11121919}, {"filename": "/tmp/pglite/share/postgresql/tsearch_data/xsyn_sample.rules", "start": 11121919, "end": 11122058}], "remote_package_size": 11122058});
 
   })();
 
-// end include: /tmp/tmpaw6ndl_z.js
+// end include: /tmp/tmpxh5f4aus.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -932,10 +945,10 @@ function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  69132752: ($0) => { Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope; Module.FD_BUFFER_MAX = $0; Module.emscripten_copy_to = console.warn; },  
- 69132925: () => { console.warn("prerun(C-node) worker=", Module.is_worker); Module['postMessage'] = function custom_postMessage(event) { console.log("# 1252: onCustomMessage:",__FILE__, event); }; },  
- 69133108: () => { console.warn("prerun(C-web) worker=", Module.is_worker); },  
- 69133169: () => { if (Module.is_worker) { console.log("Main: running in a worker, setting onCustomMessage"); function onCustomMessage(event) { console.log("onCustomMessage:", event); }; Module['onCustomMessage'] = onCustomMessage; } else { console.log("Running in main thread, faking onCustomMessage"); Module['postMessage'] = function custom_postMessage(event) { switch (event.type) { case "raw" : { stringToUTF8( event.data, shm_rawinput, Module.FD_BUFFER_MAX); break; } case "stdin" : { stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX); break; } case "rcon" : { stringToUTF8( event.data, shm_rcon, Module.FD_BUFFER_MAX); break; } default : console.warn("custom_postMessage?", event); } }; }; }
+  69132800: ($0) => { Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope; Module.FD_BUFFER_MAX = $0; Module.emscripten_copy_to = console.warn; },  
+ 69132973: () => { console.warn("prerun(C-node) worker=", Module.is_worker); Module['postMessage'] = function custom_postMessage(event) { console.log("# 1252: onCustomMessage:",__FILE__, event); }; },  
+ 69133156: () => { console.warn("prerun(C-web) worker=", Module.is_worker); },  
+ 69133217: () => { if (Module.is_worker) { console.log("Main: running in a worker, setting onCustomMessage"); function onCustomMessage(event) { console.log("onCustomMessage:", event); }; Module['onCustomMessage'] = onCustomMessage; } else { console.log("Running in main thread, faking onCustomMessage"); Module['postMessage'] = function custom_postMessage(event) { switch (event.type) { case "raw" : { stringToUTF8( event.data, shm_rawinput, Module.FD_BUFFER_MAX); break; } case "stdin" : { stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX); break; } case "rcon" : { stringToUTF8( event.data, shm_rcon, Module.FD_BUFFER_MAX); break; } default : console.warn("custom_postMessage?", event); } }; }; }
 };
 function peek_fd(fd) { return test_data.length; }
 function fnc_getfd(fd) { return fnc_stdin() }
@@ -1195,7 +1208,7 @@ is_web_env.sig = 'i';
   
   
   
-  var ___heap_base = 73484464;
+  var ___heap_base = 73484512;
   
   var zeroMemory = (address, size) => {
       HEAPU8.fill(0, address, address + size);
@@ -2041,7 +2054,7 @@ is_web_env.sig = 'i';
 
   var ___memory_base = new WebAssembly.Global({'value': 'i32', 'mutable': false}, 67108864);
 
-  var ___stack_pointer = new WebAssembly.Global({'value': 'i32', 'mutable': true}, 73484464);
+  var ___stack_pointer = new WebAssembly.Global({'value': 'i32', 'mutable': true}, 73484512);
 
   var PATH = {
   isAbs:(path) => path.charAt(0) === '/',
@@ -9439,168 +9452,782 @@ var ___errno_location = Module['___errno_location'] = () => (___errno_location =
 var _fflush = Module['_fflush'] = (a0) => (_fflush = Module['_fflush'] = wasmExports['fflush'])(a0);
 var _pg_vsnprintf = Module['_pg_vsnprintf'] = (a0, a1, a2, a3) => (_pg_vsnprintf = Module['_pg_vsnprintf'] = wasmExports['pg_vsnprintf'])(a0, a1, a2, a3);
 var _pg_malloc_extended = Module['_pg_malloc_extended'] = (a0, a1) => (_pg_malloc_extended = Module['_pg_malloc_extended'] = wasmExports['pg_malloc_extended'])(a0, a1);
-var _AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = (a0, a1, a2, a3, a4) => (_AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = wasmExports['AllocSetContextCreateInternal'])(a0, a1, a2, a3, a4);
-var _palloc0 = Module['_palloc0'] = (a0) => (_palloc0 = Module['_palloc0'] = wasmExports['palloc0'])(a0);
-var _palloc = Module['_palloc'] = (a0) => (_palloc = Module['_palloc'] = wasmExports['palloc'])(a0);
-var _pfree = Module['_pfree'] = (a0) => (_pfree = Module['_pfree'] = wasmExports['pfree'])(a0);
-var _lookup_type_cache = Module['_lookup_type_cache'] = (a0, a1) => (_lookup_type_cache = Module['_lookup_type_cache'] = wasmExports['lookup_type_cache'])(a0, a1);
 var _errstart_cold = Module['_errstart_cold'] = (a0, a1) => (_errstart_cold = Module['_errstart_cold'] = wasmExports['errstart_cold'])(a0, a1);
 var _errmsg_internal = Module['_errmsg_internal'] = (a0, a1) => (_errmsg_internal = Module['_errmsg_internal'] = wasmExports['errmsg_internal'])(a0, a1);
 var _errfinish = Module['_errfinish'] = (a0, a1, a2) => (_errfinish = Module['_errfinish'] = wasmExports['errfinish'])(a0, a1, a2);
 var _puts = Module['_puts'] = (a0) => (_puts = Module['_puts'] = wasmExports['puts'])(a0);
-var _MemoryContextReset = Module['_MemoryContextReset'] = (a0) => (_MemoryContextReset = Module['_MemoryContextReset'] = wasmExports['MemoryContextReset'])(a0);
-var _repalloc = Module['_repalloc'] = (a0, a1) => (_repalloc = Module['_repalloc'] = wasmExports['repalloc'])(a0, a1);
-var _MemoryContextDelete = Module['_MemoryContextDelete'] = (a0) => (_MemoryContextDelete = Module['_MemoryContextDelete'] = wasmExports['MemoryContextDelete'])(a0);
-var _memcpy = Module['_memcpy'] = (a0, a1, a2) => (_memcpy = Module['_memcpy'] = wasmExports['memcpy'])(a0, a1, a2);
-var _SearchSysCache2 = Module['_SearchSysCache2'] = (a0, a1, a2) => (_SearchSysCache2 = Module['_SearchSysCache2'] = wasmExports['SearchSysCache2'])(a0, a1, a2);
-var _SysCacheGetAttr = Module['_SysCacheGetAttr'] = (a0, a1, a2, a3) => (_SysCacheGetAttr = Module['_SysCacheGetAttr'] = wasmExports['SysCacheGetAttr'])(a0, a1, a2, a3);
-var _pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = (a0) => (_pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = wasmExports['pg_detoast_datum_packed'])(a0);
-var _ReleaseSysCache = Module['_ReleaseSysCache'] = (a0) => (_ReleaseSysCache = Module['_ReleaseSysCache'] = wasmExports['ReleaseSysCache'])(a0);
-var _errcode = Module['_errcode'] = (a0) => (_errcode = Module['_errcode'] = wasmExports['errcode'])(a0);
-var _errmsg = Module['_errmsg'] = (a0, a1) => (_errmsg = Module['_errmsg'] = wasmExports['errmsg'])(a0, a1);
+var _psprintf = Module['_psprintf'] = (a0, a1) => (_psprintf = Module['_psprintf'] = wasmExports['psprintf'])(a0, a1);
+var _pfree = Module['_pfree'] = (a0) => (_pfree = Module['_pfree'] = wasmExports['pfree'])(a0);
 var _initStringInfo = Module['_initStringInfo'] = (a0) => (_initStringInfo = Module['_initStringInfo'] = wasmExports['initStringInfo'])(a0);
 var _appendStringInfoChar = Module['_appendStringInfoChar'] = (a0, a1) => (_appendStringInfoChar = Module['_appendStringInfoChar'] = wasmExports['appendStringInfoChar'])(a0, a1);
 var _appendStringInfoString = Module['_appendStringInfoString'] = (a0, a1) => (_appendStringInfoString = Module['_appendStringInfoString'] = wasmExports['appendStringInfoString'])(a0, a1);
+var _escape_json = Module['_escape_json'] = (a0, a1) => (_escape_json = Module['_escape_json'] = wasmExports['escape_json'])(a0, a1);
+var _enlargeStringInfo = Module['_enlargeStringInfo'] = (a0, a1) => (_enlargeStringInfo = Module['_enlargeStringInfo'] = wasmExports['enlargeStringInfo'])(a0, a1);
 var _appendStringInfo = Module['_appendStringInfo'] = (a0, a1, a2) => (_appendStringInfo = Module['_appendStringInfo'] = wasmExports['appendStringInfo'])(a0, a1, a2);
-var _bms_is_member = Module['_bms_is_member'] = (a0, a1) => (_bms_is_member = Module['_bms_is_member'] = wasmExports['bms_is_member'])(a0, a1);
-var _equal = Module['_equal'] = (a0, a1) => (_equal = Module['_equal'] = wasmExports['equal'])(a0, a1);
-var _bms_add_member = Module['_bms_add_member'] = (a0, a1) => (_bms_add_member = Module['_bms_add_member'] = wasmExports['bms_add_member'])(a0, a1);
-var _bms_membership = Module['_bms_membership'] = (a0) => (_bms_membership = Module['_bms_membership'] = wasmExports['bms_membership'])(a0);
-var _bms_free = Module['_bms_free'] = (a0) => (_bms_free = Module['_bms_free'] = wasmExports['bms_free'])(a0);
-var _bms_next_member = Module['_bms_next_member'] = (a0, a1) => (_bms_next_member = Module['_bms_next_member'] = wasmExports['bms_next_member'])(a0, a1);
-var _bms_num_members = Module['_bms_num_members'] = (a0) => (_bms_num_members = Module['_bms_num_members'] = wasmExports['bms_num_members'])(a0);
-var _bms_del_member = Module['_bms_del_member'] = (a0, a1) => (_bms_del_member = Module['_bms_del_member'] = wasmExports['bms_del_member'])(a0, a1);
+var _errmsg = Module['_errmsg'] = (a0, a1) => (_errmsg = Module['_errmsg'] = wasmExports['errmsg'])(a0, a1);
+var _errcode_for_file_access = Module['_errcode_for_file_access'] = () => (_errcode_for_file_access = Module['_errcode_for_file_access'] = wasmExports['errcode_for_file_access'])();
+var _palloc0 = Module['_palloc0'] = (a0) => (_palloc0 = Module['_palloc0'] = wasmExports['palloc0'])(a0);
+var _palloc = Module['_palloc'] = (a0) => (_palloc = Module['_palloc'] = wasmExports['palloc'])(a0);
+var _errcode = Module['_errcode'] = (a0) => (_errcode = Module['_errcode'] = wasmExports['errcode'])(a0);
+var _bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = (a0) => (_bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = wasmExports['bbsink_forward_end_archive'])(a0);
+var _memcpy = Module['_memcpy'] = (a0, a1, a2) => (_memcpy = Module['_memcpy'] = wasmExports['memcpy'])(a0, a1, a2);
+var _bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = (a0) => (_bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = wasmExports['bbsink_forward_begin_manifest'])(a0);
+var _bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = (a0) => (_bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = wasmExports['bbsink_forward_end_manifest'])(a0);
+var _bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = (a0, a1, a2) => (_bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = wasmExports['bbsink_forward_end_backup'])(a0, a1, a2);
+var _bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = (a0) => (_bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = wasmExports['bbsink_forward_cleanup'])(a0);
+var _StartTransactionCommand = Module['_StartTransactionCommand'] = () => (_StartTransactionCommand = Module['_StartTransactionCommand'] = wasmExports['StartTransactionCommand'])();
+var _GetUserId = Module['_GetUserId'] = () => (_GetUserId = Module['_GetUserId'] = wasmExports['GetUserId'])();
+var _has_privs_of_role = Module['_has_privs_of_role'] = (a0, a1) => (_has_privs_of_role = Module['_has_privs_of_role'] = wasmExports['has_privs_of_role'])(a0, a1);
+var _errdetail = Module['_errdetail'] = (a0, a1) => (_errdetail = Module['_errdetail'] = wasmExports['errdetail'])(a0, a1);
+var _CommitTransactionCommand = Module['_CommitTransactionCommand'] = () => (_CommitTransactionCommand = Module['_CommitTransactionCommand'] = wasmExports['CommitTransactionCommand'])();
+var _bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = (a0, a1) => (_bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = wasmExports['bbsink_forward_begin_archive'])(a0, a1);
+var _errhint = Module['_errhint'] = (a0, a1) => (_errhint = Module['_errhint'] = wasmExports['errhint'])(a0, a1);
+var _bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = (a0, a1) => (_bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = wasmExports['bbsink_forward_archive_contents'])(a0, a1);
+var _bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = (a0, a1) => (_bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = wasmExports['bbsink_forward_manifest_contents'])(a0, a1);
+var _fd_durable_rename = Module['_fd_durable_rename'] = (a0, a1, a2) => (_fd_durable_rename = Module['_fd_durable_rename'] = wasmExports['fd_durable_rename'])(a0, a1, a2);
+var _bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = (a0) => (_bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = wasmExports['bbsink_forward_begin_backup'])(a0);
+var _BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = (a0, a1, a2) => (_BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = wasmExports['BaseBackupAddTarget'])(a0, a1, a2);
 var _lappend = Module['_lappend'] = (a0, a1) => (_lappend = Module['_lappend'] = wasmExports['lappend'])(a0, a1);
-var _pg_detoast_datum = Module['_pg_detoast_datum'] = (a0) => (_pg_detoast_datum = Module['_pg_detoast_datum'] = wasmExports['pg_detoast_datum'])(a0);
-var _init_MultiFuncCall = Module['_init_MultiFuncCall'] = (a0) => (_init_MultiFuncCall = Module['_init_MultiFuncCall'] = wasmExports['init_MultiFuncCall'])(a0);
-var _get_call_result_type = Module['_get_call_result_type'] = (a0, a1, a2) => (_get_call_result_type = Module['_get_call_result_type'] = wasmExports['get_call_result_type'])(a0, a1, a2);
-var _BlessTupleDesc = Module['_BlessTupleDesc'] = (a0) => (_BlessTupleDesc = Module['_BlessTupleDesc'] = wasmExports['BlessTupleDesc'])(a0);
-var _TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = (a0) => (_TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = wasmExports['TupleDescGetAttInMetadata'])(a0);
-var _per_MultiFuncCall = Module['_per_MultiFuncCall'] = (a0) => (_per_MultiFuncCall = Module['_per_MultiFuncCall'] = wasmExports['per_MultiFuncCall'])(a0);
-var _accumArrayResult = Module['_accumArrayResult'] = (a0, a1, a2, a3, a4) => (_accumArrayResult = Module['_accumArrayResult'] = wasmExports['accumArrayResult'])(a0, a1, a2, a3, a4);
-var _getTypeOutputInfo = Module['_getTypeOutputInfo'] = (a0, a1, a2) => (_getTypeOutputInfo = Module['_getTypeOutputInfo'] = wasmExports['getTypeOutputInfo'])(a0, a1, a2);
-var _fmgr_info = Module['_fmgr_info'] = (a0, a1) => (_fmgr_info = Module['_fmgr_info'] = wasmExports['fmgr_info'])(a0, a1);
-var _FunctionCall1Coll = Module['_FunctionCall1Coll'] = (a0, a1, a2) => (_FunctionCall1Coll = Module['_FunctionCall1Coll'] = wasmExports['FunctionCall1Coll'])(a0, a1, a2);
+var _pstrdup = Module['_pstrdup'] = (a0) => (_pstrdup = Module['_pstrdup'] = wasmExports['pstrdup'])(a0);
+var _GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = () => (_GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = wasmExports['GetCurrentTimestamp'])();
+var _CreateDestReceiver = Module['_CreateDestReceiver'] = (a0) => (_CreateDestReceiver = Module['_CreateDestReceiver'] = wasmExports['CreateDestReceiver'])(a0);
+var _CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = (a0) => (_CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = wasmExports['CreateTemplateTupleDesc'])(a0);
+var _strtoul = Module['_strtoul'] = (a0, a1, a2) => (_strtoul = Module['_strtoul'] = wasmExports['strtoul'])(a0, a1, a2);
 var _cstring_to_text = Module['_cstring_to_text'] = (a0) => (_cstring_to_text = Module['_cstring_to_text'] = wasmExports['cstring_to_text'])(a0);
-var _makeArrayResult = Module['_makeArrayResult'] = (a0, a1) => (_makeArrayResult = Module['_makeArrayResult'] = wasmExports['makeArrayResult'])(a0, a1);
-var _Float8GetDatum = Module['_Float8GetDatum'] = (a0) => (_Float8GetDatum = Module['_Float8GetDatum'] = wasmExports['Float8GetDatum'])(a0);
-var _heap_form_tuple = Module['_heap_form_tuple'] = (a0, a1, a2) => (_heap_form_tuple = Module['_heap_form_tuple'] = wasmExports['heap_form_tuple'])(a0, a1, a2);
-var _HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = (a0) => (_HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = wasmExports['HeapTupleHeaderGetDatum'])(a0);
-var _end_MultiFuncCall = Module['_end_MultiFuncCall'] = (a0, a1) => (_end_MultiFuncCall = Module['_end_MultiFuncCall'] = wasmExports['end_MultiFuncCall'])(a0, a1);
-var _FunctionCall2Coll = Module['_FunctionCall2Coll'] = (a0, a1, a2, a3) => (_FunctionCall2Coll = Module['_FunctionCall2Coll'] = wasmExports['FunctionCall2Coll'])(a0, a1, a2, a3);
-var _get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = (a0, a1, a2, a3) => (_get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = wasmExports['get_typlenbyvalalign'])(a0, a1, a2, a3);
-var _deconstruct_array = Module['_deconstruct_array'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_deconstruct_array = Module['_deconstruct_array'] = wasmExports['deconstruct_array'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _list_make1_impl = Module['_list_make1_impl'] = (a0, a1) => (_list_make1_impl = Module['_list_make1_impl'] = wasmExports['list_make1_impl'])(a0, a1);
-var _table_open = Module['_table_open'] = (a0, a1) => (_table_open = Module['_table_open'] = wasmExports['table_open'])(a0, a1);
+var _Int64GetDatum = Module['_Int64GetDatum'] = (a0) => (_Int64GetDatum = Module['_Int64GetDatum'] = wasmExports['Int64GetDatum'])(a0);
+var _TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = (a0, a1) => (_TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = wasmExports['TimestampDifferenceMilliseconds'])(a0, a1);
+var ___wasm_setjmp_test = Module['___wasm_setjmp_test'] = (a0, a1) => (___wasm_setjmp_test = Module['___wasm_setjmp_test'] = wasmExports['__wasm_setjmp_test'])(a0, a1);
+var _defGetString = Module['_defGetString'] = (a0) => (_defGetString = Module['_defGetString'] = wasmExports['defGetString'])(a0);
+var _defGetBoolean = Module['_defGetBoolean'] = (a0) => (_defGetBoolean = Module['_defGetBoolean'] = wasmExports['defGetBoolean'])(a0);
+var _parse_bool = Module['_parse_bool'] = (a0, a1) => (_parse_bool = Module['_parse_bool'] = wasmExports['parse_bool'])(a0, a1);
+var ___wasm_setjmp = Module['___wasm_setjmp'] = (a0, a1, a2) => (___wasm_setjmp = Module['___wasm_setjmp'] = wasmExports['__wasm_setjmp'])(a0, a1, a2);
+var _pg_re_throw = Module['_pg_re_throw'] = () => (_pg_re_throw = Module['_pg_re_throw'] = wasmExports['pg_re_throw'])();
+var _emscripten_longjmp = Module['_emscripten_longjmp'] = (a0, a1) => (_emscripten_longjmp = Module['_emscripten_longjmp'] = wasmExports['emscripten_longjmp'])(a0, a1);
+var _ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = (a0, a1) => (_ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = wasmExports['ResourceOwnerCreate'])(a0, a1);
+var _RecoveryInProgress = Module['_RecoveryInProgress'] = () => (_RecoveryInProgress = Module['_RecoveryInProgress'] = wasmExports['RecoveryInProgress'])();
+var _makeStringInfo = Module['_makeStringInfo'] = () => (_makeStringInfo = Module['_makeStringInfo'] = wasmExports['makeStringInfo'])();
+var _before_shmem_exit = Module['_before_shmem_exit'] = (a0, a1) => (_before_shmem_exit = Module['_before_shmem_exit'] = wasmExports['before_shmem_exit'])(a0, a1);
+var _cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = (a0, a1) => (_cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = wasmExports['cancel_before_shmem_exit'])(a0, a1);
+var _AllocateDir = Module['_AllocateDir'] = (a0) => (_AllocateDir = Module['_AllocateDir'] = wasmExports['AllocateDir'])(a0);
+var _ReadDir = Module['_ReadDir'] = (a0, a1) => (_ReadDir = Module['_ReadDir'] = wasmExports['ReadDir'])(a0, a1);
+var _FreeDir = Module['_FreeDir'] = (a0) => (_FreeDir = Module['_FreeDir'] = wasmExports['FreeDir'])(a0);
+var _list_sort = Module['_list_sort'] = (a0, a1) => (_list_sort = Module['_list_sort'] = wasmExports['list_sort'])(a0, a1);
+var _sscanf = Module['_sscanf'] = (a0, a1, a2) => (_sscanf = Module['_sscanf'] = wasmExports['sscanf'])(a0, a1, a2);
+var _OpenTransientFile = Module['_OpenTransientFile'] = (a0, a1) => (_OpenTransientFile = Module['_OpenTransientFile'] = wasmExports['OpenTransientFile'])(a0, a1);
+var _fstat = Module['_fstat'] = (a0, a1) => (_fstat = Module['_fstat'] = wasmExports['fstat'])(a0, a1);
+var _CloseTransientFile = Module['_CloseTransientFile'] = (a0) => (_CloseTransientFile = Module['_CloseTransientFile'] = wasmExports['CloseTransientFile'])(a0);
 var _errstart = Module['_errstart'] = (a0, a1) => (_errstart = Module['_errstart'] = wasmExports['errstart'])(a0, a1);
-var _get_namespace_name = Module['_get_namespace_name'] = (a0) => (_get_namespace_name = Module['_get_namespace_name'] = wasmExports['get_namespace_name'])(a0);
-var _getmissingattr = Module['_getmissingattr'] = (a0, a1, a2) => (_getmissingattr = Module['_getmissingattr'] = wasmExports['getmissingattr'])(a0, a1, a2);
-var _nocachegetattr = Module['_nocachegetattr'] = (a0, a1, a2) => (_nocachegetattr = Module['_nocachegetattr'] = wasmExports['nocachegetattr'])(a0, a1, a2);
-var _CreateExecutorState = Module['_CreateExecutorState'] = () => (_CreateExecutorState = Module['_CreateExecutorState'] = wasmExports['CreateExecutorState'])();
-var _MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = (a0) => (_MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = wasmExports['MakePerTupleExprContext'])(a0);
-var _MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = (a0, a1) => (_MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = wasmExports['MakeSingleTupleTableSlot'])(a0, a1);
-var _ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = (a0, a1, a2) => (_ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = wasmExports['ExecStoreHeapTuple'])(a0, a1, a2);
-var _ExecDropSingleTupleTableSlot = Module['_ExecDropSingleTupleTableSlot'] = (a0) => (_ExecDropSingleTupleTableSlot = Module['_ExecDropSingleTupleTableSlot'] = wasmExports['ExecDropSingleTupleTableSlot'])(a0);
-var _FreeExecutorState = Module['_FreeExecutorState'] = (a0) => (_FreeExecutorState = Module['_FreeExecutorState'] = wasmExports['FreeExecutorState'])(a0);
-var _ExecPrepareExpr = Module['_ExecPrepareExpr'] = (a0, a1) => (_ExecPrepareExpr = Module['_ExecPrepareExpr'] = wasmExports['ExecPrepareExpr'])(a0, a1);
-var _datumCopy = Module['_datumCopy'] = (a0, a1, a2) => (_datumCopy = Module['_datumCopy'] = wasmExports['datumCopy'])(a0, a1, a2);
-var _get_rel_type_id = Module['_get_rel_type_id'] = (a0) => (_get_rel_type_id = Module['_get_rel_type_id'] = wasmExports['get_rel_type_id'])(a0);
-var _construct_array_builtin = Module['_construct_array_builtin'] = (a0, a1, a2) => (_construct_array_builtin = Module['_construct_array_builtin'] = wasmExports['construct_array_builtin'])(a0, a1, a2);
-var _construct_array = Module['_construct_array'] = (a0, a1, a2, a3, a4, a5) => (_construct_array = Module['_construct_array'] = wasmExports['construct_array'])(a0, a1, a2, a3, a4, a5);
-var _table_close = Module['_table_close'] = (a0, a1) => (_table_close = Module['_table_close'] = wasmExports['table_close'])(a0, a1);
-var _heap_freetuple = Module['_heap_freetuple'] = (a0) => (_heap_freetuple = Module['_heap_freetuple'] = wasmExports['heap_freetuple'])(a0);
+var _errmsg_plural = Module['_errmsg_plural'] = (a0, a1, a2, a3) => (_errmsg_plural = Module['_errmsg_plural'] = wasmExports['errmsg_plural'])(a0, a1, a2, a3);
+var _strncmp = Module['_strncmp'] = (a0, a1, a2) => (_strncmp = Module['_strncmp'] = wasmExports['strncmp'])(a0, a1, a2);
+var _ProcessInterrupts = Module['_ProcessInterrupts'] = () => (_ProcessInterrupts = Module['_ProcessInterrupts'] = wasmExports['ProcessInterrupts'])();
+var _memcmp = Module['_memcmp'] = (a0, a1, a2) => (_memcmp = Module['_memcmp'] = wasmExports['memcmp'])(a0, a1, a2);
+var _geteuid = Module['_geteuid'] = () => (_geteuid = Module['_geteuid'] = wasmExports['geteuid'])();
+var _time = Module['_time'] = (a0) => (_time = Module['_time'] = wasmExports['time'])(a0);
+var _atoi = Module['_atoi'] = (a0) => (_atoi = Module['_atoi'] = wasmExports['atoi'])(a0);
+var _pg_checksum_page = Module['_pg_checksum_page'] = (a0, a1) => (_pg_checksum_page = Module['_pg_checksum_page'] = wasmExports['pg_checksum_page'])(a0, a1);
 var _pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = (a0, a1) => (_pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = wasmExports['pgstat_progress_update_param'])(a0, a1);
+var _ResetLatch = Module['_ResetLatch'] = (a0) => (_ResetLatch = Module['_ResetLatch'] = wasmExports['ResetLatch'])(a0);
+var _WaitLatch = Module['_WaitLatch'] = (a0, a1, a2, a3) => (_WaitLatch = Module['_WaitLatch'] = wasmExports['WaitLatch'])(a0, a1, a2, a3);
+var _gettimeofday = Module['_gettimeofday'] = (a0, a1) => (_gettimeofday = Module['_gettimeofday'] = wasmExports['gettimeofday'])(a0, a1);
+var _raw_parser = Module['_raw_parser'] = (a0, a1) => (_raw_parser = Module['_raw_parser'] = wasmExports['raw_parser'])(a0, a1);
+var _errdetail_internal = Module['_errdetail_internal'] = (a0, a1) => (_errdetail_internal = Module['_errdetail_internal'] = wasmExports['errdetail_internal'])(a0, a1);
+var _list_make1_impl = Module['_list_make1_impl'] = (a0, a1) => (_list_make1_impl = Module['_list_make1_impl'] = wasmExports['list_make1_impl'])(a0, a1);
+var _MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = (a0, a1) => (_MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = wasmExports['MemoryContextAllocZeroAligned'])(a0, a1);
+var _pg_prng_double = Module['_pg_prng_double'] = (a0) => (_pg_prng_double = Module['_pg_prng_double'] = wasmExports['pg_prng_double'])(a0);
+var _sigaddset = Module['_sigaddset'] = (a0, a1) => (_sigaddset = Module['_sigaddset'] = wasmExports['sigaddset'])(a0, a1);
+var _die = Module['_die'] = (a0) => (_die = Module['_die'] = wasmExports['die'])(a0);
+var _check_stack_depth = Module['_check_stack_depth'] = () => (_check_stack_depth = Module['_check_stack_depth'] = wasmExports['check_stack_depth'])();
+var _pre_format_elog_string = Module['_pre_format_elog_string'] = (a0, a1) => (_pre_format_elog_string = Module['_pre_format_elog_string'] = wasmExports['pre_format_elog_string'])(a0, a1);
+var _format_elog_string = Module['_format_elog_string'] = (a0, a1) => (_format_elog_string = Module['_format_elog_string'] = wasmExports['format_elog_string'])(a0, a1);
+var _SplitIdentifierString = Module['_SplitIdentifierString'] = (a0, a1, a2) => (_SplitIdentifierString = Module['_SplitIdentifierString'] = wasmExports['SplitIdentifierString'])(a0, a1, a2);
 var _list_free = Module['_list_free'] = (a0) => (_list_free = Module['_list_free'] = wasmExports['list_free'])(a0);
+var _guc_malloc = Module['_guc_malloc'] = (a0, a1) => (_guc_malloc = Module['_guc_malloc'] = wasmExports['guc_malloc'])(a0, a1);
+var _SetConfigOption = Module['_SetConfigOption'] = (a0, a1, a2, a3) => (_SetConfigOption = Module['_SetConfigOption'] = wasmExports['SetConfigOption'])(a0, a1, a2, a3);
+var _pg_sprintf = Module['_pg_sprintf'] = (a0, a1, a2) => (_pg_sprintf = Module['_pg_sprintf'] = wasmExports['pg_sprintf'])(a0, a1, a2);
+var _strlcpy = Module['_strlcpy'] = (a0, a1, a2) => (_strlcpy = Module['_strlcpy'] = wasmExports['strlcpy'])(a0, a1, a2);
+var _fsync_pgdata = Module['_fsync_pgdata'] = (a0, a1) => (_fsync_pgdata = Module['_fsync_pgdata'] = wasmExports['fsync_pgdata'])(a0, a1);
+var _get_restricted_token = Module['_get_restricted_token'] = () => (_get_restricted_token = Module['_get_restricted_token'] = wasmExports['get_restricted_token'])();
+var _pg_malloc = Module['_pg_malloc'] = (a0) => (_pg_malloc = Module['_pg_malloc'] = wasmExports['pg_malloc'])(a0);
+var _pg_realloc = Module['_pg_realloc'] = (a0, a1) => (_pg_realloc = Module['_pg_realloc'] = wasmExports['pg_realloc'])(a0, a1);
+var _realloc = Module['_realloc'] = (a0, a1) => (_realloc = Module['_realloc'] = wasmExports['realloc'])(a0, a1);
+var _pg_strdup = Module['_pg_strdup'] = (a0) => (_pg_strdup = Module['_pg_strdup'] = wasmExports['pg_strdup'])(a0);
+var _simple_prompt = Module['_simple_prompt'] = (a0, a1) => (_simple_prompt = Module['_simple_prompt'] = wasmExports['simple_prompt'])(a0, a1);
+var _MemoryContextDelete = Module['_MemoryContextDelete'] = (a0) => (_MemoryContextDelete = Module['_MemoryContextDelete'] = wasmExports['MemoryContextDelete'])(a0);
+var _pg_printf = Module['_pg_printf'] = (a0, a1) => (_pg_printf = Module['_pg_printf'] = wasmExports['pg_printf'])(a0, a1);
+var _AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = (a0, a1, a2, a3, a4) => (_AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = wasmExports['AllocSetContextCreateInternal'])(a0, a1, a2, a3, a4);
+var _fopen = Module['_fopen'] = (a0, a1) => (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1);
+var _interactive_file = Module['_interactive_file'] = () => (_interactive_file = Module['_interactive_file'] = wasmExports['interactive_file'])();
+var _fclose = Module['_fclose'] = (a0) => (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0);
+var _interactive_one = Module['_interactive_one'] = () => (_interactive_one = Module['_interactive_one'] = wasmExports['interactive_one'])();
+var _MemoryContextReset = Module['_MemoryContextReset'] = (a0) => (_MemoryContextReset = Module['_MemoryContextReset'] = wasmExports['MemoryContextReset'])(a0);
+var _resetStringInfo = Module['_resetStringInfo'] = (a0) => (_resetStringInfo = Module['_resetStringInfo'] = wasmExports['resetStringInfo'])(a0);
+var _getc = Module['_getc'] = (a0) => (_getc = Module['_getc'] = wasmExports['getc'])(a0);
+var _pq_getmsgint = Module['_pq_getmsgint'] = (a0, a1) => (_pq_getmsgint = Module['_pq_getmsgint'] = wasmExports['pq_getmsgint'])(a0, a1);
+var _pgstat_report_activity = Module['_pgstat_report_activity'] = (a0, a1) => (_pgstat_report_activity = Module['_pgstat_report_activity'] = wasmExports['pgstat_report_activity'])(a0, a1);
+var _access = Module['_access'] = (a0, a1) => (_access = Module['_access'] = wasmExports['access'])(a0, a1);
+var _pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = (a0, a1) => (_pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = wasmExports['pq_recvbuf_fill'])(a0, a1);
+var _unlink = Module['_unlink'] = (a0) => (_unlink = Module['_unlink'] = wasmExports['unlink'])(a0);
+var _calloc = Module['_calloc'] = (a0, a1) => (_calloc = Module['_calloc'] = wasmExports['calloc'])(a0, a1);
+var _EmitErrorReport = Module['_EmitErrorReport'] = () => (_EmitErrorReport = Module['_EmitErrorReport'] = wasmExports['EmitErrorReport'])();
+var _FlushErrorState = Module['_FlushErrorState'] = () => (_FlushErrorState = Module['_FlushErrorState'] = wasmExports['FlushErrorState'])();
+var _pg_repl_raf = Module['_pg_repl_raf'] = () => (_pg_repl_raf = Module['_pg_repl_raf'] = wasmExports['pg_repl_raf'])();
+var _pg_shutdown = Module['_pg_shutdown'] = () => (_pg_shutdown = Module['_pg_shutdown'] = wasmExports['pg_shutdown'])();
+var _errhidestmt = Module['_errhidestmt'] = (a0) => (_errhidestmt = Module['_errhidestmt'] = wasmExports['errhidestmt'])(a0);
+var _GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = () => (_GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = wasmExports['GetTransactionSnapshot'])();
+var _PushActiveSnapshot = Module['_PushActiveSnapshot'] = (a0) => (_PushActiveSnapshot = Module['_PushActiveSnapshot'] = wasmExports['PushActiveSnapshot'])(a0);
+var _PopActiveSnapshot = Module['_PopActiveSnapshot'] = () => (_PopActiveSnapshot = Module['_PopActiveSnapshot'] = wasmExports['PopActiveSnapshot'])();
+var _CommandCounterIncrement = Module['_CommandCounterIncrement'] = () => (_CommandCounterIncrement = Module['_CommandCounterIncrement'] = wasmExports['CommandCounterIncrement'])();
+var _MemoryContextSetParent = Module['_MemoryContextSetParent'] = (a0, a1) => (_MemoryContextSetParent = Module['_MemoryContextSetParent'] = wasmExports['MemoryContextSetParent'])(a0, a1);
+var _makeParamList = Module['_makeParamList'] = (a0) => (_makeParamList = Module['_makeParamList'] = wasmExports['makeParamList'])(a0);
+var _getTypeInputInfo = Module['_getTypeInputInfo'] = (a0, a1, a2) => (_getTypeInputInfo = Module['_getTypeInputInfo'] = wasmExports['getTypeInputInfo'])(a0, a1, a2);
+var _pnstrdup = Module['_pnstrdup'] = (a0, a1) => (_pnstrdup = Module['_pnstrdup'] = wasmExports['pnstrdup'])(a0, a1);
+var _interactive_write = Module['_interactive_write'] = (a0) => (_interactive_write = Module['_interactive_write'] = wasmExports['interactive_write'])(a0);
+var _interactive_read = Module['_interactive_read'] = () => (_interactive_read = Module['_interactive_read'] = wasmExports['interactive_read'])();
+var _appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = (a0, a1, a2) => (_appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = wasmExports['appendStringInfoStringQuoted'])(a0, a1, a2);
+var _set_errcontext_domain = Module['_set_errcontext_domain'] = (a0) => (_set_errcontext_domain = Module['_set_errcontext_domain'] = wasmExports['set_errcontext_domain'])(a0);
+var _errcontext_msg = Module['_errcontext_msg'] = (a0, a1) => (_errcontext_msg = Module['_errcontext_msg'] = wasmExports['errcontext_msg'])(a0, a1);
+var _SearchSysCache1 = Module['_SearchSysCache1'] = (a0, a1) => (_SearchSysCache1 = Module['_SearchSysCache1'] = wasmExports['SearchSysCache1'])(a0, a1);
+var _ReleaseSysCache = Module['_ReleaseSysCache'] = (a0) => (_ReleaseSysCache = Module['_ReleaseSysCache'] = wasmExports['ReleaseSysCache'])(a0);
+var _fmgr_info = Module['_fmgr_info'] = (a0, a1) => (_fmgr_info = Module['_fmgr_info'] = wasmExports['fmgr_info'])(a0, a1);
+var _object_aclcheck = Module['_object_aclcheck'] = (a0, a1, a2, a3) => (_object_aclcheck = Module['_object_aclcheck'] = wasmExports['object_aclcheck'])(a0, a1, a2, a3);
+var _get_namespace_name = Module['_get_namespace_name'] = (a0) => (_get_namespace_name = Module['_get_namespace_name'] = wasmExports['get_namespace_name'])(a0);
+var _aclcheck_error = Module['_aclcheck_error'] = (a0, a1, a2) => (_aclcheck_error = Module['_aclcheck_error'] = wasmExports['aclcheck_error'])(a0, a1, a2);
+var _appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = (a0, a1, a2) => (_appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = wasmExports['appendBinaryStringInfo'])(a0, a1, a2);
+var _getTypeOutputInfo = Module['_getTypeOutputInfo'] = (a0, a1, a2) => (_getTypeOutputInfo = Module['_getTypeOutputInfo'] = wasmExports['getTypeOutputInfo'])(a0, a1, a2);
+var _OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = (a0, a1) => (_OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = wasmExports['OidOutputFunctionCall'])(a0, a1);
+var _RegisterSnapshot = Module['_RegisterSnapshot'] = (a0) => (_RegisterSnapshot = Module['_RegisterSnapshot'] = wasmExports['RegisterSnapshot'])(a0);
+var _UnregisterSnapshot = Module['_UnregisterSnapshot'] = (a0) => (_UnregisterSnapshot = Module['_UnregisterSnapshot'] = wasmExports['UnregisterSnapshot'])(a0);
+var _GetActiveSnapshot = Module['_GetActiveSnapshot'] = () => (_GetActiveSnapshot = Module['_GetActiveSnapshot'] = wasmExports['GetActiveSnapshot'])();
+var _MemoryContextAlloc = Module['_MemoryContextAlloc'] = (a0, a1) => (_MemoryContextAlloc = Module['_MemoryContextAlloc'] = wasmExports['MemoryContextAlloc'])(a0, a1);
+var _SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = (a0, a1, a2, a3, a4, a5) => (_SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = wasmExports['SetTuplestoreDestReceiverParams'])(a0, a1, a2, a3, a4, a5);
+var _MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = (a0) => (_MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = wasmExports['MemoryContextDeleteChildren'])(a0);
+var _EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = () => (_EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = wasmExports['EnsurePortalSnapshotExists'])();
+var _MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = (a0, a1) => (_MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = wasmExports['MakeSingleTupleTableSlot'])(a0, a1);
+var _ExecDropSingleTupleTableSlot = Module['_ExecDropSingleTupleTableSlot'] = (a0) => (_ExecDropSingleTupleTableSlot = Module['_ExecDropSingleTupleTableSlot'] = wasmExports['ExecDropSingleTupleTableSlot'])(a0);
+var _GetCommandTagName = Module['_GetCommandTagName'] = (a0) => (_GetCommandTagName = Module['_GetCommandTagName'] = wasmExports['GetCommandTagName'])(a0);
+var _standard_ProcessUtility = Module['_standard_ProcessUtility'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_standard_ProcessUtility = Module['_standard_ProcessUtility'] = wasmExports['standard_ProcessUtility'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _copyObjectImpl = Module['_copyObjectImpl'] = (a0) => (_copyObjectImpl = Module['_copyObjectImpl'] = wasmExports['copyObjectImpl'])(a0);
+var _Async_Notify = Module['_Async_Notify'] = (a0, a1) => (_Async_Notify = Module['_Async_Notify'] = wasmExports['Async_Notify'])(a0, a1);
+var _superuser = Module['_superuser'] = () => (_superuser = Module['_superuser'] = wasmExports['superuser'])();
+var _list_concat = Module['_list_concat'] = (a0, a1) => (_list_concat = Module['_list_concat'] = wasmExports['list_concat'])(a0, a1);
+var _RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = (a0, a1, a2, a3, a4) => (_RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = wasmExports['RangeVarGetRelidExtended'])(a0, a1, a2, a3, a4);
+var _get_rel_relkind = Module['_get_rel_relkind'] = (a0) => (_get_rel_relkind = Module['_get_rel_relkind'] = wasmExports['get_rel_relkind'])(a0);
+var _CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = (a0) => (_CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = wasmExports['CreateTupleDescCopy'])(a0);
+var _bms_next_member = Module['_bms_next_member'] = (a0, a1) => (_bms_next_member = Module['_bms_next_member'] = wasmExports['bms_next_member'])(a0, a1);
+var _bms_add_member = Module['_bms_add_member'] = (a0, a1) => (_bms_add_member = Module['_bms_add_member'] = wasmExports['bms_add_member'])(a0, a1);
+var _bms_is_member = Module['_bms_is_member'] = (a0, a1) => (_bms_is_member = Module['_bms_is_member'] = wasmExports['bms_is_member'])(a0, a1);
+var _bms_del_member = Module['_bms_del_member'] = (a0, a1) => (_bms_del_member = Module['_bms_del_member'] = wasmExports['bms_del_member'])(a0, a1);
+var _bms_union = Module['_bms_union'] = (a0, a1) => (_bms_union = Module['_bms_union'] = wasmExports['bms_union'])(a0, a1);
+var _bms_overlap = Module['_bms_overlap'] = (a0, a1) => (_bms_overlap = Module['_bms_overlap'] = wasmExports['bms_overlap'])(a0, a1);
+var _table_open = Module['_table_open'] = (a0, a1) => (_table_open = Module['_table_open'] = wasmExports['table_open'])(a0, a1);
 var _ScanKeyInit = Module['_ScanKeyInit'] = (a0, a1, a2, a3, a4) => (_ScanKeyInit = Module['_ScanKeyInit'] = wasmExports['ScanKeyInit'])(a0, a1, a2, a3, a4);
 var _systable_beginscan = Module['_systable_beginscan'] = (a0, a1, a2, a3, a4, a5) => (_systable_beginscan = Module['_systable_beginscan'] = wasmExports['systable_beginscan'])(a0, a1, a2, a3, a4, a5);
 var _systable_getnext = Module['_systable_getnext'] = (a0) => (_systable_getnext = Module['_systable_getnext'] = wasmExports['systable_getnext'])(a0);
-var _pstrdup = Module['_pstrdup'] = (a0) => (_pstrdup = Module['_pstrdup'] = wasmExports['pstrdup'])(a0);
-var _SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = (a0, a1, a2) => (_SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = wasmExports['SysCacheGetAttrNotNull'])(a0, a1, a2);
-var _lappend_int = Module['_lappend_int'] = (a0, a1) => (_lappend_int = Module['_lappend_int'] = wasmExports['lappend_int'])(a0, a1);
-var _text_to_cstring = Module['_text_to_cstring'] = (a0) => (_text_to_cstring = Module['_text_to_cstring'] = wasmExports['text_to_cstring'])(a0);
-var _stringToNode = Module['_stringToNode'] = (a0) => (_stringToNode = Module['_stringToNode'] = wasmExports['stringToNode'])(a0);
 var _systable_endscan = Module['_systable_endscan'] = (a0) => (_systable_endscan = Module['_systable_endscan'] = wasmExports['systable_endscan'])(a0);
+var _table_close = Module['_table_close'] = (a0, a1) => (_table_close = Module['_table_close'] = wasmExports['table_close'])(a0, a1);
+var _errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = (a0) => (_errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = wasmExports['errdetail_relkind_not_supported'])(a0);
+var _object_ownercheck = Module['_object_ownercheck'] = (a0, a1, a2) => (_object_ownercheck = Module['_object_ownercheck'] = wasmExports['object_ownercheck'])(a0, a1, a2);
+var _get_relkind_objtype = Module['_get_relkind_objtype'] = (a0) => (_get_relkind_objtype = Module['_get_relkind_objtype'] = wasmExports['get_relkind_objtype'])(a0);
+var _SearchSysCache2 = Module['_SearchSysCache2'] = (a0, a1, a2) => (_SearchSysCache2 = Module['_SearchSysCache2'] = wasmExports['SearchSysCache2'])(a0, a1, a2);
+var _get_rel_name = Module['_get_rel_name'] = (a0) => (_get_rel_name = Module['_get_rel_name'] = wasmExports['get_rel_name'])(a0);
+var _heap_form_tuple = Module['_heap_form_tuple'] = (a0, a1, a2) => (_heap_form_tuple = Module['_heap_form_tuple'] = wasmExports['heap_form_tuple'])(a0, a1, a2);
+var _heap_freetuple = Module['_heap_freetuple'] = (a0) => (_heap_freetuple = Module['_heap_freetuple'] = wasmExports['heap_freetuple'])(a0);
 var _exprType = Module['_exprType'] = (a0) => (_exprType = Module['_exprType'] = wasmExports['exprType'])(a0);
+var _format_type_be = Module['_format_type_be'] = (a0) => (_format_type_be = Module['_format_type_be'] = wasmExports['format_type_be'])(a0);
 var _exprTypmod = Module['_exprTypmod'] = (a0) => (_exprTypmod = Module['_exprTypmod'] = wasmExports['exprTypmod'])(a0);
-var _bms_is_subset = Module['_bms_is_subset'] = (a0, a1) => (_bms_is_subset = Module['_bms_is_subset'] = wasmExports['bms_is_subset'])(a0, a1);
-var _bms_add_members = Module['_bms_add_members'] = (a0, a1) => (_bms_add_members = Module['_bms_add_members'] = wasmExports['bms_add_members'])(a0, a1);
-var _GetUserId = Module['_GetUserId'] = () => (_GetUserId = Module['_GetUserId'] = wasmExports['GetUserId'])();
-var _pg_class_aclcheck = Module['_pg_class_aclcheck'] = (a0, a1, a2) => (_pg_class_aclcheck = Module['_pg_class_aclcheck'] = wasmExports['pg_class_aclcheck'])(a0, a1, a2);
-var _pull_varattnos = Module['_pull_varattnos'] = (a0, a1, a2) => (_pull_varattnos = Module['_pull_varattnos'] = wasmExports['pull_varattnos'])(a0, a1, a2);
-var _TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = (a0) => (_TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = wasmExports['TransactionIdIsCurrentTransactionId'])(a0);
-var _MemoryContextAlloc = Module['_MemoryContextAlloc'] = (a0, a1) => (_MemoryContextAlloc = Module['_MemoryContextAlloc'] = wasmExports['MemoryContextAlloc'])(a0, a1);
-var _hash_create = Module['_hash_create'] = (a0, a1, a2, a3) => (_hash_create = Module['_hash_create'] = wasmExports['hash_create'])(a0, a1, a2, a3);
-var _hash_search = Module['_hash_search'] = (a0, a1, a2, a3) => (_hash_search = Module['_hash_search'] = wasmExports['hash_search'])(a0, a1, a2, a3);
-var _add_size = Module['_add_size'] = (a0, a1) => (_add_size = Module['_add_size'] = wasmExports['add_size'])(a0, a1);
-var _ShmemInitStruct = Module['_ShmemInitStruct'] = (a0, a1, a2) => (_ShmemInitStruct = Module['_ShmemInitStruct'] = wasmExports['ShmemInitStruct'])(a0, a1, a2);
-var _s_init_lock_sema = Module['_s_init_lock_sema'] = (a0, a1) => (_s_init_lock_sema = Module['_s_init_lock_sema'] = wasmExports['s_init_lock_sema'])(a0, a1);
-var _GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = () => (_GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = wasmExports['GetTransactionSnapshot'])();
-var _pairingheap_first = Module['_pairingheap_first'] = (a0) => (_pairingheap_first = Module['_pairingheap_first'] = wasmExports['pairingheap_first'])(a0);
-var _TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = (a0, a1) => (_TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = wasmExports['TransactionIdPrecedes'])(a0, a1);
-var _pairingheap_add = Module['_pairingheap_add'] = (a0, a1) => (_pairingheap_add = Module['_pairingheap_add'] = wasmExports['pairingheap_add'])(a0, a1);
-var _PushActiveSnapshot = Module['_PushActiveSnapshot'] = (a0) => (_PushActiveSnapshot = Module['_PushActiveSnapshot'] = wasmExports['PushActiveSnapshot'])(a0);
-var _GetCurrentTransactionNestLevel = Module['_GetCurrentTransactionNestLevel'] = () => (_GetCurrentTransactionNestLevel = Module['_GetCurrentTransactionNestLevel'] = wasmExports['GetCurrentTransactionNestLevel'])();
-var _GetCurrentCommandId = Module['_GetCurrentCommandId'] = (a0) => (_GetCurrentCommandId = Module['_GetCurrentCommandId'] = wasmExports['GetCurrentCommandId'])(a0);
-var _PopActiveSnapshot = Module['_PopActiveSnapshot'] = () => (_PopActiveSnapshot = Module['_PopActiveSnapshot'] = wasmExports['PopActiveSnapshot'])();
-var _GetActiveSnapshot = Module['_GetActiveSnapshot'] = () => (_GetActiveSnapshot = Module['_GetActiveSnapshot'] = wasmExports['GetActiveSnapshot'])();
-var _RegisterSnapshot = Module['_RegisterSnapshot'] = (a0) => (_RegisterSnapshot = Module['_RegisterSnapshot'] = wasmExports['RegisterSnapshot'])(a0);
-var _UnregisterSnapshot = Module['_UnregisterSnapshot'] = (a0) => (_UnregisterSnapshot = Module['_UnregisterSnapshot'] = wasmExports['UnregisterSnapshot'])(a0);
-var _unlink = Module['_unlink'] = (a0) => (_unlink = Module['_unlink'] = wasmExports['unlink'])(a0);
-var _AllocateFile = Module['_AllocateFile'] = (a0, a1) => (_AllocateFile = Module['_AllocateFile'] = wasmExports['AllocateFile'])(a0, a1);
-var _errcode_for_file_access = Module['_errcode_for_file_access'] = () => (_errcode_for_file_access = Module['_errcode_for_file_access'] = wasmExports['errcode_for_file_access'])();
-var _fwrite = Module['_fwrite'] = (a0, a1, a2, a3) => (_fwrite = Module['_fwrite'] = wasmExports['fwrite'])(a0, a1, a2, a3);
-var _FreeFile = Module['_FreeFile'] = (a0) => (_FreeFile = Module['_FreeFile'] = wasmExports['FreeFile'])(a0);
-var _rename = Module['_rename'] = (a0, a1) => (_rename = Module['_rename'] = wasmExports['rename'])(a0, a1);
-var _fstat = Module['_fstat'] = (a0, a1) => (_fstat = Module['_fstat'] = wasmExports['fstat'])(a0, a1);
+var _format_type_with_typemod = Module['_format_type_with_typemod'] = (a0, a1) => (_format_type_with_typemod = Module['_format_type_with_typemod'] = wasmExports['format_type_with_typemod'])(a0, a1);
+var _relation_open = Module['_relation_open'] = (a0, a1) => (_relation_open = Module['_relation_open'] = wasmExports['relation_open'])(a0, a1);
+var _relation_close = Module['_relation_close'] = (a0, a1) => (_relation_close = Module['_relation_close'] = wasmExports['relation_close'])(a0, a1);
+var _makeString = Module['_makeString'] = (a0) => (_makeString = Module['_makeString'] = wasmExports['makeString'])(a0);
+var _makeTargetEntry = Module['_makeTargetEntry'] = (a0, a1, a2, a3) => (_makeTargetEntry = Module['_makeTargetEntry'] = wasmExports['makeTargetEntry'])(a0, a1, a2, a3);
+var _makeVar = Module['_makeVar'] = (a0, a1, a2, a3, a4, a5) => (_makeVar = Module['_makeVar'] = wasmExports['makeVar'])(a0, a1, a2, a3, a4, a5);
+var _list_make2_impl = Module['_list_make2_impl'] = (a0, a1, a2) => (_list_make2_impl = Module['_list_make2_impl'] = wasmExports['list_make2_impl'])(a0, a1, a2);
+var _lappend_oid = Module['_lappend_oid'] = (a0, a1) => (_lappend_oid = Module['_lappend_oid'] = wasmExports['lappend_oid'])(a0, a1);
+var _lappend_int = Module['_lappend_int'] = (a0, a1) => (_lappend_int = Module['_lappend_int'] = wasmExports['lappend_int'])(a0, a1);
+var _SearchSysCacheExists = Module['_SearchSysCacheExists'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheExists = Module['_SearchSysCacheExists'] = wasmExports['SearchSysCacheExists'])(a0, a1, a2, a3, a4);
+var _strip_implicit_coercions = Module['_strip_implicit_coercions'] = (a0) => (_strip_implicit_coercions = Module['_strip_implicit_coercions'] = wasmExports['strip_implicit_coercions'])(a0);
+var _stringToNode = Module['_stringToNode'] = (a0) => (_stringToNode = Module['_stringToNode'] = wasmExports['stringToNode'])(a0);
+var _coerce_to_target_type = Module['_coerce_to_target_type'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_coerce_to_target_type = Module['_coerce_to_target_type'] = wasmExports['coerce_to_target_type'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _try_relation_open = Module['_try_relation_open'] = (a0, a1) => (_try_relation_open = Module['_try_relation_open'] = wasmExports['try_relation_open'])(a0, a1);
+var _list_member_oid = Module['_list_member_oid'] = (a0, a1) => (_list_member_oid = Module['_list_member_oid'] = wasmExports['list_member_oid'])(a0, a1);
+var _list_delete_last = Module['_list_delete_last'] = (a0) => (_list_delete_last = Module['_list_delete_last'] = wasmExports['list_delete_last'])(a0);
+var _list_delete_cell = Module['_list_delete_cell'] = (a0, a1) => (_list_delete_cell = Module['_list_delete_cell'] = wasmExports['list_delete_cell'])(a0, a1);
+var _addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = (a0, a1) => (_addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = wasmExports['addRTEPermissionInfo'])(a0, a1);
+var _equal = Module['_equal'] = (a0, a1) => (_equal = Module['_equal'] = wasmExports['equal'])(a0, a1);
+var _repalloc = Module['_repalloc'] = (a0, a1) => (_repalloc = Module['_repalloc'] = wasmExports['repalloc'])(a0, a1);
+var _memmove = Module['_memmove'] = (a0, a1, a2) => (_memmove = Module['_memmove'] = wasmExports['memmove'])(a0, a1, a2);
+var _palloc_extended = Module['_palloc_extended'] = (a0, a1) => (_palloc_extended = Module['_palloc_extended'] = wasmExports['palloc_extended'])(a0, a1);
+var _pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = (a0) => (_pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = wasmExports['pg_reg_getinitialstate'])(a0);
+var _pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = (a0) => (_pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = wasmExports['pg_reg_getfinalstate'])(a0);
+var _pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = (a0, a1) => (_pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = wasmExports['pg_reg_getnumoutarcs'])(a0, a1);
+var _pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = (a0, a1, a2, a3) => (_pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = wasmExports['pg_reg_getoutarcs'])(a0, a1, a2, a3);
+var _pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = (a0) => (_pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = wasmExports['pg_reg_getnumcolors'])(a0);
+var _pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = (a0, a1) => (_pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = wasmExports['pg_reg_colorisbegin'])(a0, a1);
+var _pg_reg_colorisend = Module['_pg_reg_colorisend'] = (a0, a1) => (_pg_reg_colorisend = Module['_pg_reg_colorisend'] = wasmExports['pg_reg_colorisend'])(a0, a1);
+var _pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = (a0, a1) => (_pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = wasmExports['pg_reg_getnumcharacters'])(a0, a1);
+var _pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = (a0, a1, a2, a3) => (_pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = wasmExports['pg_reg_getcharacters'])(a0, a1, a2, a3);
+var _pg_regerror = Module['_pg_regerror'] = (a0, a1, a2, a3) => (_pg_regerror = Module['_pg_regerror'] = wasmExports['pg_regerror'])(a0, a1, a2, a3);
+var _strcpy = Module['_strcpy'] = (a0, a1) => (_strcpy = Module['_strcpy'] = wasmExports['strcpy'])(a0, a1);
+var _pg_regcomp = Module['_pg_regcomp'] = (a0, a1, a2, a3, a4) => (_pg_regcomp = Module['_pg_regcomp'] = wasmExports['pg_regcomp'])(a0, a1, a2, a3, a4);
+var _GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = () => (_GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = wasmExports['GetDatabaseEncoding'])();
+var _pg_qsort = Module['_pg_qsort'] = (a0, a1, a2, a3) => (_pg_qsort = Module['_pg_qsort'] = wasmExports['pg_qsort'])(a0, a1, a2, a3);
+var _isalnum = Module['_isalnum'] = (a0) => (_isalnum = Module['_isalnum'] = wasmExports['isalnum'])(a0);
+var _tolower = Module['_tolower'] = (a0) => (_tolower = Module['_tolower'] = wasmExports['tolower'])(a0);
+var _toupper = Module['_toupper'] = (a0) => (_toupper = Module['_toupper'] = wasmExports['toupper'])(a0);
+var _makeRangeVar = Module['_makeRangeVar'] = (a0, a1, a2) => (_makeRangeVar = Module['_makeRangeVar'] = wasmExports['makeRangeVar'])(a0, a1, a2);
+var _ferror = Module['_ferror'] = (a0) => (_ferror = Module['_ferror'] = wasmExports['ferror'])(a0);
 var _fread = Module['_fread'] = (a0, a1, a2, a3) => (_fread = Module['_fread'] = wasmExports['fread'])(a0, a1, a2, a3);
-var _strncmp = Module['_strncmp'] = (a0, a1, a2) => (_strncmp = Module['_strncmp'] = wasmExports['strncmp'])(a0, a1, a2);
-var _sscanf = Module['_sscanf'] = (a0, a1, a2) => (_sscanf = Module['_sscanf'] = wasmExports['sscanf'])(a0, a1, a2);
-var _errdetail = Module['_errdetail'] = (a0, a1) => (_errdetail = Module['_errdetail'] = wasmExports['errdetail'])(a0, a1);
-var _AllocateDir = Module['_AllocateDir'] = (a0) => (_AllocateDir = Module['_AllocateDir'] = wasmExports['AllocateDir'])(a0);
-var _FreeDir = Module['_FreeDir'] = (a0) => (_FreeDir = Module['_FreeDir'] = wasmExports['FreeDir'])(a0);
-var _GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = () => (_GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = wasmExports['GetCurrentTimestamp'])();
+var _clearerr = Module['_clearerr'] = (a0) => (_clearerr = Module['_clearerr'] = wasmExports['clearerr'])(a0);
+var _pqsignal = Module['_pqsignal'] = (a0, a1) => (_pqsignal = Module['_pqsignal'] = wasmExports['pqsignal'])(a0, a1);
+var _table_openrv = Module['_table_openrv'] = (a0, a1) => (_table_openrv = Module['_table_openrv'] = wasmExports['table_openrv'])(a0, a1);
+var _MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = (a0, a1) => (_MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = wasmExports['MemoryContextAllocZero'])(a0, a1);
+var _heap_getnext = Module['_heap_getnext'] = (a0, a1) => (_heap_getnext = Module['_heap_getnext'] = wasmExports['heap_getnext'])(a0, a1);
+var _list_free_deep = Module['_list_free_deep'] = (a0) => (_list_free_deep = Module['_list_free_deep'] = wasmExports['list_free_deep'])(a0);
+var _index_open = Module['_index_open'] = (a0, a1) => (_index_open = Module['_index_open'] = wasmExports['index_open'])(a0, a1);
+var _index_close = Module['_index_close'] = (a0, a1) => (_index_close = Module['_index_close'] = wasmExports['index_close'])(a0, a1);
+var _ExecReScan = Module['_ExecReScan'] = (a0) => (_ExecReScan = Module['_ExecReScan'] = wasmExports['ExecReScan'])(a0);
+var _InstrEndLoop = Module['_InstrEndLoop'] = (a0) => (_InstrEndLoop = Module['_InstrEndLoop'] = wasmExports['InstrEndLoop'])(a0);
+var _bms_free = Module['_bms_free'] = (a0) => (_bms_free = Module['_bms_free'] = wasmExports['bms_free'])(a0);
+var _text_to_cstring = Module['_text_to_cstring'] = (a0) => (_text_to_cstring = Module['_text_to_cstring'] = wasmExports['text_to_cstring'])(a0);
+var _slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = (a0, a1) => (_slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = wasmExports['slot_getsomeattrs_int'])(a0, a1);
+var _CreateExecutorState = Module['_CreateExecutorState'] = () => (_CreateExecutorState = Module['_CreateExecutorState'] = wasmExports['CreateExecutorState'])();
+var _FreeExecutorState = Module['_FreeExecutorState'] = (a0) => (_FreeExecutorState = Module['_FreeExecutorState'] = wasmExports['FreeExecutorState'])(a0);
+var _FreeExprContext = Module['_FreeExprContext'] = (a0, a1) => (_FreeExprContext = Module['_FreeExprContext'] = wasmExports['FreeExprContext'])(a0, a1);
+var _CreateExprContext = Module['_CreateExprContext'] = (a0) => (_CreateExprContext = Module['_CreateExprContext'] = wasmExports['CreateExprContext'])(a0);
+var _MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = (a0) => (_MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = wasmExports['MakePerTupleExprContext'])(a0);
+var _list_member_int = Module['_list_member_int'] = (a0, a1) => (_list_member_int = Module['_list_member_int'] = wasmExports['list_member_int'])(a0, a1);
+var _ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = (a0, a1, a2) => (_ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = wasmExports['ExecOpenScanRelation'])(a0, a1, a2);
+var _ExecInitRangeTable = Module['_ExecInitRangeTable'] = (a0, a1, a2) => (_ExecInitRangeTable = Module['_ExecInitRangeTable'] = wasmExports['ExecInitRangeTable'])(a0, a1, a2);
+var _pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = (a0, a1) => (_pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = wasmExports['pg_mbstrlen_with_len'])(a0, a1);
+var _errposition = Module['_errposition'] = (a0) => (_errposition = Module['_errposition'] = wasmExports['errposition'])(a0);
+var _lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = (a0, a1) => (_lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = wasmExports['lookup_rowtype_tupdesc'])(a0, a1);
+var _DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = (a0) => (_DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = wasmExports['DecrTupleDescRefCount'])(a0);
+var _getmissingattr = Module['_getmissingattr'] = (a0, a1, a2) => (_getmissingattr = Module['_getmissingattr'] = wasmExports['getmissingattr'])(a0, a1, a2);
+var _nocachegetattr = Module['_nocachegetattr'] = (a0, a1, a2) => (_nocachegetattr = Module['_nocachegetattr'] = wasmExports['nocachegetattr'])(a0, a1, a2);
+var _ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = (a0, a1) => (_ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = wasmExports['ExecGetReturningSlot'])(a0, a1);
+var _build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = (a0, a1, a2) => (_build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = wasmExports['build_attrmap_by_name_if_req'])(a0, a1, a2);
+var _ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = (a0, a1) => (_ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = wasmExports['ExecGetResultRelCheckAsUser'])(a0, a1);
+var _add_size = Module['_add_size'] = (a0, a1) => (_add_size = Module['_add_size'] = wasmExports['add_size'])(a0, a1);
+var _shm_toc_allocate = Module['_shm_toc_allocate'] = (a0, a1) => (_shm_toc_allocate = Module['_shm_toc_allocate'] = wasmExports['shm_toc_allocate'])(a0, a1);
+var _shm_toc_insert = Module['_shm_toc_insert'] = (a0, a1, a2) => (_shm_toc_insert = Module['_shm_toc_insert'] = wasmExports['shm_toc_insert'])(a0, a1, a2);
+var _shm_toc_lookup = Module['_shm_toc_lookup'] = (a0, a1, a2) => (_shm_toc_lookup = Module['_shm_toc_lookup'] = wasmExports['shm_toc_lookup'])(a0, a1, a2);
+var _ExecInitExpr = Module['_ExecInitExpr'] = (a0, a1) => (_ExecInitExpr = Module['_ExecInitExpr'] = wasmExports['ExecInitExpr'])(a0, a1);
+var _ItemPointerCompare = Module['_ItemPointerCompare'] = (a0, a1) => (_ItemPointerCompare = Module['_ItemPointerCompare'] = wasmExports['ItemPointerCompare'])(a0, a1);
+var _bms_add_members = Module['_bms_add_members'] = (a0, a1) => (_bms_add_members = Module['_bms_add_members'] = wasmExports['bms_add_members'])(a0, a1);
+var _bms_num_members = Module['_bms_num_members'] = (a0) => (_bms_num_members = Module['_bms_num_members'] = wasmExports['bms_num_members'])(a0);
+var _tuplesort_end = Module['_tuplesort_end'] = (a0) => (_tuplesort_end = Module['_tuplesort_end'] = wasmExports['tuplesort_end'])(a0);
+var _ExecInitExprList = Module['_ExecInitExprList'] = (a0, a1) => (_ExecInitExprList = Module['_ExecInitExprList'] = wasmExports['ExecInitExprList'])(a0, a1);
+var _get_typlenbyval = Module['_get_typlenbyval'] = (a0, a1, a2) => (_get_typlenbyval = Module['_get_typlenbyval'] = wasmExports['get_typlenbyval'])(a0, a1, a2);
+var _SysCacheGetAttr = Module['_SysCacheGetAttr'] = (a0, a1, a2, a3) => (_SysCacheGetAttr = Module['_SysCacheGetAttr'] = wasmExports['SysCacheGetAttr'])(a0, a1, a2, a3);
+var _ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = (a0, a1, a2) => (_ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = wasmExports['ExecForceStoreHeapTuple'])(a0, a1, a2);
+var _tuplesort_performsort = Module['_tuplesort_performsort'] = (a0) => (_tuplesort_performsort = Module['_tuplesort_performsort'] = wasmExports['tuplesort_performsort'])(a0);
+var _tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = wasmExports['tuplesort_begin_heap'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = (a0) => (_ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = wasmExports['ExecStoreVirtualTuple'])(a0);
+var _MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = (a0, a1) => (_MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = wasmExports['MemoryContextMemAllocated'])(a0, a1);
+var _tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = (a0, a1, a2, a3, a4) => (_tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = wasmExports['tuplesort_gettupleslot'])(a0, a1, a2, a3, a4);
+var _tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = (a0, a1) => (_tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = wasmExports['tuplesort_puttupleslot'])(a0, a1);
+var _datumCopy = Module['_datumCopy'] = (a0, a1, a2) => (_datumCopy = Module['_datumCopy'] = wasmExports['datumCopy'])(a0, a1, a2);
+var _ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = (a0) => (_ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = wasmExports['ExecStoreAllNullTuple'])(a0);
+var _FunctionCall2Coll = Module['_FunctionCall2Coll'] = (a0, a1, a2, a3) => (_FunctionCall2Coll = Module['_FunctionCall2Coll'] = wasmExports['FunctionCall2Coll'])(a0, a1, a2, a3);
+var _MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = (a0) => (_MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = wasmExports['MakeExpandedObjectReadOnlyInternal'])(a0);
+var _ReleaseBuffer = Module['_ReleaseBuffer'] = (a0) => (_ReleaseBuffer = Module['_ReleaseBuffer'] = wasmExports['ReleaseBuffer'])(a0);
+var _s_init_lock_sema = Module['_s_init_lock_sema'] = (a0, a1) => (_s_init_lock_sema = Module['_s_init_lock_sema'] = wasmExports['s_init_lock_sema'])(a0, a1);
+var _ConditionVariableInit = Module['_ConditionVariableInit'] = (a0) => (_ConditionVariableInit = Module['_ConditionVariableInit'] = wasmExports['ConditionVariableInit'])(a0);
 var _tas_sema = Module['_tas_sema'] = (a0) => (_tas_sema = Module['_tas_sema'] = wasmExports['tas_sema'])(a0);
 var _s_lock = Module['_s_lock'] = (a0, a1, a2, a3) => (_s_lock = Module['_s_lock'] = wasmExports['s_lock'])(a0, a1, a2, a3);
 var _s_unlock_sema = Module['_s_unlock_sema'] = (a0) => (_s_unlock_sema = Module['_s_unlock_sema'] = wasmExports['s_unlock_sema'])(a0);
+var _ConditionVariableSleep = Module['_ConditionVariableSleep'] = (a0, a1) => (_ConditionVariableSleep = Module['_ConditionVariableSleep'] = wasmExports['ConditionVariableSleep'])(a0, a1);
+var _ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = () => (_ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = wasmExports['ConditionVariableCancelSleep'])();
+var _visibilitymap_get_status = Module['_visibilitymap_get_status'] = (a0, a1, a2) => (_visibilitymap_get_status = Module['_visibilitymap_get_status'] = wasmExports['visibilitymap_get_status'])(a0, a1, a2);
+var _PrefetchBuffer = Module['_PrefetchBuffer'] = (a0, a1, a2, a3) => (_PrefetchBuffer = Module['_PrefetchBuffer'] = wasmExports['PrefetchBuffer'])(a0, a1, a2, a3);
+var _ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = (a0, a1) => (_ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = wasmExports['ExecFindJunkAttributeInTlist'])(a0, a1);
+var _get_call_expr_argtype = Module['_get_call_expr_argtype'] = (a0, a1) => (_get_call_expr_argtype = Module['_get_call_expr_argtype'] = wasmExports['get_call_expr_argtype'])(a0, a1);
+var _get_typcollation = Module['_get_typcollation'] = (a0) => (_get_typcollation = Module['_get_typcollation'] = wasmExports['get_typcollation'])(a0);
+var _MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = (a0, a1) => (_MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = wasmExports['MemoryContextSetIdentifier'])(a0, a1);
+var _get_call_result_type = Module['_get_call_result_type'] = (a0, a1, a2) => (_get_call_result_type = Module['_get_call_result_type'] = wasmExports['get_call_result_type'])(a0, a1, a2);
+var _SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = (a0, a1, a2) => (_SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = wasmExports['SysCacheGetAttrNotNull'])(a0, a1, a2);
+var _BlessTupleDesc = Module['_BlessTupleDesc'] = (a0) => (_BlessTupleDesc = Module['_BlessTupleDesc'] = wasmExports['BlessTupleDesc'])(a0);
+var _type_is_rowtype = Module['_type_is_rowtype'] = (a0) => (_type_is_rowtype = Module['_type_is_rowtype'] = wasmExports['type_is_rowtype'])(a0);
+var _GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = () => (_GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = wasmExports['GetCurrentSubTransactionId'])();
+var _tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = (a0, a1, a2) => (_tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = wasmExports['tuplestore_begin_heap'])(a0, a1, a2);
+var _geterrposition = Module['_geterrposition'] = () => (_geterrposition = Module['_geterrposition'] = wasmExports['geterrposition'])();
+var _internalerrposition = Module['_internalerrposition'] = (a0) => (_internalerrposition = Module['_internalerrposition'] = wasmExports['internalerrposition'])(a0);
+var _internalerrquery = Module['_internalerrquery'] = (a0) => (_internalerrquery = Module['_internalerrquery'] = wasmExports['internalerrquery'])(a0);
+var _tuplestore_end = Module['_tuplestore_end'] = (a0) => (_tuplestore_end = Module['_tuplestore_end'] = wasmExports['tuplestore_end'])(a0);
+var _get_typtype = Module['_get_typtype'] = (a0) => (_get_typtype = Module['_get_typtype'] = wasmExports['get_typtype'])(a0);
+var _InstrAlloc = Module['_InstrAlloc'] = (a0, a1, a2) => (_InstrAlloc = Module['_InstrAlloc'] = wasmExports['InstrAlloc'])(a0, a1, a2);
+var _table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = (a0, a1) => (_table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = wasmExports['table_parallelscan_estimate'])(a0, a1);
+var _table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = (a0, a1, a2) => (_table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = wasmExports['table_parallelscan_initialize'])(a0, a1, a2);
+var _table_beginscan_parallel = Module['_table_beginscan_parallel'] = (a0, a1) => (_table_beginscan_parallel = Module['_table_beginscan_parallel'] = wasmExports['table_beginscan_parallel'])(a0, a1);
+var _tuplestore_putvalues = Module['_tuplestore_putvalues'] = (a0, a1, a2, a3) => (_tuplestore_putvalues = Module['_tuplestore_putvalues'] = wasmExports['tuplestore_putvalues'])(a0, a1, a2, a3);
+var _pull_varattnos = Module['_pull_varattnos'] = (a0, a1, a2) => (_pull_varattnos = Module['_pull_varattnos'] = wasmExports['pull_varattnos'])(a0, a1, a2);
+var _ExecPrepareExpr = Module['_ExecPrepareExpr'] = (a0, a1) => (_ExecPrepareExpr = Module['_ExecPrepareExpr'] = wasmExports['ExecPrepareExpr'])(a0, a1);
+var _hash_search = Module['_hash_search'] = (a0, a1, a2, a3) => (_hash_search = Module['_hash_search'] = wasmExports['hash_search'])(a0, a1, a2, a3);
+var _hash_create = Module['_hash_create'] = (a0, a1, a2, a3) => (_hash_create = Module['_hash_create'] = wasmExports['hash_create'])(a0, a1, a2, a3);
+var _pg_detoast_datum = Module['_pg_detoast_datum'] = (a0) => (_pg_detoast_datum = Module['_pg_detoast_datum'] = wasmExports['pg_detoast_datum'])(a0);
+var _TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = (a0) => (_TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = wasmExports['TransactionIdIsCurrentTransactionId'])(a0);
+var _execute_attr_map_slot = Module['_execute_attr_map_slot'] = (a0, a1, a2) => (_execute_attr_map_slot = Module['_execute_attr_map_slot'] = wasmExports['execute_attr_map_slot'])(a0, a1, a2);
+var _MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = (a0, a1, a2) => (_MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = wasmExports['MemoryContextAllocExtended'])(a0, a1, a2);
+var _bms_nonempty_difference = Module['_bms_nonempty_difference'] = (a0, a1) => (_bms_nonempty_difference = Module['_bms_nonempty_difference'] = wasmExports['bms_nonempty_difference'])(a0, a1);
+var _FunctionCall1Coll = Module['_FunctionCall1Coll'] = (a0, a1, a2) => (_FunctionCall1Coll = Module['_FunctionCall1Coll'] = wasmExports['FunctionCall1Coll'])(a0, a1, a2);
+var _fmgr_info_cxt = Module['_fmgr_info_cxt'] = (a0, a1, a2) => (_fmgr_info_cxt = Module['_fmgr_info_cxt'] = wasmExports['fmgr_info_cxt'])(a0, a1, a2);
+var _tuplesort_reset = Module['_tuplesort_reset'] = (a0) => (_tuplesort_reset = Module['_tuplesort_reset'] = wasmExports['tuplesort_reset'])(a0);
+var _deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = (a0, a1, a2, a3, a4) => (_deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = wasmExports['deconstruct_array_builtin'])(a0, a1, a2, a3, a4);
+var _pairingheap_remove_first = Module['_pairingheap_remove_first'] = (a0) => (_pairingheap_remove_first = Module['_pairingheap_remove_first'] = wasmExports['pairingheap_remove_first'])(a0);
+var _get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = (a0, a1, a2, a3) => (_get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = wasmExports['get_typlenbyvalalign'])(a0, a1, a2, a3);
+var _deconstruct_array = Module['_deconstruct_array'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_deconstruct_array = Module['_deconstruct_array'] = wasmExports['deconstruct_array'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _pairingheap_allocate = Module['_pairingheap_allocate'] = (a0, a1) => (_pairingheap_allocate = Module['_pairingheap_allocate'] = wasmExports['pairingheap_allocate'])(a0, a1);
+var _pairingheap_first = Module['_pairingheap_first'] = (a0) => (_pairingheap_first = Module['_pairingheap_first'] = wasmExports['pairingheap_first'])(a0);
+var _pairingheap_add = Module['_pairingheap_add'] = (a0, a1) => (_pairingheap_add = Module['_pairingheap_add'] = wasmExports['pairingheap_add'])(a0, a1);
+var _convert_tuples_by_position = Module['_convert_tuples_by_position'] = (a0, a1, a2) => (_convert_tuples_by_position = Module['_convert_tuples_by_position'] = wasmExports['convert_tuples_by_position'])(a0, a1, a2);
+var _detoast_external_attr = Module['_detoast_external_attr'] = (a0) => (_detoast_external_attr = Module['_detoast_external_attr'] = wasmExports['detoast_external_attr'])(a0);
+var _LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = (a0) => (_LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = wasmExports['LaunchParallelWorkers'])(a0);
+var _TupleDescInitEntry = Module['_TupleDescInitEntry'] = (a0, a1, a2, a3, a4, a5) => (_TupleDescInitEntry = Module['_TupleDescInitEntry'] = wasmExports['TupleDescInitEntry'])(a0, a1, a2, a3, a4, a5);
+var _TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = (a0, a1, a2) => (_TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = wasmExports['TupleDescInitEntryCollation'])(a0, a1, a2);
+var _pg_prng_uint32 = Module['_pg_prng_uint32'] = (a0) => (_pg_prng_uint32 = Module['_pg_prng_uint32'] = wasmExports['pg_prng_uint32'])(a0);
+var _DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = (a0, a1, a2) => (_DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = wasmExports['DirectFunctionCall1Coll'])(a0, a1, a2);
+var _get_attstatsslot = Module['_get_attstatsslot'] = (a0, a1, a2, a3, a4) => (_get_attstatsslot = Module['_get_attstatsslot'] = wasmExports['get_attstatsslot'])(a0, a1, a2, a3, a4);
+var _free_attstatsslot = Module['_free_attstatsslot'] = (a0) => (_free_attstatsslot = Module['_free_attstatsslot'] = wasmExports['free_attstatsslot'])(a0);
 var _LWLockAcquire = Module['_LWLockAcquire'] = (a0, a1) => (_LWLockAcquire = Module['_LWLockAcquire'] = wasmExports['LWLockAcquire'])(a0, a1);
 var _LWLockRelease = Module['_LWLockRelease'] = (a0) => (_LWLockRelease = Module['_LWLockRelease'] = wasmExports['LWLockRelease'])(a0);
-var _tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = (a0, a1, a2) => (_tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = wasmExports['tuplestore_begin_heap'])(a0, a1, a2);
-var _tuplestore_end = Module['_tuplestore_end'] = (a0) => (_tuplestore_end = Module['_tuplestore_end'] = wasmExports['tuplestore_end'])(a0);
+var _LWLockInitialize = Module['_LWLockInitialize'] = (a0, a1) => (_LWLockInitialize = Module['_LWLockInitialize'] = wasmExports['LWLockInitialize'])(a0, a1);
+var _SPI_connect = Module['_SPI_connect'] = () => (_SPI_connect = Module['_SPI_connect'] = wasmExports['SPI_connect'])();
+var _SPI_connect_ext = Module['_SPI_connect_ext'] = (a0) => (_SPI_connect_ext = Module['_SPI_connect_ext'] = wasmExports['SPI_connect_ext'])(a0);
+var _SPI_finish = Module['_SPI_finish'] = () => (_SPI_finish = Module['_SPI_finish'] = wasmExports['SPI_finish'])();
+var _SPI_commit = Module['_SPI_commit'] = () => (_SPI_commit = Module['_SPI_commit'] = wasmExports['SPI_commit'])();
+var _CopyErrorData = Module['_CopyErrorData'] = () => (_CopyErrorData = Module['_CopyErrorData'] = wasmExports['CopyErrorData'])();
+var _ReThrowError = Module['_ReThrowError'] = (a0) => (_ReThrowError = Module['_ReThrowError'] = wasmExports['ReThrowError'])(a0);
+var _SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = () => (_SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = wasmExports['SPI_commit_and_chain'])();
+var _SPI_rollback = Module['_SPI_rollback'] = () => (_SPI_rollback = Module['_SPI_rollback'] = wasmExports['SPI_rollback'])();
+var _SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = () => (_SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = wasmExports['SPI_rollback_and_chain'])();
+var _SPI_execute = Module['_SPI_execute'] = (a0, a1, a2) => (_SPI_execute = Module['_SPI_execute'] = wasmExports['SPI_execute'])(a0, a1, a2);
+var _SPI_freetuptable = Module['_SPI_freetuptable'] = (a0) => (_SPI_freetuptable = Module['_SPI_freetuptable'] = wasmExports['SPI_freetuptable'])(a0);
+var _ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = (a0, a1) => (_ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = wasmExports['ReleaseCachedPlan'])(a0, a1);
+var _SPI_exec = Module['_SPI_exec'] = (a0, a1) => (_SPI_exec = Module['_SPI_exec'] = wasmExports['SPI_exec'])(a0, a1);
+var _SPI_execute_extended = Module['_SPI_execute_extended'] = (a0, a1) => (_SPI_execute_extended = Module['_SPI_execute_extended'] = wasmExports['SPI_execute_extended'])(a0, a1);
+var _SPI_execp = Module['_SPI_execp'] = (a0, a1, a2, a3) => (_SPI_execp = Module['_SPI_execp'] = wasmExports['SPI_execp'])(a0, a1, a2, a3);
+var _SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = (a0, a1) => (_SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = wasmExports['SPI_execute_plan_extended'])(a0, a1);
+var _SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = wasmExports['SPI_execute_plan_with_paramlist'])(a0, a1, a2, a3);
+var _SPI_prepare = Module['_SPI_prepare'] = (a0, a1, a2) => (_SPI_prepare = Module['_SPI_prepare'] = wasmExports['SPI_prepare'])(a0, a1, a2);
+var _SPI_prepare_extended = Module['_SPI_prepare_extended'] = (a0, a1) => (_SPI_prepare_extended = Module['_SPI_prepare_extended'] = wasmExports['SPI_prepare_extended'])(a0, a1);
+var _SPI_keepplan = Module['_SPI_keepplan'] = (a0) => (_SPI_keepplan = Module['_SPI_keepplan'] = wasmExports['SPI_keepplan'])(a0);
+var _SPI_freeplan = Module['_SPI_freeplan'] = (a0) => (_SPI_freeplan = Module['_SPI_freeplan'] = wasmExports['SPI_freeplan'])(a0);
+var _SPI_copytuple = Module['_SPI_copytuple'] = (a0) => (_SPI_copytuple = Module['_SPI_copytuple'] = wasmExports['SPI_copytuple'])(a0);
+var _SPI_returntuple = Module['_SPI_returntuple'] = (a0, a1) => (_SPI_returntuple = Module['_SPI_returntuple'] = wasmExports['SPI_returntuple'])(a0, a1);
+var _heap_deform_tuple = Module['_heap_deform_tuple'] = (a0, a1, a2, a3) => (_heap_deform_tuple = Module['_heap_deform_tuple'] = wasmExports['heap_deform_tuple'])(a0, a1, a2, a3);
+var _SPI_fnumber = Module['_SPI_fnumber'] = (a0, a1) => (_SPI_fnumber = Module['_SPI_fnumber'] = wasmExports['SPI_fnumber'])(a0, a1);
+var _SPI_fname = Module['_SPI_fname'] = (a0, a1) => (_SPI_fname = Module['_SPI_fname'] = wasmExports['SPI_fname'])(a0, a1);
+var _SPI_getvalue = Module['_SPI_getvalue'] = (a0, a1, a2) => (_SPI_getvalue = Module['_SPI_getvalue'] = wasmExports['SPI_getvalue'])(a0, a1, a2);
+var _SPI_getbinval = Module['_SPI_getbinval'] = (a0, a1, a2, a3) => (_SPI_getbinval = Module['_SPI_getbinval'] = wasmExports['SPI_getbinval'])(a0, a1, a2, a3);
+var _SPI_gettype = Module['_SPI_gettype'] = (a0, a1) => (_SPI_gettype = Module['_SPI_gettype'] = wasmExports['SPI_gettype'])(a0, a1);
+var _SPI_gettypeid = Module['_SPI_gettypeid'] = (a0, a1) => (_SPI_gettypeid = Module['_SPI_gettypeid'] = wasmExports['SPI_gettypeid'])(a0, a1);
+var _SPI_getrelname = Module['_SPI_getrelname'] = (a0) => (_SPI_getrelname = Module['_SPI_getrelname'] = wasmExports['SPI_getrelname'])(a0);
+var _SPI_palloc = Module['_SPI_palloc'] = (a0) => (_SPI_palloc = Module['_SPI_palloc'] = wasmExports['SPI_palloc'])(a0);
+var _SPI_datumTransfer = Module['_SPI_datumTransfer'] = (a0, a1, a2) => (_SPI_datumTransfer = Module['_SPI_datumTransfer'] = wasmExports['SPI_datumTransfer'])(a0, a1, a2);
+var _datumTransfer = Module['_datumTransfer'] = (a0, a1, a2) => (_datumTransfer = Module['_datumTransfer'] = wasmExports['datumTransfer'])(a0, a1, a2);
+var _MemoryContextStrdup = Module['_MemoryContextStrdup'] = (a0, a1) => (_MemoryContextStrdup = Module['_MemoryContextStrdup'] = wasmExports['MemoryContextStrdup'])(a0, a1);
+var _SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = wasmExports['SPI_cursor_open_with_paramlist'])(a0, a1, a2, a3);
+var _SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = (a0, a1, a2) => (_SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = wasmExports['SPI_cursor_parse_open'])(a0, a1, a2);
+var _SPI_cursor_find = Module['_SPI_cursor_find'] = (a0) => (_SPI_cursor_find = Module['_SPI_cursor_find'] = wasmExports['SPI_cursor_find'])(a0);
+var _SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = (a0, a1, a2) => (_SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = wasmExports['SPI_cursor_fetch'])(a0, a1, a2);
+var _SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = (a0, a1, a2) => (_SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = wasmExports['SPI_scroll_cursor_fetch'])(a0, a1, a2);
+var _SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = (a0, a1, a2) => (_SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = wasmExports['SPI_scroll_cursor_move'])(a0, a1, a2);
+var _SPI_cursor_close = Module['_SPI_cursor_close'] = (a0) => (_SPI_cursor_close = Module['_SPI_cursor_close'] = wasmExports['SPI_cursor_close'])(a0);
+var _SPI_result_code_string = Module['_SPI_result_code_string'] = (a0) => (_SPI_result_code_string = Module['_SPI_result_code_string'] = wasmExports['SPI_result_code_string'])(a0);
+var _SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = (a0) => (_SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = wasmExports['SPI_plan_get_plan_sources'])(a0);
+var _SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = (a0) => (_SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = wasmExports['SPI_plan_get_cached_plan'])(a0);
+var _SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = (a0) => (_SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = wasmExports['SPI_register_trigger_data'])(a0);
 var _tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = (a0) => (_tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = wasmExports['tuplestore_tuple_count'])(a0);
+var _exprLocation = Module['_exprLocation'] = (a0) => (_exprLocation = Module['_exprLocation'] = wasmExports['exprLocation'])(a0);
 var _tuplestore_puttuple = Module['_tuplestore_puttuple'] = (a0, a1) => (_tuplestore_puttuple = Module['_tuplestore_puttuple'] = wasmExports['tuplestore_puttuple'])(a0, a1);
-var _tuplestore_putvalues = Module['_tuplestore_putvalues'] = (a0, a1, a2, a3) => (_tuplestore_putvalues = Module['_tuplestore_putvalues'] = wasmExports['tuplestore_putvalues'])(a0, a1, a2, a3);
-var _ProcessInterrupts = Module['_ProcessInterrupts'] = () => (_ProcessInterrupts = Module['_ProcessInterrupts'] = wasmExports['ProcessInterrupts'])();
-var _memmove = Module['_memmove'] = (a0, a1, a2) => (_memmove = Module['_memmove'] = wasmExports['memmove'])(a0, a1, a2);
-var _tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = wasmExports['tuplesort_begin_heap'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _pg_class_aclcheck = Module['_pg_class_aclcheck'] = (a0, a1, a2) => (_pg_class_aclcheck = Module['_pg_class_aclcheck'] = wasmExports['pg_class_aclcheck'])(a0, a1, a2);
+var _RelationGetIndexList = Module['_RelationGetIndexList'] = (a0) => (_RelationGetIndexList = Module['_RelationGetIndexList'] = wasmExports['RelationGetIndexList'])(a0);
+var _get_partition_ancestors = Module['_get_partition_ancestors'] = (a0) => (_get_partition_ancestors = Module['_get_partition_ancestors'] = wasmExports['get_partition_ancestors'])(a0);
+var _ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = (a0, a1) => (_ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = wasmExports['ExecInitExprWithParams'])(a0, a1);
+var _AddWaitEventToSet = Module['_AddWaitEventToSet'] = (a0, a1, a2, a3, a4) => (_AddWaitEventToSet = Module['_AddWaitEventToSet'] = wasmExports['AddWaitEventToSet'])(a0, a1, a2, a3, a4);
+var _GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = (a0) => (_GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = wasmExports['GetNumRegisteredWaitEvents'])(a0);
 var _BuildIndexInfo = Module['_BuildIndexInfo'] = (a0) => (_BuildIndexInfo = Module['_BuildIndexInfo'] = wasmExports['BuildIndexInfo'])(a0);
-var __bt_mkscankey = Module['__bt_mkscankey'] = (a0, a1) => (__bt_mkscankey = Module['__bt_mkscankey'] = wasmExports['_bt_mkscankey'])(a0, a1);
+var _ItemPointerEquals = Module['_ItemPointerEquals'] = (a0, a1) => (_ItemPointerEquals = Module['_ItemPointerEquals'] = wasmExports['ItemPointerEquals'])(a0, a1);
+var _TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = (a0, a1) => (_TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = wasmExports['TransactionIdPrecedes'])(a0, a1);
+var _bsearch = Module['_bsearch'] = (a0, a1, a2, a3, a4) => (_bsearch = Module['_bsearch'] = wasmExports['bsearch'])(a0, a1, a2, a3, a4);
+var _pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = (a0) => (_pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = wasmExports['pg_detoast_datum_copy'])(a0);
+var _HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = (a0) => (_HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = wasmExports['HeapTupleHeaderGetDatum'])(a0);
+var _construct_md_array = Module['_construct_md_array'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_construct_md_array = Module['_construct_md_array'] = wasmExports['construct_md_array'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _ArrayGetNItems = Module['_ArrayGetNItems'] = (a0, a1) => (_ArrayGetNItems = Module['_ArrayGetNItems'] = wasmExports['ArrayGetNItems'])(a0, a1);
+var _construct_empty_array = Module['_construct_empty_array'] = (a0) => (_construct_empty_array = Module['_construct_empty_array'] = wasmExports['construct_empty_array'])(a0);
+var _DatumGetEOHP = Module['_DatumGetEOHP'] = (a0) => (_DatumGetEOHP = Module['_DatumGetEOHP'] = wasmExports['DatumGetEOHP'])(a0);
+var _expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = (a0) => (_expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = wasmExports['expanded_record_fetch_tupdesc'])(a0);
+var _expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = (a0, a1, a2) => (_expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = wasmExports['expanded_record_fetch_field'])(a0, a1, a2);
+var _lookup_type_cache = Module['_lookup_type_cache'] = (a0, a1) => (_lookup_type_cache = Module['_lookup_type_cache'] = wasmExports['lookup_type_cache'])(a0, a1);
+var _execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = (a0, a1) => (_execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = wasmExports['execute_attr_map_tuple'])(a0, a1);
+var _cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = (a0, a1) => (_cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = wasmExports['cstring_to_text_with_len'])(a0, a1);
+var _pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = (a0) => (_pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = wasmExports['pg_detoast_datum_packed'])(a0);
+var _lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = (a0, a1, a2) => (_lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = wasmExports['lookup_rowtype_tupdesc_domain'])(a0, a1, a2);
+var _MemoryContextGetParent = Module['_MemoryContextGetParent'] = (a0) => (_MemoryContextGetParent = Module['_MemoryContextGetParent'] = wasmExports['MemoryContextGetParent'])(a0);
+var _DeleteExpandedObject = Module['_DeleteExpandedObject'] = (a0) => (_DeleteExpandedObject = Module['_DeleteExpandedObject'] = wasmExports['DeleteExpandedObject'])(a0);
+var _get_opfamily_member = Module['_get_opfamily_member'] = (a0, a1, a2, a3) => (_get_opfamily_member = Module['_get_opfamily_member'] = wasmExports['get_opfamily_member'])(a0, a1, a2, a3);
+var _GetCurrentCommandId = Module['_GetCurrentCommandId'] = (a0) => (_GetCurrentCommandId = Module['_GetCurrentCommandId'] = wasmExports['GetCurrentCommandId'])(a0);
+var _clock_gettime = Module['_clock_gettime'] = (a0, a1) => (_clock_gettime = Module['_clock_gettime'] = wasmExports['clock_gettime'])(a0, a1);
+var _BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = (a0, a1, a2) => (_BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = wasmExports['BufferUsageAccumDiff'])(a0, a1, a2);
+var _WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = (a0, a1, a2) => (_WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = wasmExports['WalUsageAccumDiff'])(a0, a1, a2);
+var _InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = (a0, a1) => (_InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = wasmExports['InstrUpdateTupleCount'])(a0, a1);
+var _ExprEvalPushStep = Module['_ExprEvalPushStep'] = (a0, a1) => (_ExprEvalPushStep = Module['_ExprEvalPushStep'] = wasmExports['ExprEvalPushStep'])(a0, a1);
+var _get_element_type = Module['_get_element_type'] = (a0) => (_get_element_type = Module['_get_element_type'] = wasmExports['get_element_type'])(a0);
+var _EOH_get_flat_size = Module['_EOH_get_flat_size'] = (a0) => (_EOH_get_flat_size = Module['_EOH_get_flat_size'] = wasmExports['EOH_get_flat_size'])(a0);
+var _EOH_flatten_into = Module['_EOH_flatten_into'] = (a0, a1, a2) => (_EOH_flatten_into = Module['_EOH_flatten_into'] = wasmExports['EOH_flatten_into'])(a0, a1, a2);
+var _ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = (a0, a1, a2) => (_ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = wasmExports['ExecStoreHeapTuple'])(a0, a1, a2);
+var _MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = (a0, a1) => (_MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = wasmExports['MakeTupleTableSlot'])(a0, a1);
+var _ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = (a0, a1, a2) => (_ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = wasmExports['ExecFetchSlotHeapTuple'])(a0, a1, a2);
+var _TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = (a0) => (_TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = wasmExports['TupleDescGetAttInMetadata'])(a0);
+var _BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = (a0, a1) => (_BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = wasmExports['BuildTupleFromCStrings'])(a0, a1);
+var _InputFunctionCall = Module['_InputFunctionCall'] = (a0, a1, a2, a3) => (_InputFunctionCall = Module['_InputFunctionCall'] = wasmExports['InputFunctionCall'])(a0, a1, a2, a3);
+var _standard_ExecutorStart = Module['_standard_ExecutorStart'] = (a0, a1) => (_standard_ExecutorStart = Module['_standard_ExecutorStart'] = wasmExports['standard_ExecutorStart'])(a0, a1);
+var _get_rel_namespace = Module['_get_rel_namespace'] = (a0) => (_get_rel_namespace = Module['_get_rel_namespace'] = wasmExports['get_rel_namespace'])(a0);
+var _standard_ExecutorRun = Module['_standard_ExecutorRun'] = (a0, a1, a2, a3) => (_standard_ExecutorRun = Module['_standard_ExecutorRun'] = wasmExports['standard_ExecutorRun'])(a0, a1, a2, a3);
+var _EnterParallelMode = Module['_EnterParallelMode'] = () => (_EnterParallelMode = Module['_EnterParallelMode'] = wasmExports['EnterParallelMode'])();
+var _ExitParallelMode = Module['_ExitParallelMode'] = () => (_ExitParallelMode = Module['_ExitParallelMode'] = wasmExports['ExitParallelMode'])();
+var _standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = (a0) => (_standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = wasmExports['standard_ExecutorFinish'])(a0);
+var _standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = (a0) => (_standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = wasmExports['standard_ExecutorEnd'])(a0);
+var _CreateParallelContext = Module['_CreateParallelContext'] = (a0, a1, a2) => (_CreateParallelContext = Module['_CreateParallelContext'] = wasmExports['CreateParallelContext'])(a0, a1, a2);
+var _InitializeParallelDSM = Module['_InitializeParallelDSM'] = (a0) => (_InitializeParallelDSM = Module['_InitializeParallelDSM'] = wasmExports['InitializeParallelDSM'])(a0);
+var _WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = (a0) => (_WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = wasmExports['WaitForParallelWorkersToFinish'])(a0);
+var _DestroyParallelContext = Module['_DestroyParallelContext'] = (a0) => (_DestroyParallelContext = Module['_DestroyParallelContext'] = wasmExports['DestroyParallelContext'])(a0);
 var _index_deform_tuple = Module['_index_deform_tuple'] = (a0, a1, a2, a3) => (_index_deform_tuple = Module['_index_deform_tuple'] = wasmExports['index_deform_tuple'])(a0, a1, a2, a3);
-var _get_typlenbyval = Module['_get_typlenbyval'] = (a0, a1, a2) => (_get_typlenbyval = Module['_get_typlenbyval'] = wasmExports['get_typlenbyval'])(a0, a1, a2);
-var _tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = (a0, a1) => (_tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = wasmExports['tuplesort_puttupleslot'])(a0, a1);
-var _nocache_index_getattr = Module['_nocache_index_getattr'] = (a0, a1, a2) => (_nocache_index_getattr = Module['_nocache_index_getattr'] = wasmExports['nocache_index_getattr'])(a0, a1, a2);
-var _tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = (a0, a1, a2, a3, a4) => (_tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = wasmExports['tuplesort_gettupleslot'])(a0, a1, a2, a3, a4);
+var _ExecAsyncResponse = Module['_ExecAsyncResponse'] = (a0) => (_ExecAsyncResponse = Module['_ExecAsyncResponse'] = wasmExports['ExecAsyncResponse'])(a0);
+var _ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = (a0, a1) => (_ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = wasmExports['ExecAsyncRequestDone'])(a0, a1);
+var _ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = (a0) => (_ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = wasmExports['ExecAsyncRequestPending'])(a0);
+var _format_procedure = Module['_format_procedure'] = (a0) => (_format_procedure = Module['_format_procedure'] = wasmExports['format_procedure'])(a0);
+var _stat = Module['_stat'] = (a0, a1) => (_stat = Module['_stat'] = wasmExports['stat'])(a0, a1);
+var _bloom_create = Module['_bloom_create'] = (a0, a1, a2) => (_bloom_create = Module['_bloom_create'] = wasmExports['bloom_create'])(a0, a1, a2);
+var _bloom_free = Module['_bloom_free'] = (a0) => (_bloom_free = Module['_bloom_free'] = wasmExports['bloom_free'])(a0);
+var _bloom_add_element = Module['_bloom_add_element'] = (a0, a1, a2) => (_bloom_add_element = Module['_bloom_add_element'] = wasmExports['bloom_add_element'])(a0, a1, a2);
+var _hash_bytes_extended = Module['_hash_bytes_extended'] = (a0, a1, a2) => (_hash_bytes_extended = Module['_hash_bytes_extended'] = wasmExports['hash_bytes_extended'])(a0, a1, a2);
+var _bloom_lacks_element = Module['_bloom_lacks_element'] = (a0, a1, a2) => (_bloom_lacks_element = Module['_bloom_lacks_element'] = wasmExports['bloom_lacks_element'])(a0, a1, a2);
+var _bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = (a0) => (_bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = wasmExports['bloom_prop_bits_set'])(a0);
+var _pg_popcount = Module['_pg_popcount'] = (a0, a1) => (_pg_popcount = Module['_pg_popcount'] = wasmExports['pg_popcount'])(a0, a1);
+var _log = Module['_log'] = (a0) => (_log = Module['_log'] = wasmExports['log'])(a0);
+var _bms_make_singleton = Module['_bms_make_singleton'] = (a0) => (_bms_make_singleton = Module['_bms_make_singleton'] = wasmExports['bms_make_singleton'])(a0);
+var _pairingheap_free = Module['_pairingheap_free'] = (a0) => (_pairingheap_free = Module['_pairingheap_free'] = wasmExports['pairingheap_free'])(a0);
+var _estimate_expression_value = Module['_estimate_expression_value'] = (a0, a1) => (_estimate_expression_value = Module['_estimate_expression_value'] = wasmExports['estimate_expression_value'])(a0, a1);
+var _clamp_row_est = Module['_clamp_row_est'] = (a0) => (_clamp_row_est = Module['_clamp_row_est'] = wasmExports['clamp_row_est'])(a0);
+var _hash_bytes = Module['_hash_bytes'] = (a0, a1) => (_hash_bytes = Module['_hash_bytes'] = wasmExports['hash_bytes'])(a0, a1);
+var _MarkBufferDirty = Module['_MarkBufferDirty'] = (a0) => (_MarkBufferDirty = Module['_MarkBufferDirty'] = wasmExports['MarkBufferDirty'])(a0);
+var _UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = (a0) => (_UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = wasmExports['UnlockReleaseBuffer'])(a0);
+var _PageAddItemExtended = Module['_PageAddItemExtended'] = (a0, a1, a2, a3, a4) => (_PageAddItemExtended = Module['_PageAddItemExtended'] = wasmExports['PageAddItemExtended'])(a0, a1, a2, a3, a4);
+var _BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = (a0) => (_BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = wasmExports['BufferGetBlockNumber'])(a0);
+var _PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = (a0, a1, a2) => (_PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = wasmExports['PageIndexMultiDelete'])(a0, a1, a2);
+var __hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = (a0, a1) => (__hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = wasmExports['_hash_ovflblkno_to_bitno'])(a0, a1);
+var _LockBuffer = Module['_LockBuffer'] = (a0, a1) => (_LockBuffer = Module['_LockBuffer'] = wasmExports['LockBuffer'])(a0, a1);
+var __hash_relbuf = Module['__hash_relbuf'] = (a0, a1) => (__hash_relbuf = Module['__hash_relbuf'] = wasmExports['_hash_relbuf'])(a0, a1);
+var __hash_getbuf = Module['__hash_getbuf'] = (a0, a1, a2, a3) => (__hash_getbuf = Module['__hash_getbuf'] = wasmExports['_hash_getbuf'])(a0, a1, a2, a3);
+var _XLogBeginInsert = Module['_XLogBeginInsert'] = () => (_XLogBeginInsert = Module['_XLogBeginInsert'] = wasmExports['XLogBeginInsert'])();
+var _XLogRegisterData = Module['_XLogRegisterData'] = (a0, a1) => (_XLogRegisterData = Module['_XLogRegisterData'] = wasmExports['XLogRegisterData'])(a0, a1);
+var _XLogInsert = Module['_XLogInsert'] = (a0, a1) => (_XLogInsert = Module['_XLogInsert'] = wasmExports['XLogInsert'])(a0, a1);
+var __hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = (a0, a1, a2, a3, a4) => (__hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = wasmExports['_hash_getbuf_with_strategy'])(a0, a1, a2, a3, a4);
+var _SearchSysCacheList = Module['_SearchSysCacheList'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheList = Module['_SearchSysCacheList'] = wasmExports['SearchSysCacheList'])(a0, a1, a2, a3, a4);
+var _check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = (a0) => (_check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = wasmExports['check_amoptsproc_signature'])(a0);
+var _format_operator = Module['_format_operator'] = (a0) => (_format_operator = Module['_format_operator'] = wasmExports['format_operator'])(a0);
+var _check_amop_signature = Module['_check_amop_signature'] = (a0, a1, a2, a3) => (_check_amop_signature = Module['_check_amop_signature'] = wasmExports['check_amop_signature'])(a0, a1, a2, a3);
+var _identify_opfamily_groups = Module['_identify_opfamily_groups'] = (a0, a1) => (_identify_opfamily_groups = Module['_identify_opfamily_groups'] = wasmExports['identify_opfamily_groups'])(a0, a1);
+var _ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = (a0) => (_ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = wasmExports['ReleaseCatCacheList'])(a0);
+var __hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = (a0) => (__hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = wasmExports['_hash_get_indextuple_hashkey'])(a0);
+var _PageGetFreeSpace = Module['_PageGetFreeSpace'] = (a0) => (_PageGetFreeSpace = Module['_PageGetFreeSpace'] = wasmExports['PageGetFreeSpace'])(a0);
+var _ReadBuffer = Module['_ReadBuffer'] = (a0, a1) => (_ReadBuffer = Module['_ReadBuffer'] = wasmExports['ReadBuffer'])(a0, a1);
+var _ReadBufferExtended = Module['_ReadBufferExtended'] = (a0, a1, a2, a3, a4) => (_ReadBufferExtended = Module['_ReadBufferExtended'] = wasmExports['ReadBufferExtended'])(a0, a1, a2, a3, a4);
+var _PageInit = Module['_PageInit'] = (a0, a1, a2) => (_PageInit = Module['_PageInit'] = wasmExports['PageInit'])(a0, a1, a2);
+var _RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = (a0, a1) => (_RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = wasmExports['RelationGetNumberOfBlocksInFork'])(a0, a1);
+var _ExtendBufferedRel = Module['_ExtendBufferedRel'] = (a0, a1, a2, a3) => (_ExtendBufferedRel = Module['_ExtendBufferedRel'] = wasmExports['ExtendBufferedRel'])(a0, a1, a2, a3);
+var _index_getprocid = Module['_index_getprocid'] = (a0, a1, a2) => (_index_getprocid = Module['_index_getprocid'] = wasmExports['index_getprocid'])(a0, a1, a2);
+var _smgropen = Module['_smgropen'] = (a0, a1) => (_smgropen = Module['_smgropen'] = wasmExports['smgropen'])(a0, a1);
+var _smgrsetowner = Module['_smgrsetowner'] = (a0, a1) => (_smgrsetowner = Module['_smgrsetowner'] = wasmExports['smgrsetowner'])(a0, a1);
+var _hash_destroy = Module['_hash_destroy'] = (a0) => (_hash_destroy = Module['_hash_destroy'] = wasmExports['hash_destroy'])(a0);
+var _index_form_tuple = Module['_index_form_tuple'] = (a0, a1, a2) => (_index_form_tuple = Module['_index_form_tuple'] = wasmExports['index_form_tuple'])(a0, a1, a2);
+var _LockBufferForCleanup = Module['_LockBufferForCleanup'] = (a0) => (_LockBufferForCleanup = Module['_LockBufferForCleanup'] = wasmExports['LockBufferForCleanup'])(a0);
+var _RelationGetIndexScan = Module['_RelationGetIndexScan'] = (a0, a1, a2) => (_RelationGetIndexScan = Module['_RelationGetIndexScan'] = wasmExports['RelationGetIndexScan'])(a0, a1, a2);
+var _tbm_add_tuples = Module['_tbm_add_tuples'] = (a0, a1, a2, a3) => (_tbm_add_tuples = Module['_tbm_add_tuples'] = wasmExports['tbm_add_tuples'])(a0, a1, a2, a3);
+var _vacuum_delay_point = Module['_vacuum_delay_point'] = () => (_vacuum_delay_point = Module['_vacuum_delay_point'] = wasmExports['vacuum_delay_point'])();
+var _index_getprocinfo = Module['_index_getprocinfo'] = (a0, a1, a2) => (_index_getprocinfo = Module['_index_getprocinfo'] = wasmExports['index_getprocinfo'])(a0, a1, a2);
+var _build_reloptions = Module['_build_reloptions'] = (a0, a1, a2, a3, a4, a5) => (_build_reloptions = Module['_build_reloptions'] = wasmExports['build_reloptions'])(a0, a1, a2, a3, a4, a5);
+var _TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = (a0, a1) => (_TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = wasmExports['TestForOldSnapshot_impl'])(a0, a1);
+var _pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = (a0) => (_pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = wasmExports['pgstat_assoc_relation'])(a0);
+var _visibilitymap_clear = Module['_visibilitymap_clear'] = (a0, a1, a2, a3) => (_visibilitymap_clear = Module['_visibilitymap_clear'] = wasmExports['visibilitymap_clear'])(a0, a1, a2, a3);
+var _visibilitymap_pin = Module['_visibilitymap_pin'] = (a0, a1, a2) => (_visibilitymap_pin = Module['_visibilitymap_pin'] = wasmExports['visibilitymap_pin'])(a0, a1, a2);
+var _smgrexists = Module['_smgrexists'] = (a0, a1) => (_smgrexists = Module['_smgrexists'] = wasmExports['smgrexists'])(a0, a1);
+var _visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = (a0, a1) => (_visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = wasmExports['visibilitymap_prepare_truncate'])(a0, a1);
+var _log_newpage_buffer = Module['_log_newpage_buffer'] = (a0, a1) => (_log_newpage_buffer = Module['_log_newpage_buffer'] = wasmExports['log_newpage_buffer'])(a0, a1);
+var _HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = (a0, a1, a2) => (_HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = wasmExports['HeapTupleSatisfiesVisibility'])(a0, a1, a2);
+var _HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = (a0) => (_HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = wasmExports['HeapTupleGetUpdateXid'])(a0);
+var _HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = (a0, a1, a2) => (_HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = wasmExports['HeapTupleSatisfiesVacuum'])(a0, a1, a2);
+var _GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = (a0) => (_GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = wasmExports['GetOldestNonRemovableTransactionId'])(a0);
+var _PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = (a0) => (_PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = wasmExports['PageGetHeapFreeSpace'])(a0);
+var _vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = (a0, a1, a2, a3) => (_vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = wasmExports['vac_estimate_reltuples'])(a0, a1, a2, a3);
+var _GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = (a0, a1) => (_GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = wasmExports['GetRecordedFreeSpace'])(a0, a1);
+var _heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = (a0) => (_heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = wasmExports['heap_tuple_needs_eventual_freeze'])(a0);
+var _hash_seq_init = Module['_hash_seq_init'] = (a0, a1) => (_hash_seq_init = Module['_hash_seq_init'] = wasmExports['hash_seq_init'])(a0, a1);
+var _hash_seq_search = Module['_hash_seq_search'] = (a0) => (_hash_seq_search = Module['_hash_seq_search'] = wasmExports['hash_seq_search'])(a0);
+var _ftruncate = Module['_ftruncate'] = (a0, a1) => (_ftruncate = Module['_ftruncate'] = wasmExports['ftruncate'])(a0, a1);
+var _pwrite = Module['_pwrite'] = (a0, a1, a2, a3) => (_pwrite = Module['_pwrite'] = wasmExports['pwrite'])(a0, a1, a2, a3);
+var _fd_fsync_fname = Module['_fd_fsync_fname'] = (a0, a1) => (_fd_fsync_fname = Module['_fd_fsync_fname'] = wasmExports['fd_fsync_fname'])(a0, a1);
+var _GetMultiXactIdMembers = Module['_GetMultiXactIdMembers'] = (a0, a1, a2, a3) => (_GetMultiXactIdMembers = Module['_GetMultiXactIdMembers'] = wasmExports['GetMultiXactIdMembers'])(a0, a1, a2, a3);
+var _GetAccessStrategy = Module['_GetAccessStrategy'] = (a0) => (_GetAccessStrategy = Module['_GetAccessStrategy'] = wasmExports['GetAccessStrategy'])(a0);
+var _FreeAccessStrategy = Module['_FreeAccessStrategy'] = (a0) => (_FreeAccessStrategy = Module['_FreeAccessStrategy'] = wasmExports['FreeAccessStrategy'])(a0);
+var _HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = (a0, a1, a2) => (_HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = wasmExports['HeapTupleSatisfiesUpdate'])(a0, a1, a2);
+var _TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = (a0) => (_TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = wasmExports['TransactionIdDidCommit'])(a0);
+var _TransactionIdIsInProgress = Module['_TransactionIdIsInProgress'] = (a0) => (_TransactionIdIsInProgress = Module['_TransactionIdIsInProgress'] = wasmExports['TransactionIdIsInProgress'])(a0);
+var _datumIsEqual = Module['_datumIsEqual'] = (a0, a1, a2, a3) => (_datumIsEqual = Module['_datumIsEqual'] = wasmExports['datumIsEqual'])(a0, a1, a2, a3);
+var _MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = (a0, a1) => (_MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = wasmExports['MultiXactIdPrecedes'])(a0, a1);
+var _XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = (a0, a1, a2, a3, a4, a5) => (_XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = wasmExports['XLogRecGetBlockTagExtended'])(a0, a1, a2, a3, a4, a5);
+var _ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = (a0) => (_ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = wasmExports['ConditionalLockBuffer'])(a0);
+var _toast_open_indexes = Module['_toast_open_indexes'] = (a0, a1, a2, a3) => (_toast_open_indexes = Module['_toast_open_indexes'] = wasmExports['toast_open_indexes'])(a0, a1, a2, a3);
+var _init_toast_snapshot = Module['_init_toast_snapshot'] = (a0) => (_init_toast_snapshot = Module['_init_toast_snapshot'] = wasmExports['init_toast_snapshot'])(a0);
+var _systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = (a0, a1, a2, a3, a4) => (_systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = wasmExports['systable_beginscan_ordered'])(a0, a1, a2, a3, a4);
+var _systable_getnext_ordered = Module['_systable_getnext_ordered'] = (a0, a1) => (_systable_getnext_ordered = Module['_systable_getnext_ordered'] = wasmExports['systable_getnext_ordered'])(a0, a1);
+var _systable_endscan_ordered = Module['_systable_endscan_ordered'] = (a0) => (_systable_endscan_ordered = Module['_systable_endscan_ordered'] = wasmExports['systable_endscan_ordered'])(a0);
+var _toast_close_indexes = Module['_toast_close_indexes'] = (a0, a1, a2) => (_toast_close_indexes = Module['_toast_close_indexes'] = wasmExports['toast_close_indexes'])(a0, a1, a2);
 var _GenerationContextCreate = Module['_GenerationContextCreate'] = (a0, a1, a2, a3, a4) => (_GenerationContextCreate = Module['_GenerationContextCreate'] = wasmExports['GenerationContextCreate'])(a0, a1, a2, a3, a4);
-var _tuplesort_end = Module['_tuplesort_end'] = (a0) => (_tuplesort_end = Module['_tuplesort_end'] = wasmExports['tuplesort_end'])(a0);
-var _tuplesort_reset = Module['_tuplesort_reset'] = (a0) => (_tuplesort_reset = Module['_tuplesort_reset'] = wasmExports['tuplesort_reset'])(a0);
-var _tuplesort_performsort = Module['_tuplesort_performsort'] = (a0) => (_tuplesort_performsort = Module['_tuplesort_performsort'] = wasmExports['tuplesort_performsort'])(a0);
+var _LockRelationForExtension = Module['_LockRelationForExtension'] = (a0, a1) => (_LockRelationForExtension = Module['_LockRelationForExtension'] = wasmExports['LockRelationForExtension'])(a0, a1);
+var _UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = (a0, a1) => (_UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = wasmExports['UnlockRelationForExtension'])(a0, a1);
+var _RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = (a0, a1) => (_RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = wasmExports['RecordFreeIndexPage'])(a0, a1);
+var _IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = (a0) => (_IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = wasmExports['IndexFreeSpaceMapVacuum'])(a0);
+var _gistcheckpage = Module['_gistcheckpage'] = (a0, a1) => (_gistcheckpage = Module['_gistcheckpage'] = wasmExports['gistcheckpage'])(a0, a1);
+var _nocache_index_getattr = Module['_nocache_index_getattr'] = (a0, a1, a2) => (_nocache_index_getattr = Module['_nocache_index_getattr'] = wasmExports['nocache_index_getattr'])(a0, a1, a2);
+var _GetFreeIndexPage = Module['_GetFreeIndexPage'] = (a0) => (_GetFreeIndexPage = Module['_GetFreeIndexPage'] = wasmExports['GetFreeIndexPage'])(a0);
+var _check_amproc_signature = Module['_check_amproc_signature'] = (a0, a1, a2, a3, a4, a5) => (_check_amproc_signature = Module['_check_amproc_signature'] = wasmExports['check_amproc_signature'])(a0, a1, a2, a3, a4, a5);
+var _DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = (a0, a1, a2, a3) => (_DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = wasmExports['DirectFunctionCall2Coll'])(a0, a1, a2, a3);
+var _float_overflow_error = Module['_float_overflow_error'] = () => (_float_overflow_error = Module['_float_overflow_error'] = wasmExports['float_overflow_error'])();
+var _float_underflow_error = Module['_float_underflow_error'] = () => (_float_underflow_error = Module['_float_underflow_error'] = wasmExports['float_underflow_error'])();
+var _DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = (a0, a1, a2, a3, a4, a5, a6) => (_DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = wasmExports['DirectFunctionCall5Coll'])(a0, a1, a2, a3, a4, a5, a6);
+var _Float8GetDatum = Module['_Float8GetDatum'] = (a0) => (_Float8GetDatum = Module['_Float8GetDatum'] = wasmExports['Float8GetDatum'])(a0);
+var _fmgr_info_copy = Module['_fmgr_info_copy'] = (a0, a1, a2) => (_fmgr_info_copy = Module['_fmgr_info_copy'] = wasmExports['fmgr_info_copy'])(a0, a1, a2);
+var _PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = (a0, a1, a2, a3) => (_PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = wasmExports['PageIndexTupleOverwrite'])(a0, a1, a2, a3);
+var _log_newpage_range = Module['_log_newpage_range'] = (a0, a1, a2, a3, a4) => (_log_newpage_range = Module['_log_newpage_range'] = wasmExports['log_newpage_range'])(a0, a1, a2, a3, a4);
+var _pow = Module['_pow'] = (a0, a1) => (_pow = Module['_pow'] = wasmExports['pow'])(a0, a1);
+var _CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = (a0) => (_CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = wasmExports['CreateTupleDescCopyConstr'])(a0);
+var _PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = (a0) => (_PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = wasmExports['PageGetExactFreeSpace'])(a0);
+var _brin_build_desc = Module['_brin_build_desc'] = (a0) => (_brin_build_desc = Module['_brin_build_desc'] = wasmExports['brin_build_desc'])(a0);
+var _brin_deform_tuple = Module['_brin_deform_tuple'] = (a0, a1, a2) => (_brin_deform_tuple = Module['_brin_deform_tuple'] = wasmExports['brin_deform_tuple'])(a0, a1, a2);
+var _IndexGetRelation = Module['_IndexGetRelation'] = (a0, a1) => (_IndexGetRelation = Module['_IndexGetRelation'] = wasmExports['IndexGetRelation'])(a0, a1);
+var _FunctionCall4Coll = Module['_FunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_FunctionCall4Coll = Module['_FunctionCall4Coll'] = wasmExports['FunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
+var _brin_free_desc = Module['_brin_free_desc'] = (a0) => (_brin_free_desc = Module['_brin_free_desc'] = wasmExports['brin_free_desc'])(a0);
+var _GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = (a0, a1) => (_GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = wasmExports['GetUserIdAndSecContext'])(a0, a1);
+var _SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = (a0, a1) => (_SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = wasmExports['SetUserIdAndSecContext'])(a0, a1);
+var _NewGUCNestLevel = Module['_NewGUCNestLevel'] = () => (_NewGUCNestLevel = Module['_NewGUCNestLevel'] = wasmExports['NewGUCNestLevel'])();
+var _AtEOXact_GUC = Module['_AtEOXact_GUC'] = (a0, a1) => (_AtEOXact_GUC = Module['_AtEOXact_GUC'] = wasmExports['AtEOXact_GUC'])(a0, a1);
+var _get_fn_opclass_options = Module['_get_fn_opclass_options'] = (a0) => (_get_fn_opclass_options = Module['_get_fn_opclass_options'] = wasmExports['get_fn_opclass_options'])(a0);
+var _init_local_reloptions = Module['_init_local_reloptions'] = (a0, a1) => (_init_local_reloptions = Module['_init_local_reloptions'] = wasmExports['init_local_reloptions'])(a0, a1);
+var _numeric_sub = Module['_numeric_sub'] = (a0) => (_numeric_sub = Module['_numeric_sub'] = wasmExports['numeric_sub'])(a0);
+var _qsort_arg = Module['_qsort_arg'] = (a0, a1, a2, a3, a4) => (_qsort_arg = Module['_qsort_arg'] = wasmExports['qsort_arg'])(a0, a1, a2, a3, a4);
+var _add_local_int_reloption = Module['_add_local_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_local_int_reloption = Module['_add_local_int_reloption'] = wasmExports['add_local_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
+var _OutputFunctionCall = Module['_OutputFunctionCall'] = (a0, a1) => (_OutputFunctionCall = Module['_OutputFunctionCall'] = wasmExports['OutputFunctionCall'])(a0, a1);
+var _accumArrayResult = Module['_accumArrayResult'] = (a0, a1, a2, a3, a4) => (_accumArrayResult = Module['_accumArrayResult'] = wasmExports['accumArrayResult'])(a0, a1, a2, a3, a4);
+var _makeArrayResult = Module['_makeArrayResult'] = (a0, a1) => (_makeArrayResult = Module['_makeArrayResult'] = wasmExports['makeArrayResult'])(a0, a1);
+var _hash_get_num_entries = Module['_hash_get_num_entries'] = (a0) => (_hash_get_num_entries = Module['_hash_get_num_entries'] = wasmExports['hash_get_num_entries'])(a0);
+var _RestoreBlockImage = Module['_RestoreBlockImage'] = (a0, a1, a2) => (_RestoreBlockImage = Module['_RestoreBlockImage'] = wasmExports['RestoreBlockImage'])(a0, a1, a2);
+var _wal_segment_open = Module['_wal_segment_open'] = (a0, a1, a2) => (_wal_segment_open = Module['_wal_segment_open'] = wasmExports['wal_segment_open'])(a0, a1, a2);
+var _wal_segment_close = Module['_wal_segment_close'] = (a0) => (_wal_segment_close = Module['_wal_segment_close'] = wasmExports['wal_segment_close'])(a0);
+var _close = Module['_close'] = (a0) => (_close = Module['_close'] = wasmExports['close'])(a0);
+var _GetFlushRecPtr = Module['_GetFlushRecPtr'] = (a0) => (_GetFlushRecPtr = Module['_GetFlushRecPtr'] = wasmExports['GetFlushRecPtr'])(a0);
+var _GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = (a0) => (_GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = wasmExports['GetXLogReplayRecPtr'])(a0);
+var _pg_usleep = Module['_pg_usleep'] = (a0) => (_pg_usleep = Module['_pg_usleep'] = wasmExports['pg_usleep'])(a0);
+var _read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = (a0, a1, a2, a3, a4) => (_read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = wasmExports['read_local_xlog_page_no_wait'])(a0, a1, a2, a3, a4);
+var _dsm_create = Module['_dsm_create'] = (a0, a1) => (_dsm_create = Module['_dsm_create'] = wasmExports['dsm_create'])(a0, a1);
+var _dsm_segment_address = Module['_dsm_segment_address'] = (a0) => (_dsm_segment_address = Module['_dsm_segment_address'] = wasmExports['dsm_segment_address'])(a0);
+var _WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = (a0) => (_WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = wasmExports['WaitForBackgroundWorkerShutdown'])(a0);
+var _dsm_segment_handle = Module['_dsm_segment_handle'] = (a0) => (_dsm_segment_handle = Module['_dsm_segment_handle'] = wasmExports['dsm_segment_handle'])(a0);
+var _RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = (a0, a1) => (_RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = wasmExports['RegisterDynamicBackgroundWorker'])(a0, a1);
+var _WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = (a0) => (_WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = wasmExports['WaitForParallelWorkersToAttach'])(a0);
+var _dsm_detach = Module['_dsm_detach'] = (a0) => (_dsm_detach = Module['_dsm_detach'] = wasmExports['dsm_detach'])(a0);
+var _BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = () => (_BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = wasmExports['BackgroundWorkerUnblockSignals'])();
+var _dsm_attach = Module['_dsm_attach'] = (a0) => (_dsm_attach = Module['_dsm_attach'] = wasmExports['dsm_attach'])(a0);
+var _BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = (a0, a1, a2) => (_BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = wasmExports['BackgroundWorkerInitializeConnectionByOid'])(a0, a1, a2);
+var _GenericXLogStart = Module['_GenericXLogStart'] = (a0) => (_GenericXLogStart = Module['_GenericXLogStart'] = wasmExports['GenericXLogStart'])(a0);
+var _GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = (a0, a1, a2) => (_GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = wasmExports['GenericXLogRegisterBuffer'])(a0, a1, a2);
+var _GenericXLogFinish = Module['_GenericXLogFinish'] = (a0) => (_GenericXLogFinish = Module['_GenericXLogFinish'] = wasmExports['GenericXLogFinish'])(a0);
+var _GenericXLogAbort = Module['_GenericXLogAbort'] = (a0) => (_GenericXLogAbort = Module['_GenericXLogAbort'] = wasmExports['GenericXLogAbort'])(a0);
+var _ShmemInitStruct = Module['_ShmemInitStruct'] = (a0, a1, a2) => (_ShmemInitStruct = Module['_ShmemInitStruct'] = wasmExports['ShmemInitStruct'])(a0, a1, a2);
+var _init_MultiFuncCall = Module['_init_MultiFuncCall'] = (a0) => (_init_MultiFuncCall = Module['_init_MultiFuncCall'] = wasmExports['init_MultiFuncCall'])(a0);
+var _per_MultiFuncCall = Module['_per_MultiFuncCall'] = (a0) => (_per_MultiFuncCall = Module['_per_MultiFuncCall'] = wasmExports['per_MultiFuncCall'])(a0);
+var _end_MultiFuncCall = Module['_end_MultiFuncCall'] = (a0, a1) => (_end_MultiFuncCall = Module['_end_MultiFuncCall'] = wasmExports['end_MultiFuncCall'])(a0, a1);
+var _read = Module['_read'] = (a0, a1, a2) => (_read = Module['_read'] = wasmExports['read'])(a0, a1, a2);
+var _superuser_arg = Module['_superuser_arg'] = (a0) => (_superuser_arg = Module['_superuser_arg'] = wasmExports['superuser_arg'])(a0);
+var _XLogReaderAllocate = Module['_XLogReaderAllocate'] = (a0, a1, a2, a3) => (_XLogReaderAllocate = Module['_XLogReaderAllocate'] = wasmExports['XLogReaderAllocate'])(a0, a1, a2, a3);
+var _XLogReadRecord = Module['_XLogReadRecord'] = (a0, a1) => (_XLogReadRecord = Module['_XLogReadRecord'] = wasmExports['XLogReadRecord'])(a0, a1);
+var _XLogReaderFree = Module['_XLogReaderFree'] = (a0) => (_XLogReaderFree = Module['_XLogReaderFree'] = wasmExports['XLogReaderFree'])(a0);
+var _write = Module['_write'] = (a0, a1, a2) => (_write = Module['_write'] = wasmExports['write'])(a0, a1, a2);
+var _ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = (a0, a1) => (_ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = wasmExports['ReadMultiXactIdRange'])(a0, a1);
+var _MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = (a0, a1) => (_MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = wasmExports['MultiXactIdPrecedesOrEquals'])(a0, a1);
+var _numeric_in = Module['_numeric_in'] = (a0) => (_numeric_in = Module['_numeric_in'] = wasmExports['numeric_in'])(a0);
+var _DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = (a0, a1, a2, a3, a4) => (_DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = wasmExports['DirectFunctionCall3Coll'])(a0, a1, a2, a3, a4);
+var _AllocateFile = Module['_AllocateFile'] = (a0, a1) => (_AllocateFile = Module['_AllocateFile'] = wasmExports['AllocateFile'])(a0, a1);
+var _FreeFile = Module['_FreeFile'] = (a0) => (_FreeFile = Module['_FreeFile'] = wasmExports['FreeFile'])(a0);
+var _InitMaterializedSRF = Module['_InitMaterializedSRF'] = (a0, a1) => (_InitMaterializedSRF = Module['_InitMaterializedSRF'] = wasmExports['InitMaterializedSRF'])(a0, a1);
+var _XLogRecStoreStats = Module['_XLogRecStoreStats'] = (a0, a1) => (_XLogRecStoreStats = Module['_XLogRecStoreStats'] = wasmExports['XLogRecStoreStats'])(a0, a1);
+var _XLogFindNextRecord = Module['_XLogFindNextRecord'] = (a0, a1) => (_XLogFindNextRecord = Module['_XLogFindNextRecord'] = wasmExports['XLogFindNextRecord'])(a0, a1);
+var _fgets = Module['_fgets'] = (a0, a1, a2) => (_fgets = Module['_fgets'] = wasmExports['fgets'])(a0, a1, a2);
+var _getpid = Module['_getpid'] = () => (_getpid = Module['_getpid'] = wasmExports['getpid'])();
+var _lseek = Module['_lseek'] = (a0, a1, a2) => (_lseek = Module['_lseek'] = wasmExports['lseek'])(a0, a1, a2);
+var _strtol = Module['_strtol'] = (a0, a1, a2) => (_strtol = Module['_strtol'] = wasmExports['strtol'])(a0, a1, a2);
+var _wait_result_to_str = Module['_wait_result_to_str'] = (a0) => (_wait_result_to_str = Module['_wait_result_to_str'] = wasmExports['wait_result_to_str'])(a0);
+var _replace_percent_placeholders = Module['_replace_percent_placeholders'] = (a0, a1, a2, a3) => (_replace_percent_placeholders = Module['_replace_percent_placeholders'] = wasmExports['replace_percent_placeholders'])(a0, a1, a2, a3);
+var _RmgrNotFound = Module['_RmgrNotFound'] = (a0) => (_RmgrNotFound = Module['_RmgrNotFound'] = wasmExports['RmgrNotFound'])(a0);
+var _GetCurrentTransactionNestLevel = Module['_GetCurrentTransactionNestLevel'] = () => (_GetCurrentTransactionNestLevel = Module['_GetCurrentTransactionNestLevel'] = wasmExports['GetCurrentTransactionNestLevel'])();
+var _ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = (a0) => (_ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = wasmExports['ResourceOwnerDelete'])(a0);
+var _AtEOSubXact_Files = Module['_AtEOSubXact_Files'] = (a0, a1, a2) => (_AtEOSubXact_Files = Module['_AtEOSubXact_Files'] = wasmExports['AtEOSubXact_Files'])(a0, a1, a2);
+var _RegisterXactCallback = Module['_RegisterXactCallback'] = (a0, a1) => (_RegisterXactCallback = Module['_RegisterXactCallback'] = wasmExports['RegisterXactCallback'])(a0, a1);
+var _RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = (a0, a1) => (_RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = wasmExports['RegisterSubXactCallback'])(a0, a1);
+var _BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = (a0) => (_BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = wasmExports['BeginInternalSubTransaction'])(a0);
+var _ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = () => (_ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = wasmExports['ReleaseCurrentSubTransaction'])();
+var _RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = () => (_RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = wasmExports['RollbackAndReleaseCurrentSubTransaction'])();
+var _timestamptz_in = Module['_timestamptz_in'] = (a0) => (_timestamptz_in = Module['_timestamptz_in'] = wasmExports['timestamptz_in'])(a0);
+var _timestamptz_to_str = Module['_timestamptz_to_str'] = (a0) => (_timestamptz_to_str = Module['_timestamptz_to_str'] = wasmExports['timestamptz_to_str'])(a0);
+var _fscanf = Module['_fscanf'] = (a0, a1, a2) => (_fscanf = Module['_fscanf'] = wasmExports['fscanf'])(a0, a1, a2);
+var _ParseDateTime = Module['_ParseDateTime'] = (a0, a1, a2, a3, a4, a5, a6) => (_ParseDateTime = Module['_ParseDateTime'] = wasmExports['ParseDateTime'])(a0, a1, a2, a3, a4, a5, a6);
+var _DecodeDateTime = Module['_DecodeDateTime'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_DecodeDateTime = Module['_DecodeDateTime'] = wasmExports['DecodeDateTime'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _ReleaseExternalFD = Module['_ReleaseExternalFD'] = () => (_ReleaseExternalFD = Module['_ReleaseExternalFD'] = wasmExports['ReleaseExternalFD'])();
+var _pg_strong_random = Module['_pg_strong_random'] = (a0, a1) => (_pg_strong_random = Module['_pg_strong_random'] = wasmExports['pg_strong_random'])(a0, a1);
+var _XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = (a0, a1, a2, a3, a4) => (_XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = wasmExports['XLogRecGetBlockRefInfo'])(a0, a1, a2, a3, a4);
+var _strncpy = Module['_strncpy'] = (a0, a1, a2) => (_strncpy = Module['_strncpy'] = wasmExports['strncpy'])(a0, a1, a2);
+var _heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = (a0, a1, a2, a3, a4, a5) => (_heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = wasmExports['heap_modify_tuple_by_cols'])(a0, a1, a2, a3, a4, a5);
+var _free_attrmap = Module['_free_attrmap'] = (a0) => (_free_attrmap = Module['_free_attrmap'] = wasmExports['free_attrmap'])(a0);
+var _add_reloption_kind = Module['_add_reloption_kind'] = () => (_add_reloption_kind = Module['_add_reloption_kind'] = wasmExports['add_reloption_kind'])();
+var _register_reloptions_validator = Module['_register_reloptions_validator'] = (a0, a1) => (_register_reloptions_validator = Module['_register_reloptions_validator'] = wasmExports['register_reloptions_validator'])(a0, a1);
+var _add_int_reloption = Module['_add_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_int_reloption = Module['_add_int_reloption'] = wasmExports['add_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
+var _untransformRelOptions = Module['_untransformRelOptions'] = (a0) => (_untransformRelOptions = Module['_untransformRelOptions'] = wasmExports['untransformRelOptions'])(a0);
+var _makeDefElem = Module['_makeDefElem'] = (a0, a1, a2) => (_makeDefElem = Module['_makeDefElem'] = wasmExports['makeDefElem'])(a0, a1, a2);
+var _parse_int = Module['_parse_int'] = (a0, a1, a2, a3) => (_parse_int = Module['_parse_int'] = wasmExports['parse_int'])(a0, a1, a2, a3);
+var _parse_real = Module['_parse_real'] = (a0, a1, a2, a3) => (_parse_real = Module['_parse_real'] = wasmExports['parse_real'])(a0, a1, a2, a3);
+var _typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = (a0, a1, a2, a3) => (_typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = wasmExports['typenameTypeIdAndMod'])(a0, a1, a2, a3);
+var _pg_ltoa = Module['_pg_ltoa'] = (a0, a1) => (_pg_ltoa = Module['_pg_ltoa'] = wasmExports['pg_ltoa'])(a0, a1);
+var _RelationIdGetRelation = Module['_RelationIdGetRelation'] = (a0) => (_RelationIdGetRelation = Module['_RelationIdGetRelation'] = wasmExports['RelationIdGetRelation'])(a0);
+var _relation_openrv = Module['_relation_openrv'] = (a0, a1) => (_relation_openrv = Module['_relation_openrv'] = wasmExports['relation_openrv'])(a0, a1);
+var _RelationClose = Module['_RelationClose'] = (a0) => (_RelationClose = Module['_RelationClose'] = wasmExports['RelationClose'])(a0);
+var _varstr_cmp = Module['_varstr_cmp'] = (a0, a1, a2, a3, a4) => (_varstr_cmp = Module['_varstr_cmp'] = wasmExports['varstr_cmp'])(a0, a1, a2, a3, a4);
+var _pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = (a0, a1, a2) => (_pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = wasmExports['pg_prng_uint64_range'])(a0, a1, a2);
+var _ginPostingListDecode = Module['_ginPostingListDecode'] = (a0, a1) => (_ginPostingListDecode = Module['_ginPostingListDecode'] = wasmExports['ginPostingListDecode'])(a0, a1);
+var _LockPage = Module['_LockPage'] = (a0, a1, a2) => (_LockPage = Module['_LockPage'] = wasmExports['LockPage'])(a0, a1, a2);
+var _UnlockPage = Module['_UnlockPage'] = (a0, a1, a2) => (_UnlockPage = Module['_UnlockPage'] = wasmExports['UnlockPage'])(a0, a1, a2);
+var __bt_search = Module['__bt_search'] = (a0, a1, a2, a3, a4, a5) => (__bt_search = Module['__bt_search'] = wasmExports['_bt_search'])(a0, a1, a2, a3, a4, a5);
+var __bt_compare = Module['__bt_compare'] = (a0, a1, a2, a3) => (__bt_compare = Module['__bt_compare'] = wasmExports['_bt_compare'])(a0, a1, a2, a3);
+var __bt_relbuf = Module['__bt_relbuf'] = (a0, a1) => (__bt_relbuf = Module['__bt_relbuf'] = wasmExports['_bt_relbuf'])(a0, a1);
+var __bt_binsrch_insert = Module['__bt_binsrch_insert'] = (a0, a1) => (__bt_binsrch_insert = Module['__bt_binsrch_insert'] = wasmExports['_bt_binsrch_insert'])(a0, a1);
+var __bt_metaversion = Module['__bt_metaversion'] = (a0, a1, a2) => (__bt_metaversion = Module['__bt_metaversion'] = wasmExports['_bt_metaversion'])(a0, a1, a2);
+var __bt_freestack = Module['__bt_freestack'] = (a0) => (__bt_freestack = Module['__bt_freestack'] = wasmExports['_bt_freestack'])(a0);
+var _btboolcmp = Module['_btboolcmp'] = (a0) => (_btboolcmp = Module['_btboolcmp'] = wasmExports['btboolcmp'])(a0);
+var _btint2cmp = Module['_btint2cmp'] = (a0) => (_btint2cmp = Module['_btint2cmp'] = wasmExports['btint2cmp'])(a0);
+var _btint4cmp = Module['_btint4cmp'] = (a0) => (_btint4cmp = Module['_btint4cmp'] = wasmExports['btint4cmp'])(a0);
+var _btint8cmp = Module['_btint8cmp'] = (a0) => (_btint8cmp = Module['_btint8cmp'] = wasmExports['btint8cmp'])(a0);
+var _btoidcmp = Module['_btoidcmp'] = (a0) => (_btoidcmp = Module['_btoidcmp'] = wasmExports['btoidcmp'])(a0);
+var _btcharcmp = Module['_btcharcmp'] = (a0) => (_btcharcmp = Module['_btcharcmp'] = wasmExports['btcharcmp'])(a0);
+var __bt_checkpage = Module['__bt_checkpage'] = (a0, a1) => (__bt_checkpage = Module['__bt_checkpage'] = wasmExports['_bt_checkpage'])(a0, a1);
+var __bt_mkscankey = Module['__bt_mkscankey'] = (a0, a1) => (__bt_mkscankey = Module['__bt_mkscankey'] = wasmExports['_bt_mkscankey'])(a0, a1);
+var __bt_form_posting = Module['__bt_form_posting'] = (a0, a1, a2) => (__bt_form_posting = Module['__bt_form_posting'] = wasmExports['_bt_form_posting'])(a0, a1, a2);
+var __bt_allequalimage = Module['__bt_allequalimage'] = (a0, a1) => (__bt_allequalimage = Module['__bt_allequalimage'] = wasmExports['_bt_allequalimage'])(a0, a1);
+var _ConditionVariableSignal = Module['_ConditionVariableSignal'] = (a0) => (_ConditionVariableSignal = Module['_ConditionVariableSignal'] = wasmExports['ConditionVariableSignal'])(a0);
 var _tuplesort_estimate_shared = Module['_tuplesort_estimate_shared'] = (a0) => (_tuplesort_estimate_shared = Module['_tuplesort_estimate_shared'] = wasmExports['tuplesort_estimate_shared'])(a0);
 var _tuplesort_initialize_shared = Module['_tuplesort_initialize_shared'] = (a0, a1, a2) => (_tuplesort_initialize_shared = Module['_tuplesort_initialize_shared'] = wasmExports['tuplesort_initialize_shared'])(a0, a1, a2);
 var _tuplesort_attach_shared = Module['_tuplesort_attach_shared'] = (a0, a1) => (_tuplesort_attach_shared = Module['_tuplesort_attach_shared'] = wasmExports['tuplesort_attach_shared'])(a0, a1);
-var _strcpy = Module['_strcpy'] = (a0, a1) => (_strcpy = Module['_strcpy'] = wasmExports['strcpy'])(a0, a1);
-var _LWLockInitialize = Module['_LWLockInitialize'] = (a0, a1) => (_LWLockInitialize = Module['_LWLockInitialize'] = wasmExports['LWLockInitialize'])(a0, a1);
-var _MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = (a0, a1) => (_MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = wasmExports['MemoryContextAllocZero'])(a0, a1);
-var _errdetail_internal = Module['_errdetail_internal'] = (a0, a1) => (_errdetail_internal = Module['_errdetail_internal'] = wasmExports['errdetail_internal'])(a0, a1);
-var _fmgr_info_cxt = Module['_fmgr_info_cxt'] = (a0, a1, a2) => (_fmgr_info_cxt = Module['_fmgr_info_cxt'] = wasmExports['fmgr_info_cxt'])(a0, a1, a2);
+var __bt_check_natts = Module['__bt_check_natts'] = (a0, a1, a2, a3) => (__bt_check_natts = Module['__bt_check_natts'] = wasmExports['_bt_check_natts'])(a0, a1, a2, a3);
+var _smgrread = Module['_smgrread'] = (a0, a1, a2, a3) => (_smgrread = Module['_smgrread'] = wasmExports['smgrread'])(a0, a1, a2, a3);
+var _smgrtruncate = Module['_smgrtruncate'] = (a0, a1, a2, a3) => (_smgrtruncate = Module['_smgrtruncate'] = wasmExports['smgrtruncate'])(a0, a1, a2, a3);
+var _ShmemInitHash = Module['_ShmemInitHash'] = (a0, a1, a2, a3, a4) => (_ShmemInitHash = Module['_ShmemInitHash'] = wasmExports['ShmemInitHash'])(a0, a1, a2, a3, a4);
+var _hash_estimate_size = Module['_hash_estimate_size'] = (a0, a1) => (_hash_estimate_size = Module['_hash_estimate_size'] = wasmExports['hash_estimate_size'])(a0, a1);
+var _on_shmem_exit = Module['_on_shmem_exit'] = (a0, a1) => (_on_shmem_exit = Module['_on_shmem_exit'] = wasmExports['on_shmem_exit'])(a0, a1);
+var _LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = (a0, a1) => (_LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = wasmExports['LWLockRegisterTranche'])(a0, a1);
+var _GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = (a0) => (_GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = wasmExports['GetNamedLWLockTranche'])(a0);
+var _LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = () => (_LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = wasmExports['LWLockNewTrancheId'])();
+var _RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = (a0, a1) => (_RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = wasmExports['RequestNamedLWLockTranche'])(a0, a1);
+var _RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = (a0) => (_RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = wasmExports['RequestAddinShmemSpace'])(a0);
+var _BackendXidGetPid = Module['_BackendXidGetPid'] = (a0) => (_BackendXidGetPid = Module['_BackendXidGetPid'] = wasmExports['BackendXidGetPid'])(a0);
+var _fcntl = Module['_fcntl'] = (a0, a1, a2) => (_fcntl = Module['_fcntl'] = wasmExports['fcntl'])(a0, a1, a2);
+var _poll = Module['_poll'] = (a0, a1, a2) => (_poll = Module['_poll'] = wasmExports['poll'])(a0, a1, a2);
+var _WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = (a0, a1, a2, a3, a4) => (_WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = wasmExports['WaitLatchOrSocket'])(a0, a1, a2, a3, a4);
+var _procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = (a0) => (_procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = wasmExports['procsignal_sigusr1_handler'])(a0);
+var _have_free_buffer = Module['_have_free_buffer'] = () => (_have_free_buffer = Module['_have_free_buffer'] = wasmExports['have_free_buffer'])();
+var _LockBufHdr = Module['_LockBufHdr'] = (a0) => (_LockBufHdr = Module['_LockBufHdr'] = wasmExports['LockBufHdr'])(a0);
+var _copy_file = Module['_copy_file'] = (a0, a1) => (_copy_file = Module['_copy_file'] = wasmExports['copy_file'])(a0, a1);
+var _wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = (a0, a1) => (_wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = wasmExports['wasm_OpenPipeStream'])(a0, a1);
+var _fiprintf = Module['_fiprintf'] = (a0, a1, a2) => (_fiprintf = Module['_fiprintf'] = wasmExports['fiprintf'])(a0, a1, a2);
+var _fsync_fname_ext = Module['_fsync_fname_ext'] = (a0, a1, a2, a3) => (_fsync_fname_ext = Module['_fsync_fname_ext'] = wasmExports['fsync_fname_ext'])(a0, a1, a2, a3);
+var _rename = Module['_rename'] = (a0, a1) => (_rename = Module['_rename'] = wasmExports['rename'])(a0, a1);
+var _dup = Module['_dup'] = (a0) => (_dup = Module['_dup'] = wasmExports['dup'])(a0);
+var _open = Module['_open'] = (a0, a1, a2) => (_open = Module['_open'] = wasmExports['open'])(a0, a1, a2);
+var _AcquireExternalFD = Module['_AcquireExternalFD'] = () => (_AcquireExternalFD = Module['_AcquireExternalFD'] = wasmExports['AcquireExternalFD'])();
+var _pclose = Module['_pclose'] = (a0) => (_pclose = Module['_pclose'] = wasmExports['pclose'])(a0);
+var _ClosePipeStream = Module['_ClosePipeStream'] = (a0) => (_ClosePipeStream = Module['_ClosePipeStream'] = wasmExports['ClosePipeStream'])(a0);
+var _get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = (a0, a1) => (_get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = wasmExports['get_tsearch_config_filename'])(a0, a1);
+var _lowerstr = Module['_lowerstr'] = (a0) => (_lowerstr = Module['_lowerstr'] = wasmExports['lowerstr'])(a0);
+var _readstoplist = Module['_readstoplist'] = (a0, a1, a2) => (_readstoplist = Module['_readstoplist'] = wasmExports['readstoplist'])(a0, a1, a2);
+var _lowerstr_with_len = Module['_lowerstr_with_len'] = (a0, a1) => (_lowerstr_with_len = Module['_lowerstr_with_len'] = wasmExports['lowerstr_with_len'])(a0, a1);
+var _searchstoplist = Module['_searchstoplist'] = (a0, a1) => (_searchstoplist = Module['_searchstoplist'] = wasmExports['searchstoplist'])(a0, a1);
+var _tsearch_readline_begin = Module['_tsearch_readline_begin'] = (a0, a1) => (_tsearch_readline_begin = Module['_tsearch_readline_begin'] = wasmExports['tsearch_readline_begin'])(a0, a1);
+var _tsearch_readline = Module['_tsearch_readline'] = (a0) => (_tsearch_readline = Module['_tsearch_readline'] = wasmExports['tsearch_readline'])(a0);
+var _pg_mblen = Module['_pg_mblen'] = (a0) => (_pg_mblen = Module['_pg_mblen'] = wasmExports['pg_mblen'])(a0);
+var _t_isspace = Module['_t_isspace'] = (a0) => (_t_isspace = Module['_t_isspace'] = wasmExports['t_isspace'])(a0);
+var _tsearch_readline_end = Module['_tsearch_readline_end'] = (a0) => (_tsearch_readline_end = Module['_tsearch_readline_end'] = wasmExports['tsearch_readline_end'])(a0);
+var _pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = (a0, a1, a2) => (_pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = wasmExports['pg_mb2wchar_with_len'])(a0, a1, a2);
+var _t_isdigit = Module['_t_isdigit'] = (a0) => (_t_isdigit = Module['_t_isdigit'] = wasmExports['t_isdigit'])(a0);
+var _strcat = Module['_strcat'] = (a0, a1) => (_strcat = Module['_strcat'] = wasmExports['strcat'])(a0, a1);
+var _lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = (a0) => (_lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = wasmExports['lookup_ts_dictionary_cache'])(a0);
+var _construct_array_builtin = Module['_construct_array_builtin'] = (a0, a1, a2) => (_construct_array_builtin = Module['_construct_array_builtin'] = wasmExports['construct_array_builtin'])(a0, a1, a2);
+var _t_isalnum = Module['_t_isalnum'] = (a0) => (_t_isalnum = Module['_t_isalnum'] = wasmExports['t_isalnum'])(a0);
+var _pg_any_to_server = Module['_pg_any_to_server'] = (a0, a1, a2) => (_pg_any_to_server = Module['_pg_any_to_server'] = wasmExports['pg_any_to_server'])(a0, a1, a2);
+var _pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = () => (_pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = wasmExports['pg_database_encoding_max_length'])();
+var _isxdigit = Module['_isxdigit'] = (a0) => (_isxdigit = Module['_isxdigit'] = wasmExports['isxdigit'])(a0);
+var _pg_strtoint32 = Module['_pg_strtoint32'] = (a0) => (_pg_strtoint32 = Module['_pg_strtoint32'] = wasmExports['pg_strtoint32'])(a0);
+var _textToQualifiedNameList = Module['_textToQualifiedNameList'] = (a0) => (_textToQualifiedNameList = Module['_textToQualifiedNameList'] = wasmExports['textToQualifiedNameList'])(a0);
+var _DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = wasmExports['DirectFunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
+var _get_restriction_variable = Module['_get_restriction_variable'] = (a0, a1, a2, a3, a4, a5) => (_get_restriction_variable = Module['_get_restriction_variable'] = wasmExports['get_restriction_variable'])(a0, a1, a2, a3, a4, a5);
+var _GetForeignDataWrapper = Module['_GetForeignDataWrapper'] = (a0) => (_GetForeignDataWrapper = Module['_GetForeignDataWrapper'] = wasmExports['GetForeignDataWrapper'])(a0);
+var _GetSysCacheOid = Module['_GetSysCacheOid'] = (a0, a1, a2, a3, a4, a5) => (_GetSysCacheOid = Module['_GetSysCacheOid'] = wasmExports['GetSysCacheOid'])(a0, a1, a2, a3, a4, a5);
+var _GetForeignServer = Module['_GetForeignServer'] = (a0) => (_GetForeignServer = Module['_GetForeignServer'] = wasmExports['GetForeignServer'])(a0);
+var _GetForeignServerExtended = Module['_GetForeignServerExtended'] = (a0, a1) => (_GetForeignServerExtended = Module['_GetForeignServerExtended'] = wasmExports['GetForeignServerExtended'])(a0, a1);
+var _GetForeignServerByName = Module['_GetForeignServerByName'] = (a0, a1) => (_GetForeignServerByName = Module['_GetForeignServerByName'] = wasmExports['GetForeignServerByName'])(a0, a1);
+var _GetUserMapping = Module['_GetUserMapping'] = (a0, a1) => (_GetUserMapping = Module['_GetUserMapping'] = wasmExports['GetUserMapping'])(a0, a1);
+var _GetUserNameFromId = Module['_GetUserNameFromId'] = (a0, a1) => (_GetUserNameFromId = Module['_GetUserNameFromId'] = wasmExports['GetUserNameFromId'])(a0, a1);
+var _GetForeignTable = Module['_GetForeignTable'] = (a0) => (_GetForeignTable = Module['_GetForeignTable'] = wasmExports['GetForeignTable'])(a0);
+var _GetForeignColumnOptions = Module['_GetForeignColumnOptions'] = (a0, a1) => (_GetForeignColumnOptions = Module['_GetForeignColumnOptions'] = wasmExports['GetForeignColumnOptions'])(a0, a1);
+var _initClosestMatch = Module['_initClosestMatch'] = (a0, a1, a2) => (_initClosestMatch = Module['_initClosestMatch'] = wasmExports['initClosestMatch'])(a0, a1, a2);
+var _updateClosestMatch = Module['_updateClosestMatch'] = (a0, a1) => (_updateClosestMatch = Module['_updateClosestMatch'] = wasmExports['updateClosestMatch'])(a0, a1);
+var _getClosestMatch = Module['_getClosestMatch'] = (a0) => (_getClosestMatch = Module['_getClosestMatch'] = wasmExports['getClosestMatch'])(a0);
+var _GetExistingLocalJoinPath = Module['_GetExistingLocalJoinPath'] = (a0) => (_GetExistingLocalJoinPath = Module['_GetExistingLocalJoinPath'] = wasmExports['GetExistingLocalJoinPath'])(a0);
+var _find_base_rel = Module['_find_base_rel'] = (a0, a1) => (_find_base_rel = Module['_find_base_rel'] = wasmExports['find_base_rel'])(a0, a1);
+var _bms_equal = Module['_bms_equal'] = (a0, a1) => (_bms_equal = Module['_bms_equal'] = wasmExports['bms_equal'])(a0, a1);
+var _list_copy = Module['_list_copy'] = (a0) => (_list_copy = Module['_list_copy'] = wasmExports['list_copy'])(a0);
+var _list_make3_impl = Module['_list_make3_impl'] = (a0, a1, a2, a3) => (_list_make3_impl = Module['_list_make3_impl'] = wasmExports['list_make3_impl'])(a0, a1, a2, a3);
+var _parser_errposition = Module['_parser_errposition'] = (a0, a1) => (_parser_errposition = Module['_parser_errposition'] = wasmExports['parser_errposition'])(a0, a1);
+var _get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = (a0, a1) => (_get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = wasmExports['get_fn_expr_argtype'])(a0, a1);
+var _fwrite = Module['_fwrite'] = (a0, a1, a2, a3) => (_fwrite = Module['_fwrite'] = wasmExports['fwrite'])(a0, a1, a2, a3);
+var _fputc = Module['_fputc'] = (a0, a1) => (_fputc = Module['_fputc'] = wasmExports['fputc'])(a0, a1);
+var _MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = (a0, a1) => (_MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = wasmExports['MemoryContextAllocHuge'])(a0, a1);
+var _hash_seq_term = Module['_hash_seq_term'] = (a0) => (_hash_seq_term = Module['_hash_seq_term'] = wasmExports['hash_seq_term'])(a0);
+var _PinPortal = Module['_PinPortal'] = (a0) => (_PinPortal = Module['_PinPortal'] = wasmExports['PinPortal'])(a0);
+var _UnpinPortal = Module['_UnpinPortal'] = (a0) => (_UnpinPortal = Module['_UnpinPortal'] = wasmExports['UnpinPortal'])(a0);
+var _strnlen = Module['_strnlen'] = (a0, a1) => (_strnlen = Module['_strnlen'] = wasmExports['strnlen'])(a0, a1);
+var _pchomp = Module['_pchomp'] = (a0) => (_pchomp = Module['_pchomp'] = wasmExports['pchomp'])(a0);
+var _dlsym = Module['_dlsym'] = (a0, a1) => (_dlsym = Module['_dlsym'] = wasmExports['dlsym'])(a0, a1);
+var _dlopen = Module['_dlopen'] = (a0, a1) => (_dlopen = Module['_dlopen'] = wasmExports['dlopen'])(a0, a1);
+var _dlerror = Module['_dlerror'] = () => (_dlerror = Module['_dlerror'] = wasmExports['dlerror'])();
+var _dlclose = Module['_dlclose'] = (a0) => (_dlclose = Module['_dlclose'] = wasmExports['dlclose'])(a0);
+var _find_rendezvous_variable = Module['_find_rendezvous_variable'] = (a0) => (_find_rendezvous_variable = Module['_find_rendezvous_variable'] = wasmExports['find_rendezvous_variable'])(a0);
+var _canonicalize_path = Module['_canonicalize_path'] = (a0) => (_canonicalize_path = Module['_canonicalize_path'] = wasmExports['canonicalize_path'])(a0);
+var _CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = (a0, a1, a2, a3, a4) => (_CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = wasmExports['CallerFInfoFunctionCall2'])(a0, a1, a2, a3, a4);
+var _FunctionCall0Coll = Module['_FunctionCall0Coll'] = (a0, a1) => (_FunctionCall0Coll = Module['_FunctionCall0Coll'] = wasmExports['FunctionCall0Coll'])(a0, a1);
+var _get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = (a0) => (_get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = wasmExports['get_fn_expr_rettype'])(a0);
+var _get_base_element_type = Module['_get_base_element_type'] = (a0) => (_get_base_element_type = Module['_get_base_element_type'] = wasmExports['get_base_element_type'])(a0);
+var _has_fn_opclass_options = Module['_has_fn_opclass_options'] = (a0) => (_has_fn_opclass_options = Module['_has_fn_opclass_options'] = wasmExports['has_fn_opclass_options'])(a0);
+var _CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = (a0, a1) => (_CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = wasmExports['CheckFunctionValidatorAccess'])(a0, a1);
+var _resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = (a0, a1, a2, a3) => (_resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = wasmExports['resolve_polymorphic_argtypes'])(a0, a1, a2, a3);
+var _get_func_arg_info = Module['_get_func_arg_info'] = (a0, a1, a2, a3) => (_get_func_arg_info = Module['_get_func_arg_info'] = wasmExports['get_func_arg_info'])(a0, a1, a2, a3);
+var _makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = (a0) => (_makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = wasmExports['makeRangeVarFromNameList'])(a0);
+var _pg_hmac_free = Module['_pg_hmac_free'] = (a0) => (_pg_hmac_free = Module['_pg_hmac_free'] = wasmExports['pg_hmac_free'])(a0);
+var _ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = (a0) => (_ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = wasmExports['ResourceOwnerReleaseAllPlanCacheRefs'])(a0);
+var _RegisterResourceReleaseCallback = Module['_RegisterResourceReleaseCallback'] = (a0, a1) => (_RegisterResourceReleaseCallback = Module['_RegisterResourceReleaseCallback'] = wasmExports['RegisterResourceReleaseCallback'])(a0, a1);
 var _namein = Module['_namein'] = (a0) => (_namein = Module['_namein'] = wasmExports['namein'])(a0);
 var _tidin = Module['_tidin'] = (a0) => (_tidin = Module['_tidin'] = wasmExports['tidin'])(a0);
 var _tidout = Module['_tidout'] = (a0) => (_tidout = Module['_tidout'] = wasmExports['tidout'])(a0);
 var _texteq = Module['_texteq'] = (a0) => (_texteq = Module['_texteq'] = wasmExports['texteq'])(a0);
-var _btint2cmp = Module['_btint2cmp'] = (a0) => (_btint2cmp = Module['_btint2cmp'] = wasmExports['btint2cmp'])(a0);
-var _btint4cmp = Module['_btint4cmp'] = (a0) => (_btint4cmp = Module['_btint4cmp'] = wasmExports['btint4cmp'])(a0);
 var _btfloat4cmp = Module['_btfloat4cmp'] = (a0) => (_btfloat4cmp = Module['_btfloat4cmp'] = wasmExports['btfloat4cmp'])(a0);
 var _btfloat8cmp = Module['_btfloat8cmp'] = (a0) => (_btfloat8cmp = Module['_btfloat8cmp'] = wasmExports['btfloat8cmp'])(a0);
-var _btoidcmp = Module['_btoidcmp'] = (a0) => (_btoidcmp = Module['_btoidcmp'] = wasmExports['btoidcmp'])(a0);
-var _btcharcmp = Module['_btcharcmp'] = (a0) => (_btcharcmp = Module['_btcharcmp'] = wasmExports['btcharcmp'])(a0);
 var _btnamecmp = Module['_btnamecmp'] = (a0) => (_btnamecmp = Module['_btnamecmp'] = wasmExports['btnamecmp'])(a0);
 var _bttextcmp = Module['_bttextcmp'] = (a0) => (_bttextcmp = Module['_bttextcmp'] = wasmExports['bttextcmp'])(a0);
 var _cash_cmp = Module['_cash_cmp'] = (a0) => (_cash_cmp = Module['_cash_cmp'] = wasmExports['cash_cmp'])(a0);
@@ -9615,7 +10242,6 @@ var _macaddr_le = Module['_macaddr_le'] = (a0) => (_macaddr_le = Module['_macadd
 var _macaddr_gt = Module['_macaddr_gt'] = (a0) => (_macaddr_gt = Module['_macaddr_gt'] = wasmExports['macaddr_gt'])(a0);
 var _macaddr_ge = Module['_macaddr_ge'] = (a0) => (_macaddr_ge = Module['_macaddr_ge'] = wasmExports['macaddr_ge'])(a0);
 var _macaddr_cmp = Module['_macaddr_cmp'] = (a0) => (_macaddr_cmp = Module['_macaddr_cmp'] = wasmExports['macaddr_cmp'])(a0);
-var _btint8cmp = Module['_btint8cmp'] = (a0) => (_btint8cmp = Module['_btint8cmp'] = wasmExports['btint8cmp'])(a0);
 var _inet_in = Module['_inet_in'] = (a0) => (_inet_in = Module['_inet_in'] = wasmExports['inet_in'])(a0);
 var _network_cmp = Module['_network_cmp'] = (a0) => (_network_cmp = Module['_network_cmp'] = wasmExports['network_cmp'])(a0);
 var _be_lo_unlink = Module['_be_lo_unlink'] = (a0) => (_be_lo_unlink = Module['_be_lo_unlink'] = wasmExports['be_lo_unlink'])(a0);
@@ -9638,7 +10264,6 @@ var _time_ge = Module['_time_ge'] = (a0) => (_time_ge = Module['_time_ge'] = was
 var _time_cmp = Module['_time_cmp'] = (a0) => (_time_cmp = Module['_time_cmp'] = wasmExports['time_cmp'])(a0);
 var _date_mi = Module['_date_mi'] = (a0) => (_date_mi = Module['_date_mi'] = wasmExports['date_mi'])(a0);
 var _time_eq = Module['_time_eq'] = (a0) => (_time_eq = Module['_time_eq'] = wasmExports['time_eq'])(a0);
-var _timestamptz_in = Module['_timestamptz_in'] = (a0) => (_timestamptz_in = Module['_timestamptz_in'] = wasmExports['timestamptz_in'])(a0);
 var _timestamp_eq = Module['_timestamp_eq'] = (a0) => (_timestamp_eq = Module['_timestamp_eq'] = wasmExports['timestamp_eq'])(a0);
 var _timestamp_lt = Module['_timestamp_lt'] = (a0) => (_timestamp_lt = Module['_timestamp_lt'] = wasmExports['timestamp_lt'])(a0);
 var _timestamp_le = Module['_timestamp_le'] = (a0) => (_timestamp_le = Module['_timestamp_le'] = wasmExports['timestamp_le'])(a0);
@@ -9666,14 +10291,11 @@ var _bitle = Module['_bitle'] = (a0) => (_bitle = Module['_bitle'] = wasmExports
 var _bitlt = Module['_bitlt'] = (a0) => (_bitlt = Module['_bitlt'] = wasmExports['bitlt'])(a0);
 var _bitcmp = Module['_bitcmp'] = (a0) => (_bitcmp = Module['_bitcmp'] = wasmExports['bitcmp'])(a0);
 var _time_mi_time = Module['_time_mi_time'] = (a0) => (_time_mi_time = Module['_time_mi_time'] = wasmExports['time_mi_time'])(a0);
-var _btboolcmp = Module['_btboolcmp'] = (a0) => (_btboolcmp = Module['_btboolcmp'] = wasmExports['btboolcmp'])(a0);
-var _numeric_in = Module['_numeric_in'] = (a0) => (_numeric_in = Module['_numeric_in'] = wasmExports['numeric_in'])(a0);
 var _numeric_eq = Module['_numeric_eq'] = (a0) => (_numeric_eq = Module['_numeric_eq'] = wasmExports['numeric_eq'])(a0);
 var _numeric_gt = Module['_numeric_gt'] = (a0) => (_numeric_gt = Module['_numeric_gt'] = wasmExports['numeric_gt'])(a0);
 var _numeric_ge = Module['_numeric_ge'] = (a0) => (_numeric_ge = Module['_numeric_ge'] = wasmExports['numeric_ge'])(a0);
 var _numeric_lt = Module['_numeric_lt'] = (a0) => (_numeric_lt = Module['_numeric_lt'] = wasmExports['numeric_lt'])(a0);
 var _numeric_le = Module['_numeric_le'] = (a0) => (_numeric_le = Module['_numeric_le'] = wasmExports['numeric_le'])(a0);
-var _numeric_sub = Module['_numeric_sub'] = (a0) => (_numeric_sub = Module['_numeric_sub'] = wasmExports['numeric_sub'])(a0);
 var _numeric_div = Module['_numeric_div'] = (a0) => (_numeric_div = Module['_numeric_div'] = wasmExports['numeric_div'])(a0);
 var _numeric_float4 = Module['_numeric_float4'] = (a0) => (_numeric_float4 = Module['_numeric_float4'] = wasmExports['numeric_float4'])(a0);
 var _numeric_cmp = Module['_numeric_cmp'] = (a0) => (_numeric_cmp = Module['_numeric_cmp'] = wasmExports['numeric_cmp'])(a0);
@@ -9702,286 +10324,100 @@ var _macaddr8_le = Module['_macaddr8_le'] = (a0) => (_macaddr8_le = Module['_mac
 var _macaddr8_gt = Module['_macaddr8_gt'] = (a0) => (_macaddr8_gt = Module['_macaddr8_gt'] = wasmExports['macaddr8_gt'])(a0);
 var _macaddr8_ge = Module['_macaddr8_ge'] = (a0) => (_macaddr8_ge = Module['_macaddr8_ge'] = wasmExports['macaddr8_ge'])(a0);
 var _macaddr8_cmp = Module['_macaddr8_cmp'] = (a0) => (_macaddr8_cmp = Module['_macaddr8_cmp'] = wasmExports['macaddr8_cmp'])(a0);
-var _ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = (a0, a1) => (_ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = wasmExports['ResourceOwnerCreate'])(a0, a1);
-var _ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = (a0) => (_ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = wasmExports['ReleaseCatCacheList'])(a0);
-var _ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = (a0, a1) => (_ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = wasmExports['ReleaseCachedPlan'])(a0, a1);
-var _DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = (a0) => (_DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = wasmExports['DecrTupleDescRefCount'])(a0);
-var _ReleaseBuffer = Module['_ReleaseBuffer'] = (a0) => (_ReleaseBuffer = Module['_ReleaseBuffer'] = wasmExports['ReleaseBuffer'])(a0);
-var _RelationClose = Module['_RelationClose'] = (a0) => (_RelationClose = Module['_RelationClose'] = wasmExports['RelationClose'])(a0);
-var _dsm_segment_handle = Module['_dsm_segment_handle'] = (a0) => (_dsm_segment_handle = Module['_dsm_segment_handle'] = wasmExports['dsm_segment_handle'])(a0);
-var _dsm_detach = Module['_dsm_detach'] = (a0) => (_dsm_detach = Module['_dsm_detach'] = wasmExports['dsm_detach'])(a0);
-var _pg_hmac_free = Module['_pg_hmac_free'] = (a0) => (_pg_hmac_free = Module['_pg_hmac_free'] = wasmExports['pg_hmac_free'])(a0);
-var _ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = (a0) => (_ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = wasmExports['ResourceOwnerReleaseAllPlanCacheRefs'])(a0);
-var _ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = (a0) => (_ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = wasmExports['ResourceOwnerDelete'])(a0);
-var _RegisterResourceReleaseCallback = Module['_RegisterResourceReleaseCallback'] = (a0, a1) => (_RegisterResourceReleaseCallback = Module['_RegisterResourceReleaseCallback'] = wasmExports['RegisterResourceReleaseCallback'])(a0, a1);
-var _on_shmem_exit = Module['_on_shmem_exit'] = (a0, a1) => (_on_shmem_exit = Module['_on_shmem_exit'] = wasmExports['on_shmem_exit'])(a0, a1);
-var _hash_bytes = Module['_hash_bytes'] = (a0, a1) => (_hash_bytes = Module['_hash_bytes'] = wasmExports['hash_bytes'])(a0, a1);
-var _CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = (a0, a1, a2) => (_CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = wasmExports['CacheRegisterSyscacheCallback'])(a0, a1, a2);
-var _hash_seq_init = Module['_hash_seq_init'] = (a0, a1) => (_hash_seq_init = Module['_hash_seq_init'] = wasmExports['hash_seq_init'])(a0, a1);
-var _hash_seq_search = Module['_hash_seq_search'] = (a0) => (_hash_seq_search = Module['_hash_seq_search'] = wasmExports['hash_seq_search'])(a0);
-var _XLogBeginInsert = Module['_XLogBeginInsert'] = () => (_XLogBeginInsert = Module['_XLogBeginInsert'] = wasmExports['XLogBeginInsert'])();
-var _XLogRegisterData = Module['_XLogRegisterData'] = (a0, a1) => (_XLogRegisterData = Module['_XLogRegisterData'] = wasmExports['XLogRegisterData'])(a0, a1);
-var _XLogInsert = Module['_XLogInsert'] = (a0, a1) => (_XLogInsert = Module['_XLogInsert'] = wasmExports['XLogInsert'])(a0, a1);
-var _SearchSysCache1 = Module['_SearchSysCache1'] = (a0, a1) => (_SearchSysCache1 = Module['_SearchSysCache1'] = wasmExports['SearchSysCache1'])(a0, a1);
-var _CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = (a0, a1) => (_CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = wasmExports['CacheRegisterRelcacheCallback'])(a0, a1);
-var _list_member_oid = Module['_list_member_oid'] = (a0, a1) => (_list_member_oid = Module['_list_member_oid'] = wasmExports['list_member_oid'])(a0, a1);
-var _copyObjectImpl = Module['_copyObjectImpl'] = (a0) => (_copyObjectImpl = Module['_copyObjectImpl'] = wasmExports['copyObjectImpl'])(a0);
-var _MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = (a0, a1) => (_MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = wasmExports['MemoryContextSetIdentifier'])(a0, a1);
-var _MemoryContextSetParent = Module['_MemoryContextSetParent'] = (a0, a1) => (_MemoryContextSetParent = Module['_MemoryContextSetParent'] = wasmExports['MemoryContextSetParent'])(a0, a1);
-var _MemoryContextGetParent = Module['_MemoryContextGetParent'] = (a0) => (_MemoryContextGetParent = Module['_MemoryContextGetParent'] = wasmExports['MemoryContextGetParent'])(a0);
-var _CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = (a0) => (_CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = wasmExports['CreateTupleDescCopy'])(a0);
-var _MemoryContextStrdup = Module['_MemoryContextStrdup'] = (a0, a1) => (_MemoryContextStrdup = Module['_MemoryContextStrdup'] = wasmExports['MemoryContextStrdup'])(a0, a1);
-var _CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = (a0, a1, a2) => (_CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = wasmExports['CachedPlanAllowsSimpleValidityCheck'])(a0, a1, a2);
-var _CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = (a0, a1, a2) => (_CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = wasmExports['CachedPlanIsSimplyValid'])(a0, a1, a2);
-var _GetCachedExpression = Module['_GetCachedExpression'] = (a0) => (_GetCachedExpression = Module['_GetCachedExpression'] = wasmExports['GetCachedExpression'])(a0);
-var _FreeCachedExpression = Module['_FreeCachedExpression'] = (a0) => (_FreeCachedExpression = Module['_FreeCachedExpression'] = wasmExports['FreeCachedExpression'])(a0);
-var _OpenTransientFile = Module['_OpenTransientFile'] = (a0, a1) => (_OpenTransientFile = Module['_OpenTransientFile'] = wasmExports['OpenTransientFile'])(a0, a1);
-var _read = Module['_read'] = (a0, a1, a2) => (_read = Module['_read'] = wasmExports['read'])(a0, a1, a2);
-var _CloseTransientFile = Module['_CloseTransientFile'] = (a0) => (_CloseTransientFile = Module['_CloseTransientFile'] = wasmExports['CloseTransientFile'])(a0);
-var _write = Module['_write'] = (a0, a1, a2) => (_write = Module['_write'] = wasmExports['write'])(a0, a1, a2);
-var _fd_durable_rename = Module['_fd_durable_rename'] = (a0, a1, a2) => (_fd_durable_rename = Module['_fd_durable_rename'] = wasmExports['fd_durable_rename'])(a0, a1, a2);
-var _GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = (a0, a1, a2, a3, a4) => (_GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = wasmExports['GetSysCacheHashValue'])(a0, a1, a2, a3, a4);
-var _get_opfamily_member = Module['_get_opfamily_member'] = (a0, a1, a2, a3) => (_get_opfamily_member = Module['_get_opfamily_member'] = wasmExports['get_opfamily_member'])(a0, a1, a2, a3);
-var _get_base_element_type = Module['_get_base_element_type'] = (a0) => (_get_base_element_type = Module['_get_base_element_type'] = wasmExports['get_base_element_type'])(a0);
-var _relation_open = Module['_relation_open'] = (a0, a1) => (_relation_open = Module['_relation_open'] = wasmExports['relation_open'])(a0, a1);
-var _relation_close = Module['_relation_close'] = (a0, a1) => (_relation_close = Module['_relation_close'] = wasmExports['relation_close'])(a0, a1);
-var _MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = (a0, a1) => (_MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = wasmExports['MemoryContextAllocZeroAligned'])(a0, a1);
-var _pg_qsort = Module['_pg_qsort'] = (a0, a1, a2, a3) => (_pg_qsort = Module['_pg_qsort'] = wasmExports['pg_qsort'])(a0, a1, a2, a3);
-var _ExecInitExpr = Module['_ExecInitExpr'] = (a0, a1) => (_ExecInitExpr = Module['_ExecInitExpr'] = wasmExports['ExecInitExpr'])(a0, a1);
-var _lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = (a0, a1) => (_lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = wasmExports['lookup_rowtype_tupdesc'])(a0, a1);
-var _format_type_be = Module['_format_type_be'] = (a0) => (_format_type_be = Module['_format_type_be'] = wasmExports['format_type_be'])(a0);
-var _CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = (a0) => (_CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = wasmExports['CreateTupleDescCopyConstr'])(a0);
-var _lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = (a0, a1, a2) => (_lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = wasmExports['lookup_rowtype_tupdesc_domain'])(a0, a1, a2);
-var ___wasm_setjmp_test = Module['___wasm_setjmp_test'] = (a0, a1) => (___wasm_setjmp_test = Module['___wasm_setjmp_test'] = wasmExports['__wasm_setjmp_test'])(a0, a1);
-var ___wasm_setjmp = Module['___wasm_setjmp'] = (a0, a1, a2) => (___wasm_setjmp = Module['___wasm_setjmp'] = wasmExports['__wasm_setjmp'])(a0, a1, a2);
-var _pg_re_throw = Module['_pg_re_throw'] = () => (_pg_re_throw = Module['_pg_re_throw'] = wasmExports['pg_re_throw'])();
-var _emscripten_longjmp = Module['_emscripten_longjmp'] = (a0, a1) => (_emscripten_longjmp = Module['_emscripten_longjmp'] = wasmExports['emscripten_longjmp'])(a0, a1);
-var _bsearch = Module['_bsearch'] = (a0, a1, a2, a3, a4) => (_bsearch = Module['_bsearch'] = wasmExports['bsearch'])(a0, a1, a2, a3, a4);
-var _bms_make_singleton = Module['_bms_make_singleton'] = (a0) => (_bms_make_singleton = Module['_bms_make_singleton'] = wasmExports['bms_make_singleton'])(a0);
-var _SearchSysCacheExists = Module['_SearchSysCacheExists'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheExists = Module['_SearchSysCacheExists'] = wasmExports['SearchSysCacheExists'])(a0, a1, a2, a3, a4);
-var _GetSysCacheOid = Module['_GetSysCacheOid'] = (a0, a1, a2, a3, a4, a5) => (_GetSysCacheOid = Module['_GetSysCacheOid'] = wasmExports['GetSysCacheOid'])(a0, a1, a2, a3, a4, a5);
-var _SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = (a0, a1) => (_SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = wasmExports['SearchSysCacheAttName'])(a0, a1);
-var _get_rel_name = Module['_get_rel_name'] = (a0) => (_get_rel_name = Module['_get_rel_name'] = wasmExports['get_rel_name'])(a0);
-var _SearchSysCacheList = Module['_SearchSysCacheList'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheList = Module['_SearchSysCacheList'] = wasmExports['SearchSysCacheList'])(a0, a1, a2, a3, a4);
-var _RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = (a0, a1) => (_RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = wasmExports['RelidByRelfilenumber'])(a0, a1);
-var _lappend_oid = Module['_lappend_oid'] = (a0, a1) => (_lappend_oid = Module['_lappend_oid'] = wasmExports['lappend_oid'])(a0, a1);
-var _get_attname = Module['_get_attname'] = (a0, a1, a2) => (_get_attname = Module['_get_attname'] = wasmExports['get_attname'])(a0, a1, a2);
-var _get_func_namespace = Module['_get_func_namespace'] = (a0) => (_get_func_namespace = Module['_get_func_namespace'] = wasmExports['get_func_namespace'])(a0);
-var _get_rel_namespace = Module['_get_rel_namespace'] = (a0) => (_get_rel_namespace = Module['_get_rel_namespace'] = wasmExports['get_rel_namespace'])(a0);
-var _get_rel_relkind = Module['_get_rel_relkind'] = (a0) => (_get_rel_relkind = Module['_get_rel_relkind'] = wasmExports['get_rel_relkind'])(a0);
-var _get_rel_relispartition = Module['_get_rel_relispartition'] = (a0) => (_get_rel_relispartition = Module['_get_rel_relispartition'] = wasmExports['get_rel_relispartition'])(a0);
-var _get_typtype = Module['_get_typtype'] = (a0) => (_get_typtype = Module['_get_typtype'] = wasmExports['get_typtype'])(a0);
-var _type_is_rowtype = Module['_type_is_rowtype'] = (a0) => (_type_is_rowtype = Module['_type_is_rowtype'] = wasmExports['type_is_rowtype'])(a0);
-var _get_element_type = Module['_get_element_type'] = (a0) => (_get_element_type = Module['_get_element_type'] = wasmExports['get_element_type'])(a0);
-var _getTypeInputInfo = Module['_getTypeInputInfo'] = (a0, a1, a2) => (_getTypeInputInfo = Module['_getTypeInputInfo'] = wasmExports['getTypeInputInfo'])(a0, a1, a2);
-var _get_typcollation = Module['_get_typcollation'] = (a0) => (_get_typcollation = Module['_get_typcollation'] = wasmExports['get_typcollation'])(a0);
-var _get_typsubscript = Module['_get_typsubscript'] = (a0, a1) => (_get_typsubscript = Module['_get_typsubscript'] = wasmExports['get_typsubscript'])(a0, a1);
-var _get_attstatsslot = Module['_get_attstatsslot'] = (a0, a1, a2, a3, a4) => (_get_attstatsslot = Module['_get_attstatsslot'] = wasmExports['get_attstatsslot'])(a0, a1, a2, a3, a4);
-var _pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = (a0) => (_pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = wasmExports['pg_detoast_datum_copy'])(a0);
-var _free_attstatsslot = Module['_free_attstatsslot'] = (a0) => (_free_attstatsslot = Module['_free_attstatsslot'] = wasmExports['free_attstatsslot'])(a0);
-var _get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = (a0) => (_get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = wasmExports['get_namespace_name_or_temp'])(a0);
-var _check_stack_depth = Module['_check_stack_depth'] = () => (_check_stack_depth = Module['_check_stack_depth'] = wasmExports['check_stack_depth'])();
-var _list_concat = Module['_list_concat'] = (a0, a1) => (_list_concat = Module['_list_concat'] = wasmExports['list_concat'])(a0, a1);
-var _lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = (a0) => (_lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = wasmExports['lookup_ts_dictionary_cache'])(a0);
-var _index_open = Module['_index_open'] = (a0, a1) => (_index_open = Module['_index_open'] = wasmExports['index_open'])(a0, a1);
-var _systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = (a0, a1, a2, a3, a4) => (_systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = wasmExports['systable_beginscan_ordered'])(a0, a1, a2, a3, a4);
-var _systable_getnext_ordered = Module['_systable_getnext_ordered'] = (a0, a1) => (_systable_getnext_ordered = Module['_systable_getnext_ordered'] = wasmExports['systable_getnext_ordered'])(a0, a1);
-var _systable_endscan_ordered = Module['_systable_endscan_ordered'] = (a0) => (_systable_endscan_ordered = Module['_systable_endscan_ordered'] = wasmExports['systable_endscan_ordered'])(a0);
-var _index_close = Module['_index_close'] = (a0, a1) => (_index_close = Module['_index_close'] = wasmExports['index_close'])(a0, a1);
-var _quote_qualified_identifier = Module['_quote_qualified_identifier'] = (a0, a1) => (_quote_qualified_identifier = Module['_quote_qualified_identifier'] = wasmExports['quote_qualified_identifier'])(a0, a1);
-var _CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = (a0) => (_CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = wasmExports['CreateTemplateTupleDesc'])(a0);
-var _RelationIdGetRelation = Module['_RelationIdGetRelation'] = (a0) => (_RelationIdGetRelation = Module['_RelationIdGetRelation'] = wasmExports['RelationIdGetRelation'])(a0);
-var _MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = (a0) => (_MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = wasmExports['MemoryContextDeleteChildren'])(a0);
-var _GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = () => (_GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = wasmExports['GetCurrentSubTransactionId'])();
-var _list_free_deep = Module['_list_free_deep'] = (a0) => (_list_free_deep = Module['_list_free_deep'] = wasmExports['list_free_deep'])(a0);
-var _smgropen = Module['_smgropen'] = (a0, a1) => (_smgropen = Module['_smgropen'] = wasmExports['smgropen'])(a0, a1);
-var _CommandCounterIncrement = Module['_CommandCounterIncrement'] = () => (_CommandCounterIncrement = Module['_CommandCounterIncrement'] = wasmExports['CommandCounterIncrement'])();
-var _hash_seq_term = Module['_hash_seq_term'] = (a0) => (_hash_seq_term = Module['_hash_seq_term'] = wasmExports['hash_seq_term'])(a0);
-var _RelationGetIndexList = Module['_RelationGetIndexList'] = (a0) => (_RelationGetIndexList = Module['_RelationGetIndexList'] = wasmExports['RelationGetIndexList'])(a0);
-var _list_copy = Module['_list_copy'] = (a0) => (_list_copy = Module['_list_copy'] = wasmExports['list_copy'])(a0);
-var _list_sort = Module['_list_sort'] = (a0, a1) => (_list_sort = Module['_list_sort'] = wasmExports['list_sort'])(a0, a1);
-var _is_publishable_relation = Module['_is_publishable_relation'] = (a0) => (_is_publishable_relation = Module['_is_publishable_relation'] = wasmExports['is_publishable_relation'])(a0);
-var _GetRelationPublications = Module['_GetRelationPublications'] = (a0) => (_GetRelationPublications = Module['_GetRelationPublications'] = wasmExports['GetRelationPublications'])(a0);
-var _GetSchemaPublications = Module['_GetSchemaPublications'] = (a0) => (_GetSchemaPublications = Module['_GetSchemaPublications'] = wasmExports['GetSchemaPublications'])(a0);
-var _get_partition_ancestors = Module['_get_partition_ancestors'] = (a0) => (_get_partition_ancestors = Module['_get_partition_ancestors'] = wasmExports['get_partition_ancestors'])(a0);
-var _index_getprocid = Module['_index_getprocid'] = (a0, a1, a2) => (_index_getprocid = Module['_index_getprocid'] = wasmExports['index_getprocid'])(a0, a1, a2);
-var _err_generic_string = Module['_err_generic_string'] = (a0, a1) => (_err_generic_string = Module['_err_generic_string'] = wasmExports['err_generic_string'])(a0, a1);
-var _ItemPointerEquals = Module['_ItemPointerEquals'] = (a0, a1) => (_ItemPointerEquals = Module['_ItemPointerEquals'] = wasmExports['ItemPointerEquals'])(a0, a1);
-var _memcmp = Module['_memcmp'] = (a0, a1, a2) => (_memcmp = Module['_memcmp'] = wasmExports['memcmp'])(a0, a1, a2);
-var _DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = (a0, a1, a2) => (_DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = wasmExports['DirectFunctionCall1Coll'])(a0, a1, a2);
-var _DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = (a0, a1, a2, a3) => (_DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = wasmExports['DirectFunctionCall2Coll'])(a0, a1, a2, a3);
-var _get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = (a0, a1, a2) => (_get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = wasmExports['get_tablespace_page_costs'])(a0, a1, a2);
-var _deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = (a0, a1, a2, a3, a4) => (_deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = wasmExports['deconstruct_array_builtin'])(a0, a1, a2, a3, a4);
-var _GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = () => (_GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = wasmExports['GetDatabaseEncoding'])();
-var _list_delete_cell = Module['_list_delete_cell'] = (a0, a1) => (_list_delete_cell = Module['_list_delete_cell'] = wasmExports['list_delete_cell'])(a0, a1);
-var _GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = () => (_GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = wasmExports['GetDatabaseEncodingName'])();
-var _pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = (a0, a1, a2, a3) => (_pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = wasmExports['pg_do_encoding_conversion'])(a0, a1, a2, a3);
-var _report_invalid_encoding = Module['_report_invalid_encoding'] = (a0, a1, a2) => (_report_invalid_encoding = Module['_report_invalid_encoding'] = wasmExports['report_invalid_encoding'])(a0, a1, a2);
-var _pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = (a0) => (_pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = wasmExports['pg_encoding_to_char_private'])(a0);
-var _MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = (a0, a1) => (_MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = wasmExports['MemoryContextAllocHuge'])(a0, a1);
-var _DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = (a0, a1, a2, a3, a4) => (_DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = wasmExports['DirectFunctionCall3Coll'])(a0, a1, a2, a3, a4);
-var _pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = (a0) => (_pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = wasmExports['pg_char_to_encoding_private'])(a0);
-var _pg_encoding_max_length = Module['_pg_encoding_max_length'] = (a0) => (_pg_encoding_max_length = Module['_pg_encoding_max_length'] = wasmExports['pg_encoding_max_length'])(a0);
-var _pg_any_to_server = Module['_pg_any_to_server'] = (a0, a1, a2) => (_pg_any_to_server = Module['_pg_any_to_server'] = wasmExports['pg_any_to_server'])(a0, a1, a2);
-var _pg_server_to_any = Module['_pg_server_to_any'] = (a0, a1, a2) => (_pg_server_to_any = Module['_pg_server_to_any'] = wasmExports['pg_server_to_any'])(a0, a1, a2);
-var _pg_utf_mblen = Module['_pg_utf_mblen'] = (a0) => (_pg_utf_mblen = Module['_pg_utf_mblen'] = wasmExports['pg_utf_mblen'])(a0);
-var _pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = (a0, a1, a2) => (_pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = wasmExports['pg_mb2wchar_with_len'])(a0, a1, a2);
-var _pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = (a0, a1, a2) => (_pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = wasmExports['pg_wchar2mb_with_len'])(a0, a1, a2);
-var _pg_mblen = Module['_pg_mblen'] = (a0) => (_pg_mblen = Module['_pg_mblen'] = wasmExports['pg_mblen'])(a0);
-var _pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = () => (_pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = wasmExports['pg_database_encoding_max_length'])();
-var _pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = (a0, a1) => (_pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = wasmExports['pg_mbstrlen_with_len'])(a0, a1);
-var _pg_encoding_mblen = Module['_pg_encoding_mblen'] = (a0, a1) => (_pg_encoding_mblen = Module['_pg_encoding_mblen'] = wasmExports['pg_encoding_mblen'])(a0, a1);
-var _pg_sprintf = Module['_pg_sprintf'] = (a0, a1, a2) => (_pg_sprintf = Module['_pg_sprintf'] = wasmExports['pg_sprintf'])(a0, a1, a2);
-var _check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = (a0, a1, a2, a3, a4) => (_check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = wasmExports['check_encoding_conversion_args'])(a0, a1, a2, a3, a4);
-var _report_untranslatable_char = Module['_report_untranslatable_char'] = (a0, a1, a2, a3) => (_report_untranslatable_char = Module['_report_untranslatable_char'] = wasmExports['report_untranslatable_char'])(a0, a1, a2, a3);
 var _local2local = Module['_local2local'] = (a0, a1, a2, a3, a4, a5, a6) => (_local2local = Module['_local2local'] = wasmExports['local2local'])(a0, a1, a2, a3, a4, a5, a6);
+var _report_invalid_encoding = Module['_report_invalid_encoding'] = (a0, a1, a2) => (_report_invalid_encoding = Module['_report_invalid_encoding'] = wasmExports['report_invalid_encoding'])(a0, a1, a2);
+var _report_untranslatable_char = Module['_report_untranslatable_char'] = (a0, a1, a2, a3) => (_report_untranslatable_char = Module['_report_untranslatable_char'] = wasmExports['report_untranslatable_char'])(a0, a1, a2, a3);
 var _latin2mic = Module['_latin2mic'] = (a0, a1, a2, a3, a4, a5) => (_latin2mic = Module['_latin2mic'] = wasmExports['latin2mic'])(a0, a1, a2, a3, a4, a5);
 var _mic2latin = Module['_mic2latin'] = (a0, a1, a2, a3, a4, a5) => (_mic2latin = Module['_mic2latin'] = wasmExports['mic2latin'])(a0, a1, a2, a3, a4, a5);
 var _latin2mic_with_table = Module['_latin2mic_with_table'] = (a0, a1, a2, a3, a4, a5, a6) => (_latin2mic_with_table = Module['_latin2mic_with_table'] = wasmExports['latin2mic_with_table'])(a0, a1, a2, a3, a4, a5, a6);
 var _mic2latin_with_table = Module['_mic2latin_with_table'] = (a0, a1, a2, a3, a4, a5, a6) => (_mic2latin_with_table = Module['_mic2latin_with_table'] = wasmExports['mic2latin_with_table'])(a0, a1, a2, a3, a4, a5, a6);
+var _pg_utf_mblen = Module['_pg_utf_mblen'] = (a0) => (_pg_utf_mblen = Module['_pg_utf_mblen'] = wasmExports['pg_utf_mblen'])(a0);
 var _pg_encoding_verifymbchar = Module['_pg_encoding_verifymbchar'] = (a0, a1, a2) => (_pg_encoding_verifymbchar = Module['_pg_encoding_verifymbchar'] = wasmExports['pg_encoding_verifymbchar'])(a0, a1, a2);
-var _appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = (a0, a1, a2) => (_appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = wasmExports['appendStringInfoStringQuoted'])(a0, a1, a2);
-var _pnstrdup = Module['_pnstrdup'] = (a0, a1) => (_pnstrdup = Module['_pnstrdup'] = wasmExports['pnstrdup'])(a0, a1);
-var _pqsignal = Module['_pqsignal'] = (a0, a1) => (_pqsignal = Module['_pqsignal'] = wasmExports['pqsignal'])(a0, a1);
-var _fcntl = Module['_fcntl'] = (a0, a1, a2) => (_fcntl = Module['_fcntl'] = wasmExports['fcntl'])(a0, a1, a2);
-var _stat = Module['_stat'] = (a0, a1) => (_stat = Module['_stat'] = wasmExports['stat'])(a0, a1);
-var _strtol = Module['_strtol'] = (a0, a1, a2) => (_strtol = Module['_strtol'] = wasmExports['strtol'])(a0, a1, a2);
-var _fscanf = Module['_fscanf'] = (a0, a1, a2) => (_fscanf = Module['_fscanf'] = wasmExports['fscanf'])(a0, a1, a2);
-var _errhint = Module['_errhint'] = (a0, a1) => (_errhint = Module['_errhint'] = wasmExports['errhint'])(a0, a1);
-var _GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = (a0, a1) => (_GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = wasmExports['GetUserIdAndSecContext'])(a0, a1);
-var _SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = (a0, a1) => (_SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = wasmExports['SetUserIdAndSecContext'])(a0, a1);
-var _superuser_arg = Module['_superuser_arg'] = (a0) => (_superuser_arg = Module['_superuser_arg'] = wasmExports['superuser_arg'])(a0);
-var _SetConfigOption = Module['_SetConfigOption'] = (a0, a1, a2, a3) => (_SetConfigOption = Module['_SetConfigOption'] = wasmExports['SetConfigOption'])(a0, a1, a2, a3);
-var _psprintf = Module['_psprintf'] = (a0, a1) => (_psprintf = Module['_psprintf'] = wasmExports['psprintf'])(a0, a1);
-var _GetUserNameFromId = Module['_GetUserNameFromId'] = (a0, a1) => (_GetUserNameFromId = Module['_GetUserNameFromId'] = wasmExports['GetUserNameFromId'])(a0, a1);
-var _getpid = Module['_getpid'] = () => (_getpid = Module['_getpid'] = wasmExports['getpid'])();
-var _atoi = Module['_atoi'] = (a0) => (_atoi = Module['_atoi'] = wasmExports['atoi'])(a0);
-var _open = Module['_open'] = (a0, a1, a2) => (_open = Module['_open'] = wasmExports['open'])(a0, a1, a2);
-var _close = Module['_close'] = (a0) => (_close = Module['_close'] = wasmExports['close'])(a0);
-var _strlcat = Module['_strlcat'] = (a0, a1, a2) => (_strlcat = Module['_strlcat'] = wasmExports['strlcat'])(a0, a1, a2);
-var _pwrite = Module['_pwrite'] = (a0, a1, a2, a3) => (_pwrite = Module['_pwrite'] = wasmExports['pwrite'])(a0, a1, a2, a3);
-var _pg_bindtextdomain = Module['_pg_bindtextdomain'] = (a0) => (_pg_bindtextdomain = Module['_pg_bindtextdomain'] = wasmExports['pg_bindtextdomain'])(a0);
-var _resetStringInfo = Module['_resetStringInfo'] = (a0) => (_resetStringInfo = Module['_resetStringInfo'] = wasmExports['resetStringInfo'])(a0);
-var _before_shmem_exit = Module['_before_shmem_exit'] = (a0, a1) => (_before_shmem_exit = Module['_before_shmem_exit'] = wasmExports['before_shmem_exit'])(a0, a1);
-var _StartTransactionCommand = Module['_StartTransactionCommand'] = () => (_StartTransactionCommand = Module['_StartTransactionCommand'] = wasmExports['StartTransactionCommand'])();
-var _superuser = Module['_superuser'] = () => (_superuser = Module['_superuser'] = wasmExports['superuser'])();
-var _heap_getnext = Module['_heap_getnext'] = (a0, a1) => (_heap_getnext = Module['_heap_getnext'] = wasmExports['heap_getnext'])(a0, a1);
-var _has_privs_of_role = Module['_has_privs_of_role'] = (a0, a1) => (_has_privs_of_role = Module['_has_privs_of_role'] = wasmExports['has_privs_of_role'])(a0, a1);
-var _pg_usleep = Module['_pg_usleep'] = (a0) => (_pg_usleep = Module['_pg_usleep'] = wasmExports['pg_usleep'])(a0);
-var _strlcpy = Module['_strlcpy'] = (a0, a1, a2) => (_strlcpy = Module['_strlcpy'] = wasmExports['strlcpy'])(a0, a1, a2);
-var _access = Module['_access'] = (a0, a1) => (_access = Module['_access'] = wasmExports['access'])(a0, a1);
-var _object_aclcheck = Module['_object_aclcheck'] = (a0, a1, a2, a3) => (_object_aclcheck = Module['_object_aclcheck'] = wasmExports['object_aclcheck'])(a0, a1, a2, a3);
+var _GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = () => (_GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = wasmExports['GetDatabaseEncodingName'])();
+var _pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = (a0, a1, a2, a3) => (_pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = wasmExports['pg_do_encoding_conversion'])(a0, a1, a2, a3);
+var _pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = (a0) => (_pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = wasmExports['pg_encoding_to_char_private'])(a0);
+var _pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = (a0) => (_pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = wasmExports['pg_char_to_encoding_private'])(a0);
+var _pg_encoding_max_length = Module['_pg_encoding_max_length'] = (a0) => (_pg_encoding_max_length = Module['_pg_encoding_max_length'] = wasmExports['pg_encoding_max_length'])(a0);
+var _pg_server_to_any = Module['_pg_server_to_any'] = (a0, a1, a2) => (_pg_server_to_any = Module['_pg_server_to_any'] = wasmExports['pg_server_to_any'])(a0, a1, a2);
+var _pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = (a0, a1, a2) => (_pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = wasmExports['pg_wchar2mb_with_len'])(a0, a1, a2);
+var _pg_encoding_mblen = Module['_pg_encoding_mblen'] = (a0, a1) => (_pg_encoding_mblen = Module['_pg_encoding_mblen'] = wasmExports['pg_encoding_mblen'])(a0, a1);
+var _check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = (a0, a1, a2, a3, a4) => (_check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = wasmExports['check_encoding_conversion_args'])(a0, a1, a2, a3, a4);
+var _set_config_option = Module['_set_config_option'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_set_config_option = Module['_set_config_option'] = wasmExports['set_config_option'])(a0, a1, a2, a3, a4, a5, a6, a7);
 var _quote_identifier = Module['_quote_identifier'] = (a0) => (_quote_identifier = Module['_quote_identifier'] = wasmExports['quote_identifier'])(a0);
-var _CommitTransactionCommand = Module['_CommitTransactionCommand'] = () => (_CommitTransactionCommand = Module['_CommitTransactionCommand'] = wasmExports['CommitTransactionCommand'])();
-var _NewGUCNestLevel = Module['_NewGUCNestLevel'] = () => (_NewGUCNestLevel = Module['_NewGUCNestLevel'] = wasmExports['NewGUCNestLevel'])();
-var _AtEOXact_GUC = Module['_AtEOXact_GUC'] = (a0, a1) => (_AtEOXact_GUC = Module['_AtEOXact_GUC'] = wasmExports['AtEOXact_GUC'])(a0, a1);
-var _get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = (a0, a1) => (_get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = wasmExports['get_fn_expr_argtype'])(a0, a1);
-var _ArrayGetNItems = Module['_ArrayGetNItems'] = (a0, a1) => (_ArrayGetNItems = Module['_ArrayGetNItems'] = wasmExports['ArrayGetNItems'])(a0, a1);
-var _initArrayResult = Module['_initArrayResult'] = (a0, a1, a2) => (_initArrayResult = Module['_initArrayResult'] = wasmExports['initArrayResult'])(a0, a1, a2);
-var _pq_begintypsend = Module['_pq_begintypsend'] = (a0) => (_pq_begintypsend = Module['_pq_begintypsend'] = wasmExports['pq_begintypsend'])(a0);
-var _enlargeStringInfo = Module['_enlargeStringInfo'] = (a0, a1) => (_enlargeStringInfo = Module['_enlargeStringInfo'] = wasmExports['enlargeStringInfo'])(a0, a1);
-var _pq_endtypsend = Module['_pq_endtypsend'] = (a0) => (_pq_endtypsend = Module['_pq_endtypsend'] = wasmExports['pq_endtypsend'])(a0);
-var _appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = (a0, a1, a2) => (_appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = wasmExports['appendBinaryStringInfo'])(a0, a1, a2);
-var _pq_getmsgint = Module['_pq_getmsgint'] = (a0, a1) => (_pq_getmsgint = Module['_pq_getmsgint'] = wasmExports['pq_getmsgint'])(a0, a1);
-var _array_contains_nulls = Module['_array_contains_nulls'] = (a0) => (_array_contains_nulls = Module['_array_contains_nulls'] = wasmExports['array_contains_nulls'])(a0);
-var _array_create_iterator = Module['_array_create_iterator'] = (a0, a1, a2) => (_array_create_iterator = Module['_array_create_iterator'] = wasmExports['array_create_iterator'])(a0, a1, a2);
-var _array_iterate = Module['_array_iterate'] = (a0, a1, a2) => (_array_iterate = Module['_array_iterate'] = wasmExports['array_iterate'])(a0, a1, a2);
-var _construct_empty_array = Module['_construct_empty_array'] = (a0) => (_construct_empty_array = Module['_construct_empty_array'] = wasmExports['construct_empty_array'])(a0);
-var _pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = (a0, a1, a2) => (_pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = wasmExports['pg_prng_uint64_range'])(a0, a1, a2);
-var _construct_md_array = Module['_construct_md_array'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_construct_md_array = Module['_construct_md_array'] = wasmExports['construct_md_array'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _list_delete = Module['_list_delete'] = (a0, a1) => (_list_delete = Module['_list_delete'] = wasmExports['list_delete'])(a0, a1);
+var _feof = Module['_feof'] = (a0) => (_feof = Module['_feof'] = wasmExports['feof'])(a0);
+var _BlockSampler_Init = Module['_BlockSampler_Init'] = (a0, a1, a2, a3) => (_BlockSampler_Init = Module['_BlockSampler_Init'] = wasmExports['BlockSampler_Init'])(a0, a1, a2, a3);
+var _pg_prng_seed = Module['_pg_prng_seed'] = (a0, a1) => (_pg_prng_seed = Module['_pg_prng_seed'] = wasmExports['pg_prng_seed'])(a0, a1);
+var _sampler_random_init_state = Module['_sampler_random_init_state'] = (a0, a1) => (_sampler_random_init_state = Module['_sampler_random_init_state'] = wasmExports['sampler_random_init_state'])(a0, a1);
+var _BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = (a0) => (_BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = wasmExports['BlockSampler_HasMore'])(a0);
+var _BlockSampler_Next = Module['_BlockSampler_Next'] = (a0) => (_BlockSampler_Next = Module['_BlockSampler_Next'] = wasmExports['BlockSampler_Next'])(a0);
+var _sampler_random_fract = Module['_sampler_random_fract'] = (a0) => (_sampler_random_fract = Module['_sampler_random_fract'] = wasmExports['sampler_random_fract'])(a0);
+var _reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = (a0, a1) => (_reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = wasmExports['reservoir_init_selection_state'])(a0, a1);
+var _reservoir_get_next_S = Module['_reservoir_get_next_S'] = (a0, a1, a2) => (_reservoir_get_next_S = Module['_reservoir_get_next_S'] = wasmExports['reservoir_get_next_S'])(a0, a1, a2);
+var _GetConfigOption = Module['_GetConfigOption'] = (a0, a1, a2) => (_GetConfigOption = Module['_GetConfigOption'] = wasmExports['GetConfigOption'])(a0, a1, a2);
+var _ProcessConfigFile = Module['_ProcessConfigFile'] = (a0) => (_ProcessConfigFile = Module['_ProcessConfigFile'] = wasmExports['ProcessConfigFile'])(a0);
+var _strtod = Module['_strtod'] = (a0, a1) => (_strtod = Module['_strtod'] = wasmExports['strtod'])(a0, a1);
+var _truncate_identifier = Module['_truncate_identifier'] = (a0, a1, a2) => (_truncate_identifier = Module['_truncate_identifier'] = wasmExports['truncate_identifier'])(a0, a1, a2);
+var _DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = wasmExports['DefineCustomBoolVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) => (_DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = wasmExports['DefineCustomIntVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
+var _DefineCustomRealVariable = Module['_DefineCustomRealVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) => (_DefineCustomRealVariable = Module['_DefineCustomRealVariable'] = wasmExports['DefineCustomRealVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
+var _DefineCustomStringVariable = Module['_DefineCustomStringVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_DefineCustomStringVariable = Module['_DefineCustomStringVariable'] = wasmExports['DefineCustomStringVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) => (_DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = wasmExports['DefineCustomEnumVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
+var _MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = (a0) => (_MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = wasmExports['MarkGUCPrefixReserved'])(a0);
+var _strcspn = Module['_strcspn'] = (a0, a1) => (_strcspn = Module['_strcspn'] = wasmExports['strcspn'])(a0, a1);
+var _CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = (a0, a1, a2) => (_CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = wasmExports['CacheRegisterSyscacheCallback'])(a0, a1, a2);
+var _TransferExpandedObject = Module['_TransferExpandedObject'] = (a0, a1) => (_TransferExpandedObject = Module['_TransferExpandedObject'] = wasmExports['TransferExpandedObject'])(a0, a1);
 var _errsave_start = Module['_errsave_start'] = (a0, a1) => (_errsave_start = Module['_errsave_start'] = wasmExports['errsave_start'])(a0, a1);
 var _errsave_finish = Module['_errsave_finish'] = (a0, a1, a2, a3) => (_errsave_finish = Module['_errsave_finish'] = wasmExports['errsave_finish'])(a0, a1, a2, a3);
-var _t_isalnum = Module['_t_isalnum'] = (a0) => (_t_isalnum = Module['_t_isalnum'] = wasmExports['t_isalnum'])(a0);
-var _t_isspace = Module['_t_isspace'] = (a0) => (_t_isspace = Module['_t_isspace'] = wasmExports['t_isspace'])(a0);
-var _t_isdigit = Module['_t_isdigit'] = (a0) => (_t_isdigit = Module['_t_isdigit'] = wasmExports['t_isdigit'])(a0);
-var _cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = (a0, a1) => (_cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = wasmExports['cstring_to_text_with_len'])(a0, a1);
-var _getc = Module['_getc'] = (a0) => (_getc = Module['_getc'] = wasmExports['getc'])(a0);
-var _ferror = Module['_ferror'] = (a0) => (_ferror = Module['_ferror'] = wasmExports['ferror'])(a0);
-var _clearerr = Module['_clearerr'] = (a0) => (_clearerr = Module['_clearerr'] = wasmExports['clearerr'])(a0);
-var _get_restriction_variable = Module['_get_restriction_variable'] = (a0, a1, a2, a3, a4, a5) => (_get_restriction_variable = Module['_get_restriction_variable'] = wasmExports['get_restriction_variable'])(a0, a1, a2, a3, a4, a5);
-var _clamp_row_est = Module['_clamp_row_est'] = (a0) => (_clamp_row_est = Module['_clamp_row_est'] = wasmExports['clamp_row_est'])(a0);
-var _generic_restriction_selectivity = Module['_generic_restriction_selectivity'] = (a0, a1, a2, a3, a4, a5) => (_generic_restriction_selectivity = Module['_generic_restriction_selectivity'] = wasmExports['generic_restriction_selectivity'])(a0, a1, a2, a3, a4, a5);
-var _estimate_expression_value = Module['_estimate_expression_value'] = (a0, a1) => (_estimate_expression_value = Module['_estimate_expression_value'] = wasmExports['estimate_expression_value'])(a0, a1);
-var _convert_network_to_scalar = Module['_convert_network_to_scalar'] = (a0, a1, a2) => (_convert_network_to_scalar = Module['_convert_network_to_scalar'] = wasmExports['convert_network_to_scalar'])(a0, a1, a2);
-var _find_base_rel = Module['_find_base_rel'] = (a0, a1) => (_find_base_rel = Module['_find_base_rel'] = wasmExports['find_base_rel'])(a0, a1);
-var _find_join_rel = Module['_find_join_rel'] = (a0, a1) => (_find_join_rel = Module['_find_join_rel'] = wasmExports['find_join_rel'])(a0, a1);
-var _list_make2_impl = Module['_list_make2_impl'] = (a0, a1, a2) => (_list_make2_impl = Module['_list_make2_impl'] = wasmExports['list_make2_impl'])(a0, a1, a2);
-var _FunctionCall4Coll = Module['_FunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_FunctionCall4Coll = Module['_FunctionCall4Coll'] = wasmExports['FunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
-var _DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = (a0, a1, a2, a3, a4, a5, a6) => (_DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = wasmExports['DirectFunctionCall5Coll'])(a0, a1, a2, a3, a4, a5, a6);
-var _estimate_num_groups = Module['_estimate_num_groups'] = (a0, a1, a2, a3, a4) => (_estimate_num_groups = Module['_estimate_num_groups'] = wasmExports['estimate_num_groups'])(a0, a1, a2, a3, a4);
-var _list_member_int = Module['_list_member_int'] = (a0, a1) => (_list_member_int = Module['_list_member_int'] = wasmExports['list_member_int'])(a0, a1);
-var _pull_var_clause = Module['_pull_var_clause'] = (a0, a1) => (_pull_var_clause = Module['_pull_var_clause'] = wasmExports['pull_var_clause'])(a0, a1);
-var _pow = Module['_pow'] = (a0, a1) => (_pow = Module['_pow'] = wasmExports['pow'])(a0, a1);
-var _genericcostestimate = Module['_genericcostestimate'] = (a0, a1, a2, a3) => (_genericcostestimate = Module['_genericcostestimate'] = wasmExports['genericcostestimate'])(a0, a1, a2, a3);
-var _clauselist_selectivity = Module['_clauselist_selectivity'] = (a0, a1, a2, a3, a4) => (_clauselist_selectivity = Module['_clauselist_selectivity'] = wasmExports['clauselist_selectivity'])(a0, a1, a2, a3, a4);
-var _log = Module['_log'] = (a0) => (_log = Module['_log'] = wasmExports['log'])(a0);
-var _numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = (a0) => (_numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = wasmExports['numeric_float8_no_overflow'])(a0);
-var _visibilitymap_get_status = Module['_visibilitymap_get_status'] = (a0, a1, a2) => (_visibilitymap_get_status = Module['_visibilitymap_get_status'] = wasmExports['visibilitymap_get_status'])(a0, a1, a2);
-var _Int64GetDatum = Module['_Int64GetDatum'] = (a0) => (_Int64GetDatum = Module['_Int64GetDatum'] = wasmExports['Int64GetDatum'])(a0);
+var _pq_getmsgtext = Module['_pq_getmsgtext'] = (a0, a1, a2) => (_pq_getmsgtext = Module['_pq_getmsgtext'] = wasmExports['pq_getmsgtext'])(a0, a1, a2);
+var _pq_begintypsend = Module['_pq_begintypsend'] = (a0) => (_pq_begintypsend = Module['_pq_begintypsend'] = wasmExports['pq_begintypsend'])(a0);
+var _pq_sendtext = Module['_pq_sendtext'] = (a0, a1, a2) => (_pq_sendtext = Module['_pq_sendtext'] = wasmExports['pq_sendtext'])(a0, a1, a2);
+var _pq_endtypsend = Module['_pq_endtypsend'] = (a0) => (_pq_endtypsend = Module['_pq_endtypsend'] = wasmExports['pq_endtypsend'])(a0);
+var _downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = (a0, a1, a2) => (_downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = wasmExports['downcase_truncate_identifier'])(a0, a1, a2);
+var _int64_to_numeric = Module['_int64_to_numeric'] = (a0) => (_int64_to_numeric = Module['_int64_to_numeric'] = wasmExports['int64_to_numeric'])(a0);
+var _ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = (a0, a1) => (_ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = wasmExports['ArrayGetIntegerTypmods'])(a0, a1);
+var _text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = (a0, a1, a2) => (_text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = wasmExports['text_to_cstring_buffer'])(a0, a1, a2);
+var _array_contains_nulls = Module['_array_contains_nulls'] = (a0) => (_array_contains_nulls = Module['_array_contains_nulls'] = wasmExports['array_contains_nulls'])(a0);
 var _JsonbValueToJsonb = Module['_JsonbValueToJsonb'] = (a0) => (_JsonbValueToJsonb = Module['_JsonbValueToJsonb'] = wasmExports['JsonbValueToJsonb'])(a0);
 var _pushJsonbValue = Module['_pushJsonbValue'] = (a0, a1, a2) => (_pushJsonbValue = Module['_pushJsonbValue'] = wasmExports['pushJsonbValue'])(a0, a1, a2);
-var _varstr_cmp = Module['_varstr_cmp'] = (a0, a1, a2, a3, a4) => (_varstr_cmp = Module['_varstr_cmp'] = wasmExports['varstr_cmp'])(a0, a1, a2, a3, a4);
-var _qsort_arg = Module['_qsort_arg'] = (a0, a1, a2, a3, a4) => (_qsort_arg = Module['_qsort_arg'] = wasmExports['qsort_arg'])(a0, a1, a2, a3, a4);
-var _hash_bytes_extended = Module['_hash_bytes_extended'] = (a0, a1, a2) => (_hash_bytes_extended = Module['_hash_bytes_extended'] = wasmExports['hash_bytes_extended'])(a0, a1, a2);
-var _isxdigit = Module['_isxdigit'] = (a0) => (_isxdigit = Module['_isxdigit'] = wasmExports['isxdigit'])(a0);
-var _numeric_is_nan = Module['_numeric_is_nan'] = (a0) => (_numeric_is_nan = Module['_numeric_is_nan'] = wasmExports['numeric_is_nan'])(a0);
-var _log10 = Module['_log10'] = (a0) => (_log10 = Module['_log10'] = wasmExports['log10'])(a0);
-var _ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = (a0, a1) => (_ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = wasmExports['ArrayGetIntegerTypmods'])(a0, a1);
-var ___multi3 = Module['___multi3'] = (a0, a1, a2, a3, a4) => (___multi3 = Module['___multi3'] = wasmExports['__multi3'])(a0, a1, a2, a3, a4);
-var _strtod = Module['_strtod'] = (a0, a1) => (_strtod = Module['_strtod'] = wasmExports['strtod'])(a0, a1);
-var _int64_to_numeric = Module['_int64_to_numeric'] = (a0) => (_int64_to_numeric = Module['_int64_to_numeric'] = wasmExports['int64_to_numeric'])(a0);
-var _heap_deform_tuple = Module['_heap_deform_tuple'] = (a0, a1, a2, a3) => (_heap_deform_tuple = Module['_heap_deform_tuple'] = wasmExports['heap_deform_tuple'])(a0, a1, a2, a3);
-var _OutputFunctionCall = Module['_OutputFunctionCall'] = (a0, a1) => (_OutputFunctionCall = Module['_OutputFunctionCall'] = wasmExports['OutputFunctionCall'])(a0, a1);
-var _format_type_extended = Module['_format_type_extended'] = (a0, a1, a2) => (_format_type_extended = Module['_format_type_extended'] = wasmExports['format_type_extended'])(a0, a1, a2);
-var _pg_ltoa = Module['_pg_ltoa'] = (a0, a1) => (_pg_ltoa = Module['_pg_ltoa'] = wasmExports['pg_ltoa'])(a0, a1);
+var _float4in_internal = Module['_float4in_internal'] = (a0, a1, a2, a3, a4) => (_float4in_internal = Module['_float4in_internal'] = wasmExports['float4in_internal'])(a0, a1, a2, a3, a4);
+var _strtof = Module['_strtof'] = (a0, a1) => (_strtof = Module['_strtof'] = wasmExports['strtof'])(a0, a1);
+var _float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = (a0, a1) => (_float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = wasmExports['float_to_shortest_decimal_buf'])(a0, a1);
+var _pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = (a0) => (_pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = wasmExports['pq_getmsgfloat4'])(a0);
+var _pq_sendfloat4 = Module['_pq_sendfloat4'] = (a0, a1) => (_pq_sendfloat4 = Module['_pq_sendfloat4'] = wasmExports['pq_sendfloat4'])(a0, a1);
 var _float8in_internal = Module['_float8in_internal'] = (a0, a1, a2, a3, a4) => (_float8in_internal = Module['_float8in_internal'] = wasmExports['float8in_internal'])(a0, a1, a2, a3, a4);
-var _slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = (a0, a1) => (_slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = wasmExports['slot_getsomeattrs_int'])(a0, a1);
-var _SPI_connect = Module['_SPI_connect'] = () => (_SPI_connect = Module['_SPI_connect'] = wasmExports['SPI_connect'])();
-var _SPI_finish = Module['_SPI_finish'] = () => (_SPI_finish = Module['_SPI_finish'] = wasmExports['SPI_finish'])();
-var _SPI_freeplan = Module['_SPI_freeplan'] = (a0) => (_SPI_freeplan = Module['_SPI_freeplan'] = wasmExports['SPI_freeplan'])(a0);
-var _SPI_prepare = Module['_SPI_prepare'] = (a0, a1, a2) => (_SPI_prepare = Module['_SPI_prepare'] = wasmExports['SPI_prepare'])(a0, a1, a2);
-var _SPI_result_code_string = Module['_SPI_result_code_string'] = (a0) => (_SPI_result_code_string = Module['_SPI_result_code_string'] = wasmExports['SPI_result_code_string'])(a0);
-var _SPI_keepplan = Module['_SPI_keepplan'] = (a0) => (_SPI_keepplan = Module['_SPI_keepplan'] = wasmExports['SPI_keepplan'])(a0);
-var _object_ownercheck = Module['_object_ownercheck'] = (a0, a1, a2) => (_object_ownercheck = Module['_object_ownercheck'] = wasmExports['object_ownercheck'])(a0, a1, a2);
-var _set_config_option = Module['_set_config_option'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_set_config_option = Module['_set_config_option'] = wasmExports['set_config_option'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = (a0) => (_ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = wasmExports['ExecStoreVirtualTuple'])(a0);
-var _OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = (a0, a1) => (_OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = wasmExports['OidOutputFunctionCall'])(a0, a1);
-var _InitMaterializedSRF = Module['_InitMaterializedSRF'] = (a0, a1) => (_InitMaterializedSRF = Module['_InitMaterializedSRF'] = wasmExports['InitMaterializedSRF'])(a0, a1);
-var _pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = (a0, a1, a2, a3, a4, a5, a6) => (_pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = wasmExports['pg_getnameinfo_all'])(a0, a1, a2, a3, a4, a5, a6);
-var _TupleDescInitEntry = Module['_TupleDescInitEntry'] = (a0, a1, a2, a3, a4, a5) => (_TupleDescInitEntry = Module['_TupleDescInitEntry'] = wasmExports['TupleDescInitEntry'])(a0, a1, a2, a3, a4, a5);
-var _pg_strtoint32 = Module['_pg_strtoint32'] = (a0) => (_pg_strtoint32 = Module['_pg_strtoint32'] = wasmExports['pg_strtoint32'])(a0);
-var _text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = (a0, a1, a2) => (_text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = wasmExports['text_to_cstring_buffer'])(a0, a1, a2);
-var _makeStringInfo = Module['_makeStringInfo'] = () => (_makeStringInfo = Module['_makeStringInfo'] = wasmExports['makeStringInfo'])();
-var _pq_getmsgtext = Module['_pq_getmsgtext'] = (a0, a1, a2) => (_pq_getmsgtext = Module['_pq_getmsgtext'] = wasmExports['pq_getmsgtext'])(a0, a1, a2);
-var _pq_sendtext = Module['_pq_sendtext'] = (a0, a1, a2) => (_pq_sendtext = Module['_pq_sendtext'] = wasmExports['pq_sendtext'])(a0, a1, a2);
-var _pg_popcount = Module['_pg_popcount'] = (a0, a1) => (_pg_popcount = Module['_pg_popcount'] = wasmExports['pg_popcount'])(a0, a1);
-var _textToQualifiedNameList = Module['_textToQualifiedNameList'] = (a0) => (_textToQualifiedNameList = Module['_textToQualifiedNameList'] = wasmExports['textToQualifiedNameList'])(a0);
-var _SplitIdentifierString = Module['_SplitIdentifierString'] = (a0, a1, a2) => (_SplitIdentifierString = Module['_SplitIdentifierString'] = wasmExports['SplitIdentifierString'])(a0, a1, a2);
-var _makeString = Module['_makeString'] = (a0) => (_makeString = Module['_makeString'] = wasmExports['makeString'])(a0);
-var _scanner_isspace = Module['_scanner_isspace'] = (a0) => (_scanner_isspace = Module['_scanner_isspace'] = wasmExports['scanner_isspace'])(a0);
-var _downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = (a0, a1, a2) => (_downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = wasmExports['downcase_truncate_identifier'])(a0, a1, a2);
-var _strncpy = Module['_strncpy'] = (a0, a1, a2) => (_strncpy = Module['_strncpy'] = wasmExports['strncpy'])(a0, a1, a2);
-var _truncate_identifier = Module['_truncate_identifier'] = (a0, a1, a2) => (_truncate_identifier = Module['_truncate_identifier'] = wasmExports['truncate_identifier'])(a0, a1, a2);
-var _canonicalize_path = Module['_canonicalize_path'] = (a0) => (_canonicalize_path = Module['_canonicalize_path'] = wasmExports['canonicalize_path'])(a0);
-var _pg_regerror = Module['_pg_regerror'] = (a0, a1, a2, a3) => (_pg_regerror = Module['_pg_regerror'] = wasmExports['pg_regerror'])(a0, a1, a2, a3);
+var _float8out_internal = Module['_float8out_internal'] = (a0) => (_float8out_internal = Module['_float8out_internal'] = wasmExports['float8out_internal'])(a0);
+var _pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = (a0) => (_pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = wasmExports['pq_getmsgfloat8'])(a0);
+var _pq_sendfloat8 = Module['_pq_sendfloat8'] = (a0, a1) => (_pq_sendfloat8 = Module['_pq_sendfloat8'] = wasmExports['pq_sendfloat8'])(a0, a1);
+var _log10 = Module['_log10'] = (a0) => (_log10 = Module['_log10'] = wasmExports['log10'])(a0);
+var _acos = Module['_acos'] = (a0) => (_acos = Module['_acos'] = wasmExports['acos'])(a0);
+var _asin = Module['_asin'] = (a0) => (_asin = Module['_asin'] = wasmExports['asin'])(a0);
+var _cos = Module['_cos'] = (a0) => (_cos = Module['_cos'] = wasmExports['cos'])(a0);
+var _sin = Module['_sin'] = (a0) => (_sin = Module['_sin'] = wasmExports['sin'])(a0);
+var _fmod = Module['_fmod'] = (a0, a1) => (_fmod = Module['_fmod'] = wasmExports['fmod'])(a0, a1);
+var _pg_prng_seed_check = Module['_pg_prng_seed_check'] = (a0) => (_pg_prng_seed_check = Module['_pg_prng_seed_check'] = wasmExports['pg_prng_seed_check'])(a0);
+var _construct_array = Module['_construct_array'] = (a0, a1, a2, a3, a4, a5) => (_construct_array = Module['_construct_array'] = wasmExports['construct_array'])(a0, a1, a2, a3, a4, a5);
 var _quote_literal_cstr = Module['_quote_literal_cstr'] = (a0) => (_quote_literal_cstr = Module['_quote_literal_cstr'] = wasmExports['quote_literal_cstr'])(a0);
-var _varstr_levenshtein = Module['_varstr_levenshtein'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_varstr_levenshtein = Module['_varstr_levenshtein'] = wasmExports['varstr_levenshtein'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = wasmExports['varstr_levenshtein_less_equal'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _initClosestMatch = Module['_initClosestMatch'] = (a0, a1, a2) => (_initClosestMatch = Module['_initClosestMatch'] = wasmExports['initClosestMatch'])(a0, a1, a2);
-var _updateClosestMatch = Module['_updateClosestMatch'] = (a0, a1) => (_updateClosestMatch = Module['_updateClosestMatch'] = wasmExports['updateClosestMatch'])(a0, a1);
-var _getClosestMatch = Module['_getClosestMatch'] = (a0) => (_getClosestMatch = Module['_getClosestMatch'] = wasmExports['getClosestMatch'])(a0);
-var _utf8_to_unicode = Module['_utf8_to_unicode'] = (a0) => (_utf8_to_unicode = Module['_utf8_to_unicode'] = wasmExports['utf8_to_unicode'])(a0);
+var _pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = (a0, a1, a2, a3, a4) => (_pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = wasmExports['pg_inet_net_ntop'])(a0, a1, a2, a3, a4);
+var _convert_network_to_scalar = Module['_convert_network_to_scalar'] = (a0, a1, a2) => (_convert_network_to_scalar = Module['_convert_network_to_scalar'] = wasmExports['convert_network_to_scalar'])(a0, a1, a2);
+var _pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = (a0, a1, a2, a3, a4, a5, a6) => (_pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = wasmExports['pg_getnameinfo_all'])(a0, a1, a2, a3, a4, a5, a6);
 var _appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = (a0, a1) => (_appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = wasmExports['appendStringInfoSpaces'])(a0, a1);
-var _setenv = Module['_setenv'] = (a0, a1, a2) => (_setenv = Module['_setenv'] = wasmExports['setenv'])(a0, a1, a2);
-var _pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = (a0, a1) => (_pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = wasmExports['pg_get_encoding_from_locale'])(a0, a1);
-var _time = Module['_time'] = (a0) => (_time = Module['_time'] = wasmExports['time'])(a0);
-var _localtime = Module['_localtime'] = (a0) => (_localtime = Module['_localtime'] = wasmExports['localtime'])(a0);
-var _strftime = Module['_strftime'] = (a0, a1, a2, a3) => (_strftime = Module['_strftime'] = wasmExports['strftime'])(a0, a1, a2, a3);
-var _get_extension_oid = Module['_get_extension_oid'] = (a0, a1) => (_get_extension_oid = Module['_get_extension_oid'] = wasmExports['get_extension_oid'])(a0, a1);
-var _strtoul = Module['_strtoul'] = (a0, a1, a2) => (_strtoul = Module['_strtoul'] = wasmExports['strtoul'])(a0, a1, a2);
-var _MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = (a0) => (_MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = wasmExports['MakeExpandedObjectReadOnlyInternal'])(a0);
+var _format_type_extended = Module['_format_type_extended'] = (a0, a1, a2) => (_format_type_extended = Module['_format_type_extended'] = wasmExports['format_type_extended'])(a0, a1, a2);
+var _get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = (a0) => (_get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = wasmExports['get_namespace_name_or_temp'])(a0);
+var _quote_qualified_identifier = Module['_quote_qualified_identifier'] = (a0, a1) => (_quote_qualified_identifier = Module['_quote_qualified_identifier'] = wasmExports['quote_qualified_identifier'])(a0, a1);
+var _make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = (a0, a1, a2) => (_make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = wasmExports['make_expanded_record_from_typeid'])(a0, a1, a2);
+var _make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = (a0, a1) => (_make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = wasmExports['make_expanded_record_from_tupdesc'])(a0, a1);
+var _make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = (a0, a1) => (_make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = wasmExports['make_expanded_record_from_exprecord'])(a0, a1);
+var _expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = (a0, a1, a2, a3) => (_expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = wasmExports['expanded_record_set_tuple'])(a0, a1, a2, a3);
 var _domain_check = Module['_domain_check'] = (a0, a1, a2, a3, a4) => (_domain_check = Module['_domain_check'] = wasmExports['domain_check'])(a0, a1, a2, a3, a4);
-var _get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = (a0) => (_get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = wasmExports['get_fn_expr_rettype'])(a0);
+var _expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = (a0) => (_expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = wasmExports['expanded_record_get_tuple'])(a0);
+var _deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = (a0) => (_deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = wasmExports['deconstruct_expanded_record'])(a0);
+var _expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = (a0, a1, a2) => (_expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = wasmExports['expanded_record_lookup_field'])(a0, a1, a2);
+var _expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = (a0, a1, a2, a3, a4, a5) => (_expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = wasmExports['expanded_record_set_field_internal'])(a0, a1, a2, a3, a4, a5);
+var _expanded_record_set_fields = Module['_expanded_record_set_fields'] = (a0, a1, a2, a3) => (_expanded_record_set_fields = Module['_expanded_record_set_fields'] = wasmExports['expanded_record_set_fields'])(a0, a1, a2, a3);
+var _err_generic_string = Module['_err_generic_string'] = (a0, a1) => (_err_generic_string = Module['_err_generic_string'] = wasmExports['err_generic_string'])(a0, a1);
+var _forkname_to_number = Module['_forkname_to_number'] = (a0) => (_forkname_to_number = Module['_forkname_to_number'] = wasmExports['forkname_to_number'])(a0);
+var _RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = (a0, a1) => (_RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = wasmExports['RelidByRelfilenumber'])(a0, a1);
 var _pg_xml_init = Module['_pg_xml_init'] = (a0) => (_pg_xml_init = Module['_pg_xml_init'] = wasmExports['pg_xml_init'])(a0);
 var _xmlInitParser = Module['_xmlInitParser'] = () => (_xmlInitParser = Module['_xmlInitParser'] = wasmExports['xmlInitParser'])();
 var _xml_ereport = Module['_xml_ereport'] = (a0, a1, a2, a3) => (_xml_ereport = Module['_xml_ereport'] = wasmExports['xml_ereport'])(a0, a1, a2, a3);
@@ -9991,362 +10427,184 @@ var _xmlXPathFreeContext = Module['_xmlXPathFreeContext'] = (a0) => (_xmlXPathFr
 var _xmlFreeDoc = Module['_xmlFreeDoc'] = (a0) => (_xmlFreeDoc = Module['_xmlFreeDoc'] = wasmExports['xmlFreeDoc'])(a0);
 var _xmlXPathCompile = Module['_xmlXPathCompile'] = (a0) => (_xmlXPathCompile = Module['_xmlXPathCompile'] = wasmExports['xmlXPathCompile'])(a0);
 var _xmlXPathCompiledEval = Module['_xmlXPathCompiledEval'] = (a0, a1) => (_xmlXPathCompiledEval = Module['_xmlXPathCompiledEval'] = wasmExports['xmlXPathCompiledEval'])(a0, a1);
-var _InputFunctionCall = Module['_InputFunctionCall'] = (a0, a1, a2, a3) => (_InputFunctionCall = Module['_InputFunctionCall'] = wasmExports['InputFunctionCall'])(a0, a1, a2, a3);
 var _xmlXPathFreeCompExpr = Module['_xmlXPathFreeCompExpr'] = (a0) => (_xmlXPathFreeCompExpr = Module['_xmlXPathFreeCompExpr'] = wasmExports['xmlXPathFreeCompExpr'])(a0);
 var _xmlStrdup = Module['_xmlStrdup'] = (a0) => (_xmlStrdup = Module['_xmlStrdup'] = wasmExports['xmlStrdup'])(a0);
-var _strnlen = Module['_strnlen'] = (a0, a1) => (_strnlen = Module['_strnlen'] = wasmExports['strnlen'])(a0, a1);
-var _SPI_execute = Module['_SPI_execute'] = (a0, a1, a2) => (_SPI_execute = Module['_SPI_execute'] = wasmExports['SPI_execute'])(a0, a1, a2);
-var _SPI_cursor_find = Module['_SPI_cursor_find'] = (a0) => (_SPI_cursor_find = Module['_SPI_cursor_find'] = wasmExports['SPI_cursor_find'])(a0);
-var _SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = (a0, a1, a2) => (_SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = wasmExports['SPI_cursor_fetch'])(a0, a1, a2);
-var _SPI_fname = Module['_SPI_fname'] = (a0, a1) => (_SPI_fname = Module['_SPI_fname'] = wasmExports['SPI_fname'])(a0, a1);
-var _SPI_getbinval = Module['_SPI_getbinval'] = (a0, a1, a2, a3) => (_SPI_getbinval = Module['_SPI_getbinval'] = wasmExports['SPI_getbinval'])(a0, a1, a2, a3);
-var _SPI_gettypeid = Module['_SPI_gettypeid'] = (a0, a1) => (_SPI_gettypeid = Module['_SPI_gettypeid'] = wasmExports['SPI_gettypeid'])(a0, a1);
-var _SPI_palloc = Module['_SPI_palloc'] = (a0) => (_SPI_palloc = Module['_SPI_palloc'] = wasmExports['SPI_palloc'])(a0);
-var _SPI_cursor_close = Module['_SPI_cursor_close'] = (a0) => (_SPI_cursor_close = Module['_SPI_cursor_close'] = wasmExports['SPI_cursor_close'])(a0);
+var _initArrayResult = Module['_initArrayResult'] = (a0, a1, a2) => (_initArrayResult = Module['_initArrayResult'] = wasmExports['initArrayResult'])(a0, a1, a2);
 var _xmlXPathCastNodeToString = Module['_xmlXPathCastNodeToString'] = (a0) => (_xmlXPathCastNodeToString = Module['_xmlXPathCastNodeToString'] = wasmExports['xmlXPathCastNodeToString'])(a0);
-var _set_errcontext_domain = Module['_set_errcontext_domain'] = (a0) => (_set_errcontext_domain = Module['_set_errcontext_domain'] = wasmExports['set_errcontext_domain'])(a0);
-var _errcontext_msg = Module['_errcontext_msg'] = (a0, a1) => (_errcontext_msg = Module['_errcontext_msg'] = wasmExports['errcontext_msg'])(a0, a1);
-var _escape_json = Module['_escape_json'] = (a0, a1) => (_escape_json = Module['_escape_json'] = wasmExports['escape_json'])(a0, a1);
-var _hash_destroy = Module['_hash_destroy'] = (a0) => (_hash_destroy = Module['_hash_destroy'] = wasmExports['hash_destroy'])(a0);
-var _hash_get_num_entries = Module['_hash_get_num_entries'] = (a0) => (_hash_get_num_entries = Module['_hash_get_num_entries'] = wasmExports['hash_get_num_entries'])(a0);
-var _pg_regcomp = Module['_pg_regcomp'] = (a0, a1, a2, a3, a4) => (_pg_regcomp = Module['_pg_regcomp'] = wasmExports['pg_regcomp'])(a0, a1, a2, a3, a4);
-var _pg_strong_random = Module['_pg_strong_random'] = (a0, a1) => (_pg_strong_random = Module['_pg_strong_random'] = wasmExports['pg_strong_random'])(a0, a1);
-var _tolower = Module['_tolower'] = (a0) => (_tolower = Module['_tolower'] = wasmExports['tolower'])(a0);
-var _ParseDateTime = Module['_ParseDateTime'] = (a0, a1, a2, a3, a4, a5, a6) => (_ParseDateTime = Module['_ParseDateTime'] = wasmExports['ParseDateTime'])(a0, a1, a2, a3, a4, a5, a6);
-var _DecodeDateTime = Module['_DecodeDateTime'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_DecodeDateTime = Module['_DecodeDateTime'] = wasmExports['DecodeDateTime'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _float_overflow_error = Module['_float_overflow_error'] = () => (_float_overflow_error = Module['_float_overflow_error'] = wasmExports['float_overflow_error'])();
-var _float_underflow_error = Module['_float_underflow_error'] = () => (_float_underflow_error = Module['_float_underflow_error'] = wasmExports['float_underflow_error'])();
-var _strcat = Module['_strcat'] = (a0, a1) => (_strcat = Module['_strcat'] = wasmExports['strcat'])(a0, a1);
-var _gettimeofday = Module['_gettimeofday'] = (a0, a1) => (_gettimeofday = Module['_gettimeofday'] = wasmExports['gettimeofday'])(a0, a1);
-var _TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = (a0, a1) => (_TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = wasmExports['TimestampDifferenceMilliseconds'])(a0, a1);
-var _timestamptz_to_str = Module['_timestamptz_to_str'] = (a0) => (_timestamptz_to_str = Module['_timestamptz_to_str'] = wasmExports['timestamptz_to_str'])(a0);
-var _SPI_fnumber = Module['_SPI_fnumber'] = (a0, a1) => (_SPI_fnumber = Module['_SPI_fnumber'] = wasmExports['SPI_fnumber'])(a0, a1);
-var _SPI_getvalue = Module['_SPI_getvalue'] = (a0, a1, a2) => (_SPI_getvalue = Module['_SPI_getvalue'] = wasmExports['SPI_getvalue'])(a0, a1, a2);
-var _makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = (a0) => (_makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = wasmExports['makeRangeVarFromNameList'])(a0);
-var _RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = (a0, a1, a2, a3, a4) => (_RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = wasmExports['RangeVarGetRelidExtended'])(a0, a1, a2, a3, a4);
+var _str_tolower = Module['_str_tolower'] = (a0, a1, a2) => (_str_tolower = Module['_str_tolower'] = wasmExports['str_tolower'])(a0, a1, a2);
+var _GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = (a0, a1, a2, a3, a4) => (_GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = wasmExports['GetSysCacheHashValue'])(a0, a1, a2, a3, a4);
+var ___multi3 = Module['___multi3'] = (a0, a1, a2, a3, a4) => (___multi3 = Module['___multi3'] = wasmExports['__multi3'])(a0, a1, a2, a3, a4);
+var _expand_array = Module['_expand_array'] = (a0, a1, a2) => (_expand_array = Module['_expand_array'] = wasmExports['expand_array'])(a0, a1, a2);
+var _generic_restriction_selectivity = Module['_generic_restriction_selectivity'] = (a0, a1, a2, a3, a4, a5) => (_generic_restriction_selectivity = Module['_generic_restriction_selectivity'] = wasmExports['generic_restriction_selectivity'])(a0, a1, a2, a3, a4, a5);
+var _bms_membership = Module['_bms_membership'] = (a0) => (_bms_membership = Module['_bms_membership'] = wasmExports['bms_membership'])(a0);
+var _find_join_rel = Module['_find_join_rel'] = (a0, a1) => (_find_join_rel = Module['_find_join_rel'] = wasmExports['find_join_rel'])(a0, a1);
+var _bms_is_subset = Module['_bms_is_subset'] = (a0, a1) => (_bms_is_subset = Module['_bms_is_subset'] = wasmExports['bms_is_subset'])(a0, a1);
+var _estimate_num_groups = Module['_estimate_num_groups'] = (a0, a1, a2, a3, a4) => (_estimate_num_groups = Module['_estimate_num_groups'] = wasmExports['estimate_num_groups'])(a0, a1, a2, a3, a4);
+var _pull_var_clause = Module['_pull_var_clause'] = (a0, a1) => (_pull_var_clause = Module['_pull_var_clause'] = wasmExports['pull_var_clause'])(a0, a1);
+var _genericcostestimate = Module['_genericcostestimate'] = (a0, a1, a2, a3) => (_genericcostestimate = Module['_genericcostestimate'] = wasmExports['genericcostestimate'])(a0, a1, a2, a3);
+var _clauselist_selectivity = Module['_clauselist_selectivity'] = (a0, a1, a2, a3, a4) => (_clauselist_selectivity = Module['_clauselist_selectivity'] = wasmExports['clauselist_selectivity'])(a0, a1, a2, a3, a4);
+var _get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = (a0, a1, a2) => (_get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = wasmExports['get_tablespace_page_costs'])(a0, a1, a2);
+var _numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = (a0) => (_numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = wasmExports['numeric_float8_no_overflow'])(a0);
+var _array_create_iterator = Module['_array_create_iterator'] = (a0, a1, a2) => (_array_create_iterator = Module['_array_create_iterator'] = wasmExports['array_create_iterator'])(a0, a1, a2);
+var _array_iterate = Module['_array_iterate'] = (a0, a1, a2) => (_array_iterate = Module['_array_iterate'] = wasmExports['array_iterate'])(a0, a1, a2);
+var _transformExpr = Module['_transformExpr'] = (a0, a1, a2) => (_transformExpr = Module['_transformExpr'] = wasmExports['transformExpr'])(a0, a1, a2);
+var _numeric_is_nan = Module['_numeric_is_nan'] = (a0) => (_numeric_is_nan = Module['_numeric_is_nan'] = wasmExports['numeric_is_nan'])(a0);
+var _get_attname = Module['_get_attname'] = (a0, a1, a2) => (_get_attname = Module['_get_attname'] = wasmExports['get_attname'])(a0, a1, a2);
 var _pg_get_indexdef_columns_extended = Module['_pg_get_indexdef_columns_extended'] = (a0, a1) => (_pg_get_indexdef_columns_extended = Module['_pg_get_indexdef_columns_extended'] = wasmExports['pg_get_indexdef_columns_extended'])(a0, a1);
-var _try_relation_open = Module['_try_relation_open'] = (a0, a1) => (_try_relation_open = Module['_try_relation_open'] = wasmExports['try_relation_open'])(a0, a1);
-var _get_func_arg_info = Module['_get_func_arg_info'] = (a0, a1, a2, a3) => (_get_func_arg_info = Module['_get_func_arg_info'] = wasmExports['get_func_arg_info'])(a0, a1, a2, a3);
-var _format_type_with_typemod = Module['_format_type_with_typemod'] = (a0, a1) => (_format_type_with_typemod = Module['_format_type_with_typemod'] = wasmExports['format_type_with_typemod'])(a0, a1);
-var _strcspn = Module['_strcspn'] = (a0, a1) => (_strcspn = Module['_strcspn'] = wasmExports['strcspn'])(a0, a1);
 var _RelationIsVisible = Module['_RelationIsVisible'] = (a0) => (_RelationIsVisible = Module['_RelationIsVisible'] = wasmExports['RelationIsVisible'])(a0);
-var _strip_implicit_coercions = Module['_strip_implicit_coercions'] = (a0) => (_strip_implicit_coercions = Module['_strip_implicit_coercions'] = wasmExports['strip_implicit_coercions'])(a0);
 var _exprIsLengthCoercion = Module['_exprIsLengthCoercion'] = (a0, a1) => (_exprIsLengthCoercion = Module['_exprIsLengthCoercion'] = wasmExports['exprIsLengthCoercion'])(a0, a1);
-var _bms_union = Module['_bms_union'] = (a0, a1) => (_bms_union = Module['_bms_union'] = wasmExports['bms_union'])(a0, a1);
 var _get_sortgroupref_tle = Module['_get_sortgroupref_tle'] = (a0, a1) => (_get_sortgroupref_tle = Module['_get_sortgroupref_tle'] = wasmExports['get_sortgroupref_tle'])(a0, a1);
 var _strrchr = Module['_strrchr'] = (a0, a1) => (_strrchr = Module['_strrchr'] = wasmExports['strrchr'])(a0, a1);
-var _pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = (a0, a1, a2, a3, a4) => (_pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = wasmExports['pg_inet_net_ntop'])(a0, a1, a2, a3, a4);
-var _TransactionIdIsInProgress = Module['_TransactionIdIsInProgress'] = (a0) => (_TransactionIdIsInProgress = Module['_TransactionIdIsInProgress'] = wasmExports['TransactionIdIsInProgress'])(a0);
-var _TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = (a0) => (_TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = wasmExports['TransactionIdDidCommit'])(a0);
-var _parse_bool = Module['_parse_bool'] = (a0, a1) => (_parse_bool = Module['_parse_bool'] = wasmExports['parse_bool'])(a0, a1);
-var _SPI_freetuptable = Module['_SPI_freetuptable'] = (a0) => (_SPI_freetuptable = Module['_SPI_freetuptable'] = wasmExports['SPI_freetuptable'])(a0);
-var _BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = (a0, a1) => (_BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = wasmExports['BuildTupleFromCStrings'])(a0, a1);
-var _heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = (a0, a1, a2, a3, a4, a5) => (_heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = wasmExports['heap_modify_tuple_by_cols'])(a0, a1, a2, a3, a4, a5);
-var _aclcheck_error = Module['_aclcheck_error'] = (a0, a1, a2) => (_aclcheck_error = Module['_aclcheck_error'] = wasmExports['aclcheck_error'])(a0, a1, a2);
-var _ReadDir = Module['_ReadDir'] = (a0, a1) => (_ReadDir = Module['_ReadDir'] = wasmExports['ReadDir'])(a0, a1);
-var _forkname_to_number = Module['_forkname_to_number'] = (a0) => (_forkname_to_number = Module['_forkname_to_number'] = wasmExports['forkname_to_number'])(a0);
-var _str_tolower = Module['_str_tolower'] = (a0, a1, a2) => (_str_tolower = Module['_str_tolower'] = wasmExports['str_tolower'])(a0, a1, a2);
-var _isalnum = Module['_isalnum'] = (a0) => (_isalnum = Module['_isalnum'] = wasmExports['isalnum'])(a0);
-var _DatumGetEOHP = Module['_DatumGetEOHP'] = (a0) => (_DatumGetEOHP = Module['_DatumGetEOHP'] = wasmExports['DatumGetEOHP'])(a0);
-var _EOH_get_flat_size = Module['_EOH_get_flat_size'] = (a0) => (_EOH_get_flat_size = Module['_EOH_get_flat_size'] = wasmExports['EOH_get_flat_size'])(a0);
-var _EOH_flatten_into = Module['_EOH_flatten_into'] = (a0, a1, a2) => (_EOH_flatten_into = Module['_EOH_flatten_into'] = wasmExports['EOH_flatten_into'])(a0, a1, a2);
-var _datumTransfer = Module['_datumTransfer'] = (a0, a1, a2) => (_datumTransfer = Module['_datumTransfer'] = wasmExports['datumTransfer'])(a0, a1, a2);
-var _TransferExpandedObject = Module['_TransferExpandedObject'] = (a0, a1) => (_TransferExpandedObject = Module['_TransferExpandedObject'] = wasmExports['TransferExpandedObject'])(a0, a1);
-var _datumIsEqual = Module['_datumIsEqual'] = (a0, a1, a2, a3) => (_datumIsEqual = Module['_datumIsEqual'] = wasmExports['datumIsEqual'])(a0, a1, a2, a3);
-var _float4in_internal = Module['_float4in_internal'] = (a0, a1, a2, a3, a4) => (_float4in_internal = Module['_float4in_internal'] = wasmExports['float4in_internal'])(a0, a1, a2, a3, a4);
-var _strtof = Module['_strtof'] = (a0, a1) => (_strtof = Module['_strtof'] = wasmExports['strtof'])(a0, a1);
-var _float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = (a0, a1) => (_float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = wasmExports['float_to_shortest_decimal_buf'])(a0, a1);
-var _pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = (a0) => (_pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = wasmExports['pq_getmsgfloat4'])(a0);
-var _pq_sendfloat4 = Module['_pq_sendfloat4'] = (a0, a1) => (_pq_sendfloat4 = Module['_pq_sendfloat4'] = wasmExports['pq_sendfloat4'])(a0, a1);
-var _float8out_internal = Module['_float8out_internal'] = (a0) => (_float8out_internal = Module['_float8out_internal'] = wasmExports['float8out_internal'])(a0);
-var _pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = (a0) => (_pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = wasmExports['pq_getmsgfloat8'])(a0);
-var _pq_sendfloat8 = Module['_pq_sendfloat8'] = (a0, a1) => (_pq_sendfloat8 = Module['_pq_sendfloat8'] = wasmExports['pq_sendfloat8'])(a0, a1);
-var _acos = Module['_acos'] = (a0) => (_acos = Module['_acos'] = wasmExports['acos'])(a0);
-var _asin = Module['_asin'] = (a0) => (_asin = Module['_asin'] = wasmExports['asin'])(a0);
-var _cos = Module['_cos'] = (a0) => (_cos = Module['_cos'] = wasmExports['cos'])(a0);
-var _sin = Module['_sin'] = (a0) => (_sin = Module['_sin'] = wasmExports['sin'])(a0);
-var _fmod = Module['_fmod'] = (a0, a1) => (_fmod = Module['_fmod'] = wasmExports['fmod'])(a0, a1);
-var _pg_prng_seed_check = Module['_pg_prng_seed_check'] = (a0) => (_pg_prng_seed_check = Module['_pg_prng_seed_check'] = wasmExports['pg_prng_seed_check'])(a0);
-var _pg_prng_seed = Module['_pg_prng_seed'] = (a0, a1) => (_pg_prng_seed = Module['_pg_prng_seed'] = wasmExports['pg_prng_seed'])(a0, a1);
-var _pg_prng_double = Module['_pg_prng_double'] = (a0) => (_pg_prng_double = Module['_pg_prng_double'] = wasmExports['pg_prng_double'])(a0);
-var _ItemPointerCompare = Module['_ItemPointerCompare'] = (a0, a1) => (_ItemPointerCompare = Module['_ItemPointerCompare'] = wasmExports['ItemPointerCompare'])(a0, a1);
-var _table_openrv = Module['_table_openrv'] = (a0, a1) => (_table_openrv = Module['_table_openrv'] = wasmExports['table_openrv'])(a0, a1);
-var _get_relkind_objtype = Module['_get_relkind_objtype'] = (a0) => (_get_relkind_objtype = Module['_get_relkind_objtype'] = wasmExports['get_relkind_objtype'])(a0);
-var _expand_array = Module['_expand_array'] = (a0, a1, a2) => (_expand_array = Module['_expand_array'] = wasmExports['expand_array'])(a0, a1, a2);
-var _transformExpr = Module['_transformExpr'] = (a0, a1, a2) => (_transformExpr = Module['_transformExpr'] = wasmExports['transformExpr'])(a0, a1, a2);
-var _coerce_to_target_type = Module['_coerce_to_target_type'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_coerce_to_target_type = Module['_coerce_to_target_type'] = wasmExports['coerce_to_target_type'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _exprLocation = Module['_exprLocation'] = (a0) => (_exprLocation = Module['_exprLocation'] = wasmExports['exprLocation'])(a0);
-var _parser_errposition = Module['_parser_errposition'] = (a0, a1) => (_parser_errposition = Module['_parser_errposition'] = wasmExports['parser_errposition'])(a0, a1);
-var _guc_malloc = Module['_guc_malloc'] = (a0, a1) => (_guc_malloc = Module['_guc_malloc'] = wasmExports['guc_malloc'])(a0, a1);
-var _format_procedure = Module['_format_procedure'] = (a0) => (_format_procedure = Module['_format_procedure'] = wasmExports['format_procedure'])(a0);
-var _format_operator = Module['_format_operator'] = (a0) => (_format_operator = Module['_format_operator'] = wasmExports['format_operator'])(a0);
+var _get_rel_relispartition = Module['_get_rel_relispartition'] = (a0) => (_get_rel_relispartition = Module['_get_rel_relispartition'] = wasmExports['get_rel_relispartition'])(a0);
+var _scanner_isspace = Module['_scanner_isspace'] = (a0) => (_scanner_isspace = Module['_scanner_isspace'] = wasmExports['scanner_isspace'])(a0);
+var _varstr_levenshtein = Module['_varstr_levenshtein'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_varstr_levenshtein = Module['_varstr_levenshtein'] = wasmExports['varstr_levenshtein'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = wasmExports['varstr_levenshtein_less_equal'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _utf8_to_unicode = Module['_utf8_to_unicode'] = (a0) => (_utf8_to_unicode = Module['_utf8_to_unicode'] = wasmExports['utf8_to_unicode'])(a0);
+var _unpack_sql_state = Module['_unpack_sql_state'] = (a0) => (_unpack_sql_state = Module['_unpack_sql_state'] = wasmExports['unpack_sql_state'])(a0);
+var _get_role_oid = Module['_get_role_oid'] = (a0, a1) => (_get_role_oid = Module['_get_role_oid'] = wasmExports['get_role_oid'])(a0, a1);
 var _NameListToString = Module['_NameListToString'] = (a0) => (_NameListToString = Module['_NameListToString'] = wasmExports['NameListToString'])(a0);
 var _get_collation_oid = Module['_get_collation_oid'] = (a0, a1) => (_get_collation_oid = Module['_get_collation_oid'] = wasmExports['get_collation_oid'])(a0, a1);
-var _get_role_oid = Module['_get_role_oid'] = (a0, a1) => (_get_role_oid = Module['_get_role_oid'] = wasmExports['get_role_oid'])(a0, a1);
-var _WaitLatch = Module['_WaitLatch'] = (a0, a1, a2, a3) => (_WaitLatch = Module['_WaitLatch'] = wasmExports['WaitLatch'])(a0, a1, a2, a3);
-var _ResetLatch = Module['_ResetLatch'] = (a0) => (_ResetLatch = Module['_ResetLatch'] = wasmExports['ResetLatch'])(a0);
-var _unpack_sql_state = Module['_unpack_sql_state'] = (a0) => (_unpack_sql_state = Module['_unpack_sql_state'] = wasmExports['unpack_sql_state'])(a0);
-var _fgets = Module['_fgets'] = (a0, a1, a2) => (_fgets = Module['_fgets'] = wasmExports['fgets'])(a0, a1, a2);
 var _path_is_prefix_of_path = Module['_path_is_prefix_of_path'] = (a0, a1) => (_path_is_prefix_of_path = Module['_path_is_prefix_of_path'] = wasmExports['path_is_prefix_of_path'])(a0, a1);
 var _path_is_relative_and_below_cwd = Module['_path_is_relative_and_below_cwd'] = (a0) => (_path_is_relative_and_below_cwd = Module['_path_is_relative_and_below_cwd'] = wasmExports['path_is_relative_and_below_cwd'])(a0);
-var _feof = Module['_feof'] = (a0) => (_feof = Module['_feof'] = wasmExports['feof'])(a0);
-var _has_fn_opclass_options = Module['_has_fn_opclass_options'] = (a0) => (_has_fn_opclass_options = Module['_has_fn_opclass_options'] = wasmExports['has_fn_opclass_options'])(a0);
-var _get_fn_opclass_options = Module['_get_fn_opclass_options'] = (a0) => (_get_fn_opclass_options = Module['_get_fn_opclass_options'] = wasmExports['get_fn_opclass_options'])(a0);
-var _init_local_reloptions = Module['_init_local_reloptions'] = (a0, a1) => (_init_local_reloptions = Module['_init_local_reloptions'] = wasmExports['init_local_reloptions'])(a0, a1);
-var _add_local_int_reloption = Module['_add_local_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_local_int_reloption = Module['_add_local_int_reloption'] = wasmExports['add_local_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
+var _setenv = Module['_setenv'] = (a0, a1, a2) => (_setenv = Module['_setenv'] = wasmExports['setenv'])(a0, a1, a2);
+var _pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = (a0, a1) => (_pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = wasmExports['pg_get_encoding_from_locale'])(a0, a1);
+var _localtime = Module['_localtime'] = (a0) => (_localtime = Module['_localtime'] = wasmExports['localtime'])(a0);
+var _strftime = Module['_strftime'] = (a0, a1, a2, a3) => (_strftime = Module['_strftime'] = wasmExports['strftime'])(a0, a1, a2, a3);
+var _get_extension_oid = Module['_get_extension_oid'] = (a0, a1) => (_get_extension_oid = Module['_get_extension_oid'] = wasmExports['get_extension_oid'])(a0, a1);
 var _IsValidJsonNumber = Module['_IsValidJsonNumber'] = (a0, a1) => (_IsValidJsonNumber = Module['_IsValidJsonNumber'] = wasmExports['IsValidJsonNumber'])(a0, a1);
-var _vacuum_delay_point = Module['_vacuum_delay_point'] = () => (_vacuum_delay_point = Module['_vacuum_delay_point'] = wasmExports['vacuum_delay_point'])();
-var _make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = (a0, a1, a2) => (_make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = wasmExports['make_expanded_record_from_typeid'])(a0, a1, a2);
-var _make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = (a0, a1) => (_make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = wasmExports['make_expanded_record_from_tupdesc'])(a0, a1);
-var _make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = (a0, a1) => (_make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = wasmExports['make_expanded_record_from_exprecord'])(a0, a1);
-var _expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = (a0) => (_expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = wasmExports['expanded_record_fetch_tupdesc'])(a0);
-var _expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = (a0, a1, a2, a3) => (_expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = wasmExports['expanded_record_set_tuple'])(a0, a1, a2, a3);
-var _expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = (a0) => (_expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = wasmExports['expanded_record_get_tuple'])(a0);
-var _deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = (a0) => (_deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = wasmExports['deconstruct_expanded_record'])(a0);
-var _expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = (a0, a1, a2) => (_expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = wasmExports['expanded_record_lookup_field'])(a0, a1, a2);
-var _expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = (a0, a1, a2) => (_expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = wasmExports['expanded_record_fetch_field'])(a0, a1, a2);
-var _expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = (a0, a1, a2, a3, a4, a5) => (_expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = wasmExports['expanded_record_set_field_internal'])(a0, a1, a2, a3, a4, a5);
-var _detoast_external_attr = Module['_detoast_external_attr'] = (a0) => (_detoast_external_attr = Module['_detoast_external_attr'] = wasmExports['detoast_external_attr'])(a0);
-var _expanded_record_set_fields = Module['_expanded_record_set_fields'] = (a0, a1, a2, a3) => (_expanded_record_set_fields = Module['_expanded_record_set_fields'] = wasmExports['expanded_record_set_fields'])(a0, a1, a2, a3);
-var _DeleteExpandedObject = Module['_DeleteExpandedObject'] = (a0) => (_DeleteExpandedObject = Module['_DeleteExpandedObject'] = wasmExports['DeleteExpandedObject'])(a0);
-var _dsm_create = Module['_dsm_create'] = (a0, a1) => (_dsm_create = Module['_dsm_create'] = wasmExports['dsm_create'])(a0, a1);
-var _dsm_segment_address = Module['_dsm_segment_address'] = (a0) => (_dsm_segment_address = Module['_dsm_segment_address'] = wasmExports['dsm_segment_address'])(a0);
-var _dsm_attach = Module['_dsm_attach'] = (a0) => (_dsm_attach = Module['_dsm_attach'] = wasmExports['dsm_attach'])(a0);
-var _PinPortal = Module['_PinPortal'] = (a0) => (_PinPortal = Module['_PinPortal'] = wasmExports['PinPortal'])(a0);
-var _UnpinPortal = Module['_UnpinPortal'] = (a0) => (_UnpinPortal = Module['_UnpinPortal'] = wasmExports['UnpinPortal'])(a0);
-var _realloc = Module['_realloc'] = (a0, a1) => (_realloc = Module['_realloc'] = wasmExports['realloc'])(a0, a1);
-var _MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = (a0, a1) => (_MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = wasmExports['MemoryContextMemAllocated'])(a0, a1);
-var _errhidestmt = Module['_errhidestmt'] = (a0) => (_errhidestmt = Module['_errhidestmt'] = wasmExports['errhidestmt'])(a0);
-var _MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = (a0, a1, a2) => (_MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = wasmExports['MemoryContextAllocExtended'])(a0, a1, a2);
-var _palloc_extended = Module['_palloc_extended'] = (a0, a1) => (_palloc_extended = Module['_palloc_extended'] = wasmExports['palloc_extended'])(a0, a1);
-var _pchomp = Module['_pchomp'] = (a0) => (_pchomp = Module['_pchomp'] = wasmExports['pchomp'])(a0);
-var _hash_estimate_size = Module['_hash_estimate_size'] = (a0, a1) => (_hash_estimate_size = Module['_hash_estimate_size'] = wasmExports['hash_estimate_size'])(a0, a1);
-var _pg_printf = Module['_pg_printf'] = (a0, a1) => (_pg_printf = Module['_pg_printf'] = wasmExports['pg_printf'])(a0, a1);
-var _ProcessConfigFile = Module['_ProcessConfigFile'] = (a0) => (_ProcessConfigFile = Module['_ProcessConfigFile'] = wasmExports['ProcessConfigFile'])(a0);
-var _list_delete = Module['_list_delete'] = (a0, a1) => (_list_delete = Module['_list_delete'] = wasmExports['list_delete'])(a0, a1);
-var _GetConfigOption = Module['_GetConfigOption'] = (a0, a1, a2) => (_GetConfigOption = Module['_GetConfigOption'] = wasmExports['GetConfigOption'])(a0, a1, a2);
-var _RecoveryInProgress = Module['_RecoveryInProgress'] = () => (_RecoveryInProgress = Module['_RecoveryInProgress'] = wasmExports['RecoveryInProgress'])();
-var _parse_int = Module['_parse_int'] = (a0, a1, a2, a3) => (_parse_int = Module['_parse_int'] = wasmExports['parse_int'])(a0, a1, a2, a3);
-var _parse_real = Module['_parse_real'] = (a0, a1, a2, a3) => (_parse_real = Module['_parse_real'] = wasmExports['parse_real'])(a0, a1, a2, a3);
-var _FlushErrorState = Module['_FlushErrorState'] = () => (_FlushErrorState = Module['_FlushErrorState'] = wasmExports['FlushErrorState'])();
-var _DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = wasmExports['DefineCustomBoolVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) => (_DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = wasmExports['DefineCustomIntVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
-var _DefineCustomRealVariable = Module['_DefineCustomRealVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) => (_DefineCustomRealVariable = Module['_DefineCustomRealVariable'] = wasmExports['DefineCustomRealVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
-var _DefineCustomStringVariable = Module['_DefineCustomStringVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_DefineCustomStringVariable = Module['_DefineCustomStringVariable'] = wasmExports['DefineCustomStringVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) => (_DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = wasmExports['DefineCustomEnumVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
-var _MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = (a0) => (_MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = wasmExports['MarkGUCPrefixReserved'])(a0);
-var _typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = (a0, a1, a2, a3) => (_typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = wasmExports['typenameTypeIdAndMod'])(a0, a1, a2, a3);
-var _pre_format_elog_string = Module['_pre_format_elog_string'] = (a0, a1) => (_pre_format_elog_string = Module['_pre_format_elog_string'] = wasmExports['pre_format_elog_string'])(a0, a1);
-var _format_elog_string = Module['_format_elog_string'] = (a0, a1) => (_format_elog_string = Module['_format_elog_string'] = wasmExports['format_elog_string'])(a0, a1);
-var _BlockSampler_Init = Module['_BlockSampler_Init'] = (a0, a1, a2, a3) => (_BlockSampler_Init = Module['_BlockSampler_Init'] = wasmExports['BlockSampler_Init'])(a0, a1, a2, a3);
-var _sampler_random_init_state = Module['_sampler_random_init_state'] = (a0, a1) => (_sampler_random_init_state = Module['_sampler_random_init_state'] = wasmExports['sampler_random_init_state'])(a0, a1);
-var _BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = (a0) => (_BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = wasmExports['BlockSampler_HasMore'])(a0);
-var _BlockSampler_Next = Module['_BlockSampler_Next'] = (a0) => (_BlockSampler_Next = Module['_BlockSampler_Next'] = wasmExports['BlockSampler_Next'])(a0);
-var _sampler_random_fract = Module['_sampler_random_fract'] = (a0) => (_sampler_random_fract = Module['_sampler_random_fract'] = wasmExports['sampler_random_fract'])(a0);
-var _reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = (a0, a1) => (_reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = wasmExports['reservoir_init_selection_state'])(a0, a1);
-var _pg_prng_uint32 = Module['_pg_prng_uint32'] = (a0) => (_pg_prng_uint32 = Module['_pg_prng_uint32'] = wasmExports['pg_prng_uint32'])(a0);
-var _reservoir_get_next_S = Module['_reservoir_get_next_S'] = (a0, a1, a2) => (_reservoir_get_next_S = Module['_reservoir_get_next_S'] = wasmExports['reservoir_get_next_S'])(a0, a1, a2);
-var _pgstat_report_activity = Module['_pgstat_report_activity'] = (a0, a1) => (_pgstat_report_activity = Module['_pgstat_report_activity'] = wasmExports['pgstat_report_activity'])(a0, a1);
-var _pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = (a0) => (_pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = wasmExports['pgstat_assoc_relation'])(a0);
-var _clock_gettime = Module['_clock_gettime'] = (a0, a1) => (_clock_gettime = Module['_clock_gettime'] = wasmExports['clock_gettime'])(a0, a1);
-var _WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = (a0, a1, a2) => (_WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = wasmExports['WalUsageAccumDiff'])(a0, a1, a2);
-var _fputc = Module['_fputc'] = (a0, a1) => (_fputc = Module['_fputc'] = wasmExports['fputc'])(a0, a1);
-var _fmgr_info_copy = Module['_fmgr_info_copy'] = (a0, a1, a2) => (_fmgr_info_copy = Module['_fmgr_info_copy'] = wasmExports['fmgr_info_copy'])(a0, a1, a2);
-var _DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = wasmExports['DirectFunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
-var _CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = (a0, a1, a2, a3, a4) => (_CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = wasmExports['CallerFInfoFunctionCall2'])(a0, a1, a2, a3, a4);
-var _FunctionCall0Coll = Module['_FunctionCall0Coll'] = (a0, a1) => (_FunctionCall0Coll = Module['_FunctionCall0Coll'] = wasmExports['FunctionCall0Coll'])(a0, a1);
-var _get_call_expr_argtype = Module['_get_call_expr_argtype'] = (a0, a1) => (_get_call_expr_argtype = Module['_get_call_expr_argtype'] = wasmExports['get_call_expr_argtype'])(a0, a1);
-var _CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = (a0, a1) => (_CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = wasmExports['CheckFunctionValidatorAccess'])(a0, a1);
-var _dlsym = Module['_dlsym'] = (a0, a1) => (_dlsym = Module['_dlsym'] = wasmExports['dlsym'])(a0, a1);
-var _dlopen = Module['_dlopen'] = (a0, a1) => (_dlopen = Module['_dlopen'] = wasmExports['dlopen'])(a0, a1);
-var _dlerror = Module['_dlerror'] = () => (_dlerror = Module['_dlerror'] = wasmExports['dlerror'])();
-var _dlclose = Module['_dlclose'] = (a0) => (_dlclose = Module['_dlclose'] = wasmExports['dlclose'])(a0);
-var _find_rendezvous_variable = Module['_find_rendezvous_variable'] = (a0) => (_find_rendezvous_variable = Module['_find_rendezvous_variable'] = wasmExports['find_rendezvous_variable'])(a0);
-var _TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = (a0, a1, a2) => (_TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = wasmExports['TupleDescInitEntryCollation'])(a0, a1, a2);
-var _resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = (a0, a1, a2, a3) => (_resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = wasmExports['resolve_polymorphic_argtypes'])(a0, a1, a2, a3);
-var _relation_openrv = Module['_relation_openrv'] = (a0, a1) => (_relation_openrv = Module['_relation_openrv'] = wasmExports['relation_openrv'])(a0, a1);
+var _strlcat = Module['_strlcat'] = (a0, a1, a2) => (_strlcat = Module['_strlcat'] = wasmExports['strlcat'])(a0, a1, a2);
+var _pg_bindtextdomain = Module['_pg_bindtextdomain'] = (a0) => (_pg_bindtextdomain = Module['_pg_bindtextdomain'] = wasmExports['pg_bindtextdomain'])(a0);
+var _CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = (a0, a1) => (_CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = wasmExports['CacheRegisterRelcacheCallback'])(a0, a1);
+var _CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = (a0, a1, a2) => (_CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = wasmExports['CachedPlanAllowsSimpleValidityCheck'])(a0, a1, a2);
+var _CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = (a0, a1, a2) => (_CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = wasmExports['CachedPlanIsSimplyValid'])(a0, a1, a2);
+var _GetCachedExpression = Module['_GetCachedExpression'] = (a0) => (_GetCachedExpression = Module['_GetCachedExpression'] = wasmExports['GetCachedExpression'])(a0);
+var _FreeCachedExpression = Module['_FreeCachedExpression'] = (a0) => (_FreeCachedExpression = Module['_FreeCachedExpression'] = wasmExports['FreeCachedExpression'])(a0);
+var _SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = (a0, a1) => (_SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = wasmExports['SearchSysCacheAttName'])(a0, a1);
+var _get_func_namespace = Module['_get_func_namespace'] = (a0) => (_get_func_namespace = Module['_get_func_namespace'] = wasmExports['get_func_namespace'])(a0);
+var _get_rel_type_id = Module['_get_rel_type_id'] = (a0) => (_get_rel_type_id = Module['_get_rel_type_id'] = wasmExports['get_rel_type_id'])(a0);
+var _get_typsubscript = Module['_get_typsubscript'] = (a0, a1) => (_get_typsubscript = Module['_get_typsubscript'] = wasmExports['get_typsubscript'])(a0, a1);
+var _is_publishable_relation = Module['_is_publishable_relation'] = (a0) => (_is_publishable_relation = Module['_is_publishable_relation'] = wasmExports['is_publishable_relation'])(a0);
+var _GetRelationPublications = Module['_GetRelationPublications'] = (a0) => (_GetRelationPublications = Module['_GetRelationPublications'] = wasmExports['GetRelationPublications'])(a0);
+var _GetSchemaPublications = Module['_GetSchemaPublications'] = (a0) => (_GetSchemaPublications = Module['_GetSchemaPublications'] = wasmExports['GetSchemaPublications'])(a0);
 var _in_error_recursion_trouble = Module['_in_error_recursion_trouble'] = () => (_in_error_recursion_trouble = Module['_in_error_recursion_trouble'] = wasmExports['in_error_recursion_trouble'])();
-var _EmitErrorReport = Module['_EmitErrorReport'] = () => (_EmitErrorReport = Module['_EmitErrorReport'] = wasmExports['EmitErrorReport'])();
-var _errmsg_plural = Module['_errmsg_plural'] = (a0, a1, a2, a3) => (_errmsg_plural = Module['_errmsg_plural'] = wasmExports['errmsg_plural'])(a0, a1, a2, a3);
-var _errposition = Module['_errposition'] = (a0) => (_errposition = Module['_errposition'] = wasmExports['errposition'])(a0);
-var _internalerrposition = Module['_internalerrposition'] = (a0) => (_internalerrposition = Module['_internalerrposition'] = wasmExports['internalerrposition'])(a0);
-var _internalerrquery = Module['_internalerrquery'] = (a0) => (_internalerrquery = Module['_internalerrquery'] = wasmExports['internalerrquery'])(a0);
-var _geterrposition = Module['_geterrposition'] = () => (_geterrposition = Module['_geterrposition'] = wasmExports['geterrposition'])();
 var _getinternalerrposition = Module['_getinternalerrposition'] = () => (_getinternalerrposition = Module['_getinternalerrposition'] = wasmExports['getinternalerrposition'])();
-var _CopyErrorData = Module['_CopyErrorData'] = () => (_CopyErrorData = Module['_CopyErrorData'] = wasmExports['CopyErrorData'])();
 var _FreeErrorData = Module['_FreeErrorData'] = (a0) => (_FreeErrorData = Module['_FreeErrorData'] = wasmExports['FreeErrorData'])(a0);
-var _ReThrowError = Module['_ReThrowError'] = (a0) => (_ReThrowError = Module['_ReThrowError'] = wasmExports['ReThrowError'])(a0);
 var _GetErrorContextStack = Module['_GetErrorContextStack'] = () => (_GetErrorContextStack = Module['_GetErrorContextStack'] = wasmExports['GetErrorContextStack'])();
-var _ExecReScan = Module['_ExecReScan'] = (a0) => (_ExecReScan = Module['_ExecReScan'] = wasmExports['ExecReScan'])(a0);
-var _ExecInitExprList = Module['_ExecInitExprList'] = (a0, a1) => (_ExecInitExprList = Module['_ExecInitExprList'] = wasmExports['ExecInitExprList'])(a0, a1);
-var _CreateExprContext = Module['_CreateExprContext'] = (a0) => (_CreateExprContext = Module['_CreateExprContext'] = wasmExports['CreateExprContext'])(a0);
-var _makeTargetEntry = Module['_makeTargetEntry'] = (a0, a1, a2, a3) => (_makeTargetEntry = Module['_makeTargetEntry'] = wasmExports['makeTargetEntry'])(a0, a1, a2, a3);
-var _InstrAlloc = Module['_InstrAlloc'] = (a0, a1, a2) => (_InstrAlloc = Module['_InstrAlloc'] = wasmExports['InstrAlloc'])(a0, a1, a2);
-var _bms_overlap = Module['_bms_overlap'] = (a0, a1) => (_bms_overlap = Module['_bms_overlap'] = wasmExports['bms_overlap'])(a0, a1);
-var _ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = (a0, a1, a2) => (_ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = wasmExports['ExecOpenScanRelation'])(a0, a1, a2);
-var _SPI_connect_ext = Module['_SPI_connect_ext'] = (a0) => (_SPI_connect_ext = Module['_SPI_connect_ext'] = wasmExports['SPI_connect_ext'])(a0);
-var _SPI_commit = Module['_SPI_commit'] = () => (_SPI_commit = Module['_SPI_commit'] = wasmExports['SPI_commit'])();
-var _SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = () => (_SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = wasmExports['SPI_commit_and_chain'])();
-var _SPI_rollback = Module['_SPI_rollback'] = () => (_SPI_rollback = Module['_SPI_rollback'] = wasmExports['SPI_rollback'])();
-var _SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = () => (_SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = wasmExports['SPI_rollback_and_chain'])();
-var _raw_parser = Module['_raw_parser'] = (a0, a1) => (_raw_parser = Module['_raw_parser'] = wasmExports['raw_parser'])(a0, a1);
-var _GetCommandTagName = Module['_GetCommandTagName'] = (a0) => (_GetCommandTagName = Module['_GetCommandTagName'] = wasmExports['GetCommandTagName'])(a0);
-var _EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = () => (_EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = wasmExports['EnsurePortalSnapshotExists'])();
-var _CreateDestReceiver = Module['_CreateDestReceiver'] = (a0) => (_CreateDestReceiver = Module['_CreateDestReceiver'] = wasmExports['CreateDestReceiver'])(a0);
-var _SPI_exec = Module['_SPI_exec'] = (a0, a1) => (_SPI_exec = Module['_SPI_exec'] = wasmExports['SPI_exec'])(a0, a1);
-var _SPI_execute_extended = Module['_SPI_execute_extended'] = (a0, a1) => (_SPI_execute_extended = Module['_SPI_execute_extended'] = wasmExports['SPI_execute_extended'])(a0, a1);
-var _makeParamList = Module['_makeParamList'] = (a0) => (_makeParamList = Module['_makeParamList'] = wasmExports['makeParamList'])(a0);
-var _SPI_execp = Module['_SPI_execp'] = (a0, a1, a2, a3) => (_SPI_execp = Module['_SPI_execp'] = wasmExports['SPI_execp'])(a0, a1, a2, a3);
-var _SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = (a0, a1) => (_SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = wasmExports['SPI_execute_plan_extended'])(a0, a1);
-var _SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = wasmExports['SPI_execute_plan_with_paramlist'])(a0, a1, a2, a3);
-var _SPI_prepare_extended = Module['_SPI_prepare_extended'] = (a0, a1) => (_SPI_prepare_extended = Module['_SPI_prepare_extended'] = wasmExports['SPI_prepare_extended'])(a0, a1);
-var _SPI_copytuple = Module['_SPI_copytuple'] = (a0) => (_SPI_copytuple = Module['_SPI_copytuple'] = wasmExports['SPI_copytuple'])(a0);
-var _SPI_returntuple = Module['_SPI_returntuple'] = (a0, a1) => (_SPI_returntuple = Module['_SPI_returntuple'] = wasmExports['SPI_returntuple'])(a0, a1);
-var _SPI_gettype = Module['_SPI_gettype'] = (a0, a1) => (_SPI_gettype = Module['_SPI_gettype'] = wasmExports['SPI_gettype'])(a0, a1);
-var _SPI_getrelname = Module['_SPI_getrelname'] = (a0) => (_SPI_getrelname = Module['_SPI_getrelname'] = wasmExports['SPI_getrelname'])(a0);
-var _SPI_datumTransfer = Module['_SPI_datumTransfer'] = (a0, a1, a2) => (_SPI_datumTransfer = Module['_SPI_datumTransfer'] = wasmExports['SPI_datumTransfer'])(a0, a1, a2);
-var _SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = wasmExports['SPI_cursor_open_with_paramlist'])(a0, a1, a2, a3);
-var _SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = (a0, a1, a2) => (_SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = wasmExports['SPI_cursor_parse_open'])(a0, a1, a2);
-var _SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = (a0, a1, a2) => (_SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = wasmExports['SPI_scroll_cursor_fetch'])(a0, a1, a2);
-var _SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = (a0, a1, a2) => (_SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = wasmExports['SPI_scroll_cursor_move'])(a0, a1, a2);
-var _SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = (a0) => (_SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = wasmExports['SPI_plan_get_plan_sources'])(a0);
-var _SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = (a0) => (_SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = wasmExports['SPI_plan_get_cached_plan'])(a0);
-var _SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = (a0) => (_SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = wasmExports['SPI_register_trigger_data'])(a0);
-var _execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = (a0, a1) => (_execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = wasmExports['execute_attr_map_tuple'])(a0, a1);
-var _shm_toc_allocate = Module['_shm_toc_allocate'] = (a0, a1) => (_shm_toc_allocate = Module['_shm_toc_allocate'] = wasmExports['shm_toc_allocate'])(a0, a1);
-var _shm_toc_insert = Module['_shm_toc_insert'] = (a0, a1, a2) => (_shm_toc_insert = Module['_shm_toc_insert'] = wasmExports['shm_toc_insert'])(a0, a1, a2);
-var _shm_toc_lookup = Module['_shm_toc_lookup'] = (a0, a1, a2) => (_shm_toc_lookup = Module['_shm_toc_lookup'] = wasmExports['shm_toc_lookup'])(a0, a1, a2);
-var _CreateParallelContext = Module['_CreateParallelContext'] = (a0, a1, a2) => (_CreateParallelContext = Module['_CreateParallelContext'] = wasmExports['CreateParallelContext'])(a0, a1, a2);
-var _InitializeParallelDSM = Module['_InitializeParallelDSM'] = (a0) => (_InitializeParallelDSM = Module['_InitializeParallelDSM'] = wasmExports['InitializeParallelDSM'])(a0);
-var _WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = (a0) => (_WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = wasmExports['WaitForParallelWorkersToFinish'])(a0);
-var _DestroyParallelContext = Module['_DestroyParallelContext'] = (a0) => (_DestroyParallelContext = Module['_DestroyParallelContext'] = wasmExports['DestroyParallelContext'])(a0);
-var _InstrEndLoop = Module['_InstrEndLoop'] = (a0) => (_InstrEndLoop = Module['_InstrEndLoop'] = wasmExports['InstrEndLoop'])(a0);
-var _build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = (a0, a1, a2) => (_build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = wasmExports['build_attrmap_by_name_if_req'])(a0, a1, a2);
-var _execute_attr_map_slot = Module['_execute_attr_map_slot'] = (a0, a1, a2) => (_execute_attr_map_slot = Module['_execute_attr_map_slot'] = wasmExports['execute_attr_map_slot'])(a0, a1, a2);
-var _ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = (a0, a1) => (_ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = wasmExports['ExecInitExprWithParams'])(a0, a1);
-var _ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = (a0, a1, a2) => (_ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = wasmExports['ExecForceStoreHeapTuple'])(a0, a1, a2);
-var _list_delete_last = Module['_list_delete_last'] = (a0) => (_list_delete_last = Module['_list_delete_last'] = wasmExports['list_delete_last'])(a0);
-var _ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = (a0) => (_ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = wasmExports['ExecStoreAllNullTuple'])(a0);
-var _ExprEvalPushStep = Module['_ExprEvalPushStep'] = (a0, a1) => (_ExprEvalPushStep = Module['_ExprEvalPushStep'] = wasmExports['ExprEvalPushStep'])(a0, a1);
-var _convert_tuples_by_position = Module['_convert_tuples_by_position'] = (a0, a1, a2) => (_convert_tuples_by_position = Module['_convert_tuples_by_position'] = wasmExports['convert_tuples_by_position'])(a0, a1, a2);
-var _SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = (a0, a1, a2, a3, a4, a5) => (_SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = wasmExports['SetTuplestoreDestReceiverParams'])(a0, a1, a2, a3, a4, a5);
-var _ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = (a0, a1) => (_ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = wasmExports['ExecFindJunkAttributeInTlist'])(a0, a1);
-var _ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = (a0, a1) => (_ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = wasmExports['ExecGetReturningSlot'])(a0, a1);
-var _ConditionVariableInit = Module['_ConditionVariableInit'] = (a0) => (_ConditionVariableInit = Module['_ConditionVariableInit'] = wasmExports['ConditionVariableInit'])(a0);
-var _ConditionVariableSleep = Module['_ConditionVariableSleep'] = (a0, a1) => (_ConditionVariableSleep = Module['_ConditionVariableSleep'] = wasmExports['ConditionVariableSleep'])(a0, a1);
-var _ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = () => (_ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = wasmExports['ConditionVariableCancelSleep'])();
-var _PrefetchBuffer = Module['_PrefetchBuffer'] = (a0, a1, a2, a3) => (_PrefetchBuffer = Module['_PrefetchBuffer'] = wasmExports['PrefetchBuffer'])(a0, a1, a2, a3);
-var _errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = (a0) => (_errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = wasmExports['errdetail_relkind_not_supported'])(a0);
-var _ExecAsyncResponse = Module['_ExecAsyncResponse'] = (a0) => (_ExecAsyncResponse = Module['_ExecAsyncResponse'] = wasmExports['ExecAsyncResponse'])(a0);
-var _ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = (a0, a1) => (_ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = wasmExports['ExecAsyncRequestDone'])(a0, a1);
-var _ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = (a0) => (_ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = wasmExports['ExecAsyncRequestPending'])(a0);
-var _pairingheap_remove_first = Module['_pairingheap_remove_first'] = (a0) => (_pairingheap_remove_first = Module['_pairingheap_remove_first'] = wasmExports['pairingheap_remove_first'])(a0);
-var _pairingheap_allocate = Module['_pairingheap_allocate'] = (a0, a1) => (_pairingheap_allocate = Module['_pairingheap_allocate'] = wasmExports['pairingheap_allocate'])(a0, a1);
-var _LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = (a0) => (_LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = wasmExports['LaunchParallelWorkers'])(a0);
-var _FreeExprContext = Module['_FreeExprContext'] = (a0, a1) => (_FreeExprContext = Module['_FreeExprContext'] = wasmExports['FreeExprContext'])(a0, a1);
-var _ExecInitRangeTable = Module['_ExecInitRangeTable'] = (a0, a1, a2) => (_ExecInitRangeTable = Module['_ExecInitRangeTable'] = wasmExports['ExecInitRangeTable'])(a0, a1, a2);
-var _ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = (a0, a1) => (_ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = wasmExports['ExecGetResultRelCheckAsUser'])(a0, a1);
-var _AddWaitEventToSet = Module['_AddWaitEventToSet'] = (a0, a1, a2, a3, a4) => (_AddWaitEventToSet = Module['_AddWaitEventToSet'] = wasmExports['AddWaitEventToSet'])(a0, a1, a2, a3, a4);
-var _GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = (a0) => (_GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = wasmExports['GetNumRegisteredWaitEvents'])(a0);
-var _BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = (a0, a1, a2) => (_BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = wasmExports['BufferUsageAccumDiff'])(a0, a1, a2);
-var _InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = (a0, a1) => (_InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = wasmExports['InstrUpdateTupleCount'])(a0, a1);
-var _table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = (a0, a1) => (_table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = wasmExports['table_parallelscan_estimate'])(a0, a1);
-var _table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = (a0, a1, a2) => (_table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = wasmExports['table_parallelscan_initialize'])(a0, a1, a2);
-var _table_beginscan_parallel = Module['_table_beginscan_parallel'] = (a0, a1) => (_table_beginscan_parallel = Module['_table_beginscan_parallel'] = wasmExports['table_beginscan_parallel'])(a0, a1);
-var _standard_ExecutorStart = Module['_standard_ExecutorStart'] = (a0, a1) => (_standard_ExecutorStart = Module['_standard_ExecutorStart'] = wasmExports['standard_ExecutorStart'])(a0, a1);
-var _standard_ExecutorRun = Module['_standard_ExecutorRun'] = (a0, a1, a2, a3) => (_standard_ExecutorRun = Module['_standard_ExecutorRun'] = wasmExports['standard_ExecutorRun'])(a0, a1, a2, a3);
-var _EnterParallelMode = Module['_EnterParallelMode'] = () => (_EnterParallelMode = Module['_EnterParallelMode'] = wasmExports['EnterParallelMode'])();
-var _ExitParallelMode = Module['_ExitParallelMode'] = () => (_ExitParallelMode = Module['_ExitParallelMode'] = wasmExports['ExitParallelMode'])();
-var _standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = (a0) => (_standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = wasmExports['standard_ExecutorFinish'])(a0);
-var _standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = (a0) => (_standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = wasmExports['standard_ExecutorEnd'])(a0);
-var _MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = (a0, a1) => (_MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = wasmExports['MakeTupleTableSlot'])(a0, a1);
-var _ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = (a0, a1, a2) => (_ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = wasmExports['ExecFetchSlotHeapTuple'])(a0, a1, a2);
-var _bms_nonempty_difference = Module['_bms_nonempty_difference'] = (a0, a1) => (_bms_nonempty_difference = Module['_bms_nonempty_difference'] = wasmExports['bms_nonempty_difference'])(a0, a1);
-var _sigaddset = Module['_sigaddset'] = (a0, a1) => (_sigaddset = Module['_sigaddset'] = wasmExports['sigaddset'])(a0, a1);
-var _die = Module['_die'] = (a0) => (_die = Module['_die'] = wasmExports['die'])(a0);
-var _fsync_pgdata = Module['_fsync_pgdata'] = (a0, a1) => (_fsync_pgdata = Module['_fsync_pgdata'] = wasmExports['fsync_pgdata'])(a0, a1);
-var _get_restricted_token = Module['_get_restricted_token'] = () => (_get_restricted_token = Module['_get_restricted_token'] = wasmExports['get_restricted_token'])();
-var _pg_malloc = Module['_pg_malloc'] = (a0) => (_pg_malloc = Module['_pg_malloc'] = wasmExports['pg_malloc'])(a0);
-var _pg_realloc = Module['_pg_realloc'] = (a0, a1) => (_pg_realloc = Module['_pg_realloc'] = wasmExports['pg_realloc'])(a0, a1);
-var _pg_strdup = Module['_pg_strdup'] = (a0) => (_pg_strdup = Module['_pg_strdup'] = wasmExports['pg_strdup'])(a0);
-var _simple_prompt = Module['_simple_prompt'] = (a0, a1) => (_simple_prompt = Module['_simple_prompt'] = wasmExports['simple_prompt'])(a0, a1);
-var _fopen = Module['_fopen'] = (a0, a1) => (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1);
-var _interactive_file = Module['_interactive_file'] = () => (_interactive_file = Module['_interactive_file'] = wasmExports['interactive_file'])();
-var _fclose = Module['_fclose'] = (a0) => (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0);
-var _interactive_one = Module['_interactive_one'] = () => (_interactive_one = Module['_interactive_one'] = wasmExports['interactive_one'])();
-var _pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = (a0, a1) => (_pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = wasmExports['pq_recvbuf_fill'])(a0, a1);
-var _calloc = Module['_calloc'] = (a0, a1) => (_calloc = Module['_calloc'] = wasmExports['calloc'])(a0, a1);
-var _pg_repl_raf = Module['_pg_repl_raf'] = () => (_pg_repl_raf = Module['_pg_repl_raf'] = wasmExports['pg_repl_raf'])();
-var _pg_shutdown = Module['_pg_shutdown'] = () => (_pg_shutdown = Module['_pg_shutdown'] = wasmExports['pg_shutdown'])();
-var _interactive_write = Module['_interactive_write'] = (a0) => (_interactive_write = Module['_interactive_write'] = wasmExports['interactive_write'])(a0);
-var _interactive_read = Module['_interactive_read'] = () => (_interactive_read = Module['_interactive_read'] = wasmExports['interactive_read'])();
-var _standard_ProcessUtility = Module['_standard_ProcessUtility'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_standard_ProcessUtility = Module['_standard_ProcessUtility'] = wasmExports['standard_ProcessUtility'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _Async_Notify = Module['_Async_Notify'] = (a0, a1) => (_Async_Notify = Module['_Async_Notify'] = wasmExports['Async_Notify'])(a0, a1);
-var _defGetBoolean = Module['_defGetBoolean'] = (a0) => (_defGetBoolean = Module['_defGetBoolean'] = wasmExports['defGetBoolean'])(a0);
-var _bms_equal = Module['_bms_equal'] = (a0, a1) => (_bms_equal = Module['_bms_equal'] = wasmExports['bms_equal'])(a0, a1);
-var _list_make3_impl = Module['_list_make3_impl'] = (a0, a1, a2, a3) => (_list_make3_impl = Module['_list_make3_impl'] = wasmExports['list_make3_impl'])(a0, a1, a2, a3);
-var _makeVar = Module['_makeVar'] = (a0, a1, a2, a3, a4, a5) => (_makeVar = Module['_makeVar'] = wasmExports['makeVar'])(a0, a1, a2, a3, a4, a5);
-var _SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = (a0) => (_SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = wasmExports['SignalHandlerForConfigReload'])(a0);
-var _procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = (a0) => (_procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = wasmExports['procsignal_sigusr1_handler'])(a0);
-var _SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = (a0) => (_SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = wasmExports['SignalHandlerForShutdownRequest'])(a0);
-var _GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = (a0) => (_GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = wasmExports['GetXLogReplayRecPtr'])(a0);
-var _send = Module['_send'] = (a0, a1, a2, a3) => (_send = Module['_send'] = wasmExports['send'])(a0, a1, a2, a3);
-var _ReleaseExternalFD = Module['_ReleaseExternalFD'] = () => (_ReleaseExternalFD = Module['_ReleaseExternalFD'] = wasmExports['ReleaseExternalFD'])();
-var _BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = (a0, a1, a2) => (_BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = wasmExports['BackgroundWorkerInitializeConnectionByOid'])(a0, a1, a2);
-var _BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = () => (_BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = wasmExports['BackgroundWorkerUnblockSignals'])();
-var _gai_strerror = Module['_gai_strerror'] = (a0) => (_gai_strerror = Module['_gai_strerror'] = wasmExports['gai_strerror'])(a0);
-var _MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = (a0, a1) => (_MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = wasmExports['MultiXactIdPrecedes'])(a0, a1);
-var _makeRangeVar = Module['_makeRangeVar'] = (a0, a1, a2) => (_makeRangeVar = Module['_makeRangeVar'] = wasmExports['makeRangeVar'])(a0, a1, a2);
-var _RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = (a0) => (_RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = wasmExports['RegisterBackgroundWorker'])(a0);
-var _RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = (a0, a1) => (_RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = wasmExports['RegisterDynamicBackgroundWorker'])(a0, a1);
-var _WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = (a0, a1) => (_WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = wasmExports['WaitForBackgroundWorkerStartup'])(a0, a1);
-var _WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = (a0) => (_WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = wasmExports['WaitForBackgroundWorkerShutdown'])(a0);
-var _defGetString = Module['_defGetString'] = (a0) => (_defGetString = Module['_defGetString'] = wasmExports['defGetString'])(a0);
-var _get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = (a0, a1) => (_get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = wasmExports['get_tsearch_config_filename'])(a0, a1);
-var _lowerstr = Module['_lowerstr'] = (a0) => (_lowerstr = Module['_lowerstr'] = wasmExports['lowerstr'])(a0);
-var _readstoplist = Module['_readstoplist'] = (a0, a1, a2) => (_readstoplist = Module['_readstoplist'] = wasmExports['readstoplist'])(a0, a1, a2);
-var _lowerstr_with_len = Module['_lowerstr_with_len'] = (a0, a1) => (_lowerstr_with_len = Module['_lowerstr_with_len'] = wasmExports['lowerstr_with_len'])(a0, a1);
-var _searchstoplist = Module['_searchstoplist'] = (a0, a1) => (_searchstoplist = Module['_searchstoplist'] = wasmExports['searchstoplist'])(a0, a1);
-var _tsearch_readline_begin = Module['_tsearch_readline_begin'] = (a0, a1) => (_tsearch_readline_begin = Module['_tsearch_readline_begin'] = wasmExports['tsearch_readline_begin'])(a0, a1);
-var _tsearch_readline = Module['_tsearch_readline'] = (a0) => (_tsearch_readline = Module['_tsearch_readline'] = wasmExports['tsearch_readline'])(a0);
-var _tsearch_readline_end = Module['_tsearch_readline_end'] = (a0) => (_tsearch_readline_end = Module['_tsearch_readline_end'] = wasmExports['tsearch_readline_end'])(a0);
+var _scanner_init = Module['_scanner_init'] = (a0, a1, a2, a3) => (_scanner_init = Module['_scanner_init'] = wasmExports['scanner_init'])(a0, a1, a2, a3);
+var _scanner_finish = Module['_scanner_finish'] = (a0) => (_scanner_finish = Module['_scanner_finish'] = wasmExports['scanner_finish'])(a0);
+var _core_yylex = Module['_core_yylex'] = (a0, a1, a2) => (_core_yylex = Module['_core_yylex'] = wasmExports['core_yylex'])(a0, a1, a2);
+var _LookupTypeName = Module['_LookupTypeName'] = (a0, a1, a2, a3) => (_LookupTypeName = Module['_LookupTypeName'] = wasmExports['LookupTypeName'])(a0, a1, a2, a3);
+var _typeStringToTypeName = Module['_typeStringToTypeName'] = (a0, a1) => (_typeStringToTypeName = Module['_typeStringToTypeName'] = wasmExports['typeStringToTypeName'])(a0, a1);
+var _makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = (a0) => (_makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = wasmExports['makeTypeNameFromNameList'])(a0);
+var _makeBoolean = Module['_makeBoolean'] = (a0) => (_makeBoolean = Module['_makeBoolean'] = wasmExports['makeBoolean'])(a0);
+var _makeInteger = Module['_makeInteger'] = (a0) => (_makeInteger = Module['_makeInteger'] = wasmExports['makeInteger'])(a0);
+var _makeTypeName = Module['_makeTypeName'] = (a0) => (_makeTypeName = Module['_makeTypeName'] = wasmExports['makeTypeName'])(a0);
 var _list_make4_impl = Module['_list_make4_impl'] = (a0, a1, a2, a3, a4) => (_list_make4_impl = Module['_list_make4_impl'] = wasmExports['list_make4_impl'])(a0, a1, a2, a3, a4);
+var _list_member = Module['_list_member'] = (a0, a1) => (_list_member = Module['_list_member'] = wasmExports['list_member'])(a0, a1);
+var _SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = (a0) => (_SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = wasmExports['SignalHandlerForConfigReload'])(a0);
+var _SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = (a0) => (_SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = wasmExports['SignalHandlerForShutdownRequest'])(a0);
+var _send = Module['_send'] = (a0, a1, a2, a3) => (_send = Module['_send'] = wasmExports['send'])(a0, a1, a2, a3);
+var _gai_strerror = Module['_gai_strerror'] = (a0) => (_gai_strerror = Module['_gai_strerror'] = wasmExports['gai_strerror'])(a0);
+var _RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = (a0) => (_RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = wasmExports['RegisterBackgroundWorker'])(a0);
+var _WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = (a0, a1) => (_WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = wasmExports['WaitForBackgroundWorkerStartup'])(a0, a1);
+var _pg_initdb = Module['_pg_initdb'] = () => (_pg_initdb = Module['_pg_initdb'] = wasmExports['pg_initdb'])();
+var _pg_initdb_main = Module['_pg_initdb_main'] = () => (_pg_initdb_main = Module['_pg_initdb_main'] = wasmExports['pg_initdb_main'])();
+var ___cxa_throw = Module['___cxa_throw'] = (a0, a1, a2) => (___cxa_throw = Module['___cxa_throw'] = wasmExports['__cxa_throw'])(a0, a1, a2);
+var _main_repl = Module['_main_repl'] = () => (_main_repl = Module['_main_repl'] = wasmExports['main_repl'])();
+var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
 var _list_make5_impl = Module['_list_make5_impl'] = (a0, a1, a2, a3, a4, a5) => (_list_make5_impl = Module['_list_make5_impl'] = wasmExports['list_make5_impl'])(a0, a1, a2, a3, a4, a5);
 var _lappend_xid = Module['_lappend_xid'] = (a0, a1) => (_lappend_xid = Module['_lappend_xid'] = wasmExports['lappend_xid'])(a0, a1);
-var _list_member = Module['_list_member'] = (a0, a1) => (_list_member = Module['_list_member'] = wasmExports['list_member'])(a0, a1);
 var _list_member_ptr = Module['_list_member_ptr'] = (a0, a1) => (_list_member_ptr = Module['_list_member_ptr'] = wasmExports['list_member_ptr'])(a0, a1);
 var _list_member_xid = Module['_list_member_xid'] = (a0, a1) => (_list_member_xid = Module['_list_member_xid'] = wasmExports['list_member_xid'])(a0, a1);
 var _list_append_unique_ptr = Module['_list_append_unique_ptr'] = (a0, a1) => (_list_append_unique_ptr = Module['_list_append_unique_ptr'] = wasmExports['list_append_unique_ptr'])(a0, a1);
-var _makeInteger = Module['_makeInteger'] = (a0) => (_makeInteger = Module['_makeInteger'] = wasmExports['makeInteger'])(a0);
-var _makeBoolean = Module['_makeBoolean'] = (a0) => (_makeBoolean = Module['_makeBoolean'] = wasmExports['makeBoolean'])(a0);
-var _makeTypeName = Module['_makeTypeName'] = (a0) => (_makeTypeName = Module['_makeTypeName'] = wasmExports['makeTypeName'])(a0);
-var _makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = (a0) => (_makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = wasmExports['makeTypeNameFromNameList'])(a0);
-var _makeDefElem = Module['_makeDefElem'] = (a0, a1, a2) => (_makeDefElem = Module['_makeDefElem'] = wasmExports['makeDefElem'])(a0, a1, a2);
-var _make_orclause = Module['_make_orclause'] = (a0) => (_make_orclause = Module['_make_orclause'] = wasmExports['make_orclause'])(a0);
 var _CleanQuerytext = Module['_CleanQuerytext'] = (a0, a1, a2) => (_CleanQuerytext = Module['_CleanQuerytext'] = wasmExports['CleanQuerytext'])(a0, a1, a2);
 var _EnableQueryId = Module['_EnableQueryId'] = () => (_EnableQueryId = Module['_EnableQueryId'] = wasmExports['EnableQueryId'])();
-var _tbm_add_tuples = Module['_tbm_add_tuples'] = (a0, a1, a2, a3) => (_tbm_add_tuples = Module['_tbm_add_tuples'] = wasmExports['tbm_add_tuples'])(a0, a1, a2, a3);
-var _GetForeignDataWrapper = Module['_GetForeignDataWrapper'] = (a0) => (_GetForeignDataWrapper = Module['_GetForeignDataWrapper'] = wasmExports['GetForeignDataWrapper'])(a0);
-var _untransformRelOptions = Module['_untransformRelOptions'] = (a0) => (_untransformRelOptions = Module['_untransformRelOptions'] = wasmExports['untransformRelOptions'])(a0);
-var _GetForeignServer = Module['_GetForeignServer'] = (a0) => (_GetForeignServer = Module['_GetForeignServer'] = wasmExports['GetForeignServer'])(a0);
-var _GetForeignServerExtended = Module['_GetForeignServerExtended'] = (a0, a1) => (_GetForeignServerExtended = Module['_GetForeignServerExtended'] = wasmExports['GetForeignServerExtended'])(a0, a1);
-var _GetForeignServerByName = Module['_GetForeignServerByName'] = (a0, a1) => (_GetForeignServerByName = Module['_GetForeignServerByName'] = wasmExports['GetForeignServerByName'])(a0, a1);
-var _GetUserMapping = Module['_GetUserMapping'] = (a0, a1) => (_GetUserMapping = Module['_GetUserMapping'] = wasmExports['GetUserMapping'])(a0, a1);
-var _GetForeignTable = Module['_GetForeignTable'] = (a0) => (_GetForeignTable = Module['_GetForeignTable'] = wasmExports['GetForeignTable'])(a0);
-var _GetForeignColumnOptions = Module['_GetForeignColumnOptions'] = (a0, a1) => (_GetForeignColumnOptions = Module['_GetForeignColumnOptions'] = wasmExports['GetForeignColumnOptions'])(a0, a1);
-var _GetExistingLocalJoinPath = Module['_GetExistingLocalJoinPath'] = (a0) => (_GetExistingLocalJoinPath = Module['_GetExistingLocalJoinPath'] = wasmExports['GetExistingLocalJoinPath'])(a0);
-var _GetFlushRecPtr = Module['_GetFlushRecPtr'] = (a0) => (_GetFlushRecPtr = Module['_GetFlushRecPtr'] = wasmExports['GetFlushRecPtr'])(a0);
-var _wal_segment_close = Module['_wal_segment_close'] = (a0) => (_wal_segment_close = Module['_wal_segment_close'] = wasmExports['wal_segment_close'])(a0);
-var _wal_segment_open = Module['_wal_segment_open'] = (a0, a1, a2) => (_wal_segment_open = Module['_wal_segment_open'] = wasmExports['wal_segment_open'])(a0, a1, a2);
-var _XLogReadRecord = Module['_XLogReadRecord'] = (a0, a1) => (_XLogReadRecord = Module['_XLogReadRecord'] = wasmExports['XLogReadRecord'])(a0, a1);
+var _make_orclause = Module['_make_orclause'] = (a0) => (_make_orclause = Module['_make_orclause'] = wasmExports['make_orclause'])(a0);
+var _join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = (a0, a1) => (_join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = wasmExports['join_clause_is_movable_to'])(a0, a1);
+var _make_restrictinfo = Module['_make_restrictinfo'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_make_restrictinfo = Module['_make_restrictinfo'] = wasmExports['make_restrictinfo'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _get_plan_rowmark = Module['_get_plan_rowmark'] = (a0, a1) => (_get_plan_rowmark = Module['_get_plan_rowmark'] = wasmExports['get_plan_rowmark'])(a0, a1);
+var _add_row_identity_var = Module['_add_row_identity_var'] = (a0, a1, a2, a3) => (_add_row_identity_var = Module['_add_row_identity_var'] = wasmExports['add_row_identity_var'])(a0, a1, a2, a3);
+var _get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = (a0, a1) => (_get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = wasmExports['get_rel_all_updated_cols'])(a0, a1);
+var _get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = (a0, a1, a2) => (_get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = wasmExports['get_baserel_parampathinfo'])(a0, a1, a2);
+var _tlist_member = Module['_tlist_member'] = (a0, a1) => (_tlist_member = Module['_tlist_member'] = wasmExports['tlist_member'])(a0, a1);
+var _add_to_flat_tlist = Module['_add_to_flat_tlist'] = (a0, a1) => (_add_to_flat_tlist = Module['_add_to_flat_tlist'] = wasmExports['add_to_flat_tlist'])(a0, a1);
+var _get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = (a0, a1) => (_get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = wasmExports['get_sortgrouplist_exprs'])(a0, a1);
+var _get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = (a0, a1) => (_get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = wasmExports['get_sortgroupref_clause_noerr'])(a0, a1);
+var _grouping_is_sortable = Module['_grouping_is_sortable'] = (a0) => (_grouping_is_sortable = Module['_grouping_is_sortable'] = wasmExports['grouping_is_sortable'])(a0);
+var _copy_pathtarget = Module['_copy_pathtarget'] = (a0) => (_copy_pathtarget = Module['_copy_pathtarget'] = wasmExports['copy_pathtarget'])(a0);
+var _add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = (a0, a1) => (_add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = wasmExports['add_new_columns_to_pathtarget'])(a0, a1);
+var _get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = (a0, a1, a2, a3) => (_get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = wasmExports['get_translated_update_targetlist'])(a0, a1, a2, a3);
+var _contain_mutable_functions = Module['_contain_mutable_functions'] = (a0) => (_contain_mutable_functions = Module['_contain_mutable_functions'] = wasmExports['contain_mutable_functions'])(a0);
+var _cost_qual_eval = Module['_cost_qual_eval'] = (a0, a1, a2) => (_cost_qual_eval = Module['_cost_qual_eval'] = wasmExports['cost_qual_eval'])(a0, a1, a2);
+var _add_path = Module['_add_path'] = (a0, a1) => (_add_path = Module['_add_path'] = wasmExports['add_path'])(a0, a1);
+var _pathkeys_contained_in = Module['_pathkeys_contained_in'] = (a0, a1) => (_pathkeys_contained_in = Module['_pathkeys_contained_in'] = wasmExports['pathkeys_contained_in'])(a0, a1);
+var _cost_sort = Module['_cost_sort'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_cost_sort = Module['_cost_sort'] = wasmExports['cost_sort'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _create_foreignscan_path = Module['_create_foreignscan_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreignscan_path = Module['_create_foreignscan_path'] = wasmExports['create_foreignscan_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _create_foreign_join_path = Module['_create_foreign_join_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreign_join_path = Module['_create_foreign_join_path'] = wasmExports['create_foreign_join_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _create_foreign_upper_path = Module['_create_foreign_upper_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_create_foreign_upper_path = Module['_create_foreign_upper_path'] = wasmExports['create_foreign_upper_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _create_projection_path = Module['_create_projection_path'] = (a0, a1, a2, a3) => (_create_projection_path = Module['_create_projection_path'] = wasmExports['create_projection_path'])(a0, a1, a2, a3);
+var _create_sort_path = Module['_create_sort_path'] = (a0, a1, a2, a3, a4) => (_create_sort_path = Module['_create_sort_path'] = wasmExports['create_sort_path'])(a0, a1, a2, a3, a4);
+var _adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = (a0, a1, a2, a3, a4) => (_adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = wasmExports['adjust_limit_rows_costs'])(a0, a1, a2, a3, a4);
+var _extract_actual_clauses = Module['_extract_actual_clauses'] = (a0, a1) => (_extract_actual_clauses = Module['_extract_actual_clauses'] = wasmExports['extract_actual_clauses'])(a0, a1);
+var _get_agg_clause_costs = Module['_get_agg_clause_costs'] = (a0, a1, a2) => (_get_agg_clause_costs = Module['_get_agg_clause_costs'] = wasmExports['get_agg_clause_costs'])(a0, a1, a2);
+var _update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = (a0, a1) => (_update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = wasmExports['update_mergeclause_eclasses'])(a0, a1);
+var _set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = (a0, a1) => (_set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = wasmExports['set_baserel_size_estimates'])(a0, a1);
+var _make_canonical_pathkey = Module['_make_canonical_pathkey'] = (a0, a1, a2, a3, a4) => (_make_canonical_pathkey = Module['_make_canonical_pathkey'] = wasmExports['make_canonical_pathkey'])(a0, a1, a2, a3, a4);
+var _eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = (a0, a1, a2) => (_eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = wasmExports['eclass_useful_for_merging'])(a0, a1, a2);
+var _generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = (a0, a1, a2, a3, a4) => (_generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = wasmExports['generate_implied_equalities_for_column'])(a0, a1, a2, a3, a4);
+var _standard_planner = Module['_standard_planner'] = (a0, a1, a2, a3) => (_standard_planner = Module['_standard_planner'] = wasmExports['standard_planner'])(a0, a1, a2, a3);
+var _plan_create_index_workers = Module['_plan_create_index_workers'] = (a0, a1) => (_plan_create_index_workers = Module['_plan_create_index_workers'] = wasmExports['plan_create_index_workers'])(a0, a1);
+var _change_plan_targetlist = Module['_change_plan_targetlist'] = (a0, a1, a2) => (_change_plan_targetlist = Module['_change_plan_targetlist'] = wasmExports['change_plan_targetlist'])(a0, a1, a2);
+var _make_foreignscan = Module['_make_foreignscan'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_make_foreignscan = Module['_make_foreignscan'] = wasmExports['make_foreignscan'])(a0, a1, a2, a3, a4, a5, a6, a7);
 var _BeginCopyFrom = Module['_BeginCopyFrom'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_BeginCopyFrom = Module['_BeginCopyFrom'] = wasmExports['BeginCopyFrom'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = (a0, a1, a2, a3, a4) => (_WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = wasmExports['WaitLatchOrSocket'])(a0, a1, a2, a3, a4);
-var _RmgrNotFound = Module['_RmgrNotFound'] = (a0) => (_RmgrNotFound = Module['_RmgrNotFound'] = wasmExports['RmgrNotFound'])(a0);
-var _XLogReaderAllocate = Module['_XLogReaderAllocate'] = (a0, a1, a2, a3) => (_XLogReaderAllocate = Module['_XLogReaderAllocate'] = wasmExports['XLogReaderAllocate'])(a0, a1, a2, a3);
-var _XLogReaderFree = Module['_XLogReaderFree'] = (a0) => (_XLogReaderFree = Module['_XLogReaderFree'] = wasmExports['XLogReaderFree'])(a0);
-var _OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = (a0, a1) => (_OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = wasmExports['OutputPluginPrepareWrite'])(a0, a1);
-var _OutputPluginWrite = Module['_OutputPluginWrite'] = (a0, a1) => (_OutputPluginWrite = Module['_OutputPluginWrite'] = wasmExports['OutputPluginWrite'])(a0, a1);
-var _OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = (a0, a1) => (_OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = wasmExports['OutputPluginUpdateProgress'])(a0, a1);
+var _EndCopyFrom = Module['_EndCopyFrom'] = (a0) => (_EndCopyFrom = Module['_EndCopyFrom'] = wasmExports['EndCopyFrom'])(a0);
+var _ProcessCopyOptions = Module['_ProcessCopyOptions'] = (a0, a1, a2, a3) => (_ProcessCopyOptions = Module['_ProcessCopyOptions'] = wasmExports['ProcessCopyOptions'])(a0, a1, a2, a3);
+var _NextCopyFrom = Module['_NextCopyFrom'] = (a0, a1, a2, a3) => (_NextCopyFrom = Module['_NextCopyFrom'] = wasmExports['NextCopyFrom'])(a0, a1, a2, a3);
+var _defGetStreamingMode = Module['_defGetStreamingMode'] = (a0) => (_defGetStreamingMode = Module['_defGetStreamingMode'] = wasmExports['defGetStreamingMode'])(a0);
+var _plain_crypt_verify = Module['_plain_crypt_verify'] = (a0, a1, a2, a3) => (_plain_crypt_verify = Module['_plain_crypt_verify'] = wasmExports['plain_crypt_verify'])(a0, a1, a2, a3);
+var _getExtensionOfObject = Module['_getExtensionOfObject'] = (a0, a1) => (_getExtensionOfObject = Module['_getExtensionOfObject'] = wasmExports['getExtensionOfObject'])(a0, a1);
+var _nextval = Module['_nextval'] = (a0) => (_nextval = Module['_nextval'] = wasmExports['nextval'])(a0);
+var _CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = (a0) => (_CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = wasmExports['CopyFromErrorCallback'])(a0);
+var _GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = (a0, a1, a2) => (_GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = wasmExports['GetTopMostAncestorInPublication'])(a0, a1, a2);
+var _pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = (a0, a1, a2) => (_pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = wasmExports['pub_collist_to_bitmapset'])(a0, a1, a2);
+var _ExplainBeginOutput = Module['_ExplainBeginOutput'] = (a0) => (_ExplainBeginOutput = Module['_ExplainBeginOutput'] = wasmExports['ExplainBeginOutput'])(a0);
+var _NewExplainState = Module['_NewExplainState'] = () => (_NewExplainState = Module['_NewExplainState'] = wasmExports['NewExplainState'])();
+var _ExplainEndOutput = Module['_ExplainEndOutput'] = (a0) => (_ExplainEndOutput = Module['_ExplainEndOutput'] = wasmExports['ExplainEndOutput'])(a0);
+var _ExplainPrintPlan = Module['_ExplainPrintPlan'] = (a0, a1) => (_ExplainPrintPlan = Module['_ExplainPrintPlan'] = wasmExports['ExplainPrintPlan'])(a0, a1);
+var _ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = (a0, a1) => (_ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = wasmExports['ExplainPrintTriggers'])(a0, a1);
+var _ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = (a0, a1) => (_ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = wasmExports['ExplainPrintJITSummary'])(a0, a1);
+var _ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = (a0, a1, a2, a3) => (_ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = wasmExports['ExplainPropertyInteger'])(a0, a1, a2, a3);
+var _ExplainQueryText = Module['_ExplainQueryText'] = (a0, a1) => (_ExplainQueryText = Module['_ExplainQueryText'] = wasmExports['ExplainQueryText'])(a0, a1);
+var _ExplainPropertyText = Module['_ExplainPropertyText'] = (a0, a1, a2) => (_ExplainPropertyText = Module['_ExplainPropertyText'] = wasmExports['ExplainPropertyText'])(a0, a1, a2);
+var _ExplainQueryParameters = Module['_ExplainQueryParameters'] = (a0, a1, a2) => (_ExplainQueryParameters = Module['_ExplainQueryParameters'] = wasmExports['ExplainQueryParameters'])(a0, a1, a2);
+var _pg_is_ascii = Module['_pg_is_ascii'] = (a0) => (_pg_is_ascii = Module['_pg_is_ascii'] = wasmExports['pg_is_ascii'])(a0);
+var _pg_md5_encrypt = Module['_pg_md5_encrypt'] = (a0, a1, a2, a3, a4) => (_pg_md5_encrypt = Module['_pg_md5_encrypt'] = wasmExports['pg_md5_encrypt'])(a0, a1, a2, a3, a4);
+var _explicit_bzero = Module['_explicit_bzero'] = (a0, a1) => (_explicit_bzero = Module['_explicit_bzero'] = wasmExports['explicit_bzero'])(a0, a1);
+var _pg_strip_crlf = Module['_pg_strip_crlf'] = (a0) => (_pg_strip_crlf = Module['_pg_strip_crlf'] = wasmExports['pg_strip_crlf'])(a0);
+var _recv = Module['_recv'] = (a0, a1, a2, a3) => (_recv = Module['_recv'] = wasmExports['recv'])(a0, a1, a2, a3);
+var _pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = (a0, a1, a2, a3) => (_pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = wasmExports['pg_getaddrinfo_all'])(a0, a1, a2, a3);
+var _pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = (a0, a1) => (_pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = wasmExports['pg_freeaddrinfo_all'])(a0, a1);
+var _sigemptyset = Module['_sigemptyset'] = (a0) => (_sigemptyset = Module['_sigemptyset'] = wasmExports['sigemptyset'])(a0);
+var _getpeereid = Module['_getpeereid'] = (a0, a1, a2) => (_getpeereid = Module['_getpeereid'] = wasmExports['getpeereid'])(a0, a1, a2);
+var _socket = Module['_socket'] = (a0, a1, a2) => (_socket = Module['_socket'] = wasmExports['socket'])(a0, a1, a2);
+var _connect = Module['_connect'] = (a0, a1, a2) => (_connect = Module['_connect'] = wasmExports['connect'])(a0, a1, a2);
+var _setsockopt = Module['_setsockopt'] = (a0, a1, a2, a3, a4) => (_setsockopt = Module['_setsockopt'] = wasmExports['setsockopt'])(a0, a1, a2, a3, a4);
+var _getsockname = Module['_getsockname'] = (a0, a1, a2) => (_getsockname = Module['_getsockname'] = wasmExports['getsockname'])(a0, a1, a2);
+var _getsockopt = Module['_getsockopt'] = (a0, a1, a2, a3, a4) => (_getsockopt = Module['_getsockopt'] = wasmExports['getsockopt'])(a0, a1, a2, a3, a4);
+var _pg_b64_enc_len = Module['_pg_b64_enc_len'] = (a0) => (_pg_b64_enc_len = Module['_pg_b64_enc_len'] = wasmExports['pg_b64_enc_len'])(a0);
+var _pg_b64_encode = Module['_pg_b64_encode'] = (a0, a1, a2, a3) => (_pg_b64_encode = Module['_pg_b64_encode'] = wasmExports['pg_b64_encode'])(a0, a1, a2, a3);
+var _pg_b64_dec_len = Module['_pg_b64_dec_len'] = (a0) => (_pg_b64_dec_len = Module['_pg_b64_dec_len'] = wasmExports['pg_b64_dec_len'])(a0);
+var _pg_b64_decode = Module['_pg_b64_decode'] = (a0, a1, a2, a3) => (_pg_b64_decode = Module['_pg_b64_decode'] = wasmExports['pg_b64_decode'])(a0, a1, a2, a3);
+var _pg_hmac_create = Module['_pg_hmac_create'] = (a0) => (_pg_hmac_create = Module['_pg_hmac_create'] = wasmExports['pg_hmac_create'])(a0);
+var _pg_hmac_init = Module['_pg_hmac_init'] = (a0, a1, a2) => (_pg_hmac_init = Module['_pg_hmac_init'] = wasmExports['pg_hmac_init'])(a0, a1, a2);
+var _pg_hmac_update = Module['_pg_hmac_update'] = (a0, a1, a2) => (_pg_hmac_update = Module['_pg_hmac_update'] = wasmExports['pg_hmac_update'])(a0, a1, a2);
+var _pg_hmac_final = Module['_pg_hmac_final'] = (a0, a1, a2) => (_pg_hmac_final = Module['_pg_hmac_final'] = wasmExports['pg_hmac_final'])(a0, a1, a2);
+var _pg_hmac_error = Module['_pg_hmac_error'] = (a0) => (_pg_hmac_error = Module['_pg_hmac_error'] = wasmExports['pg_hmac_error'])(a0);
+var _scram_H = Module['_scram_H'] = (a0, a1, a2, a3, a4) => (_scram_H = Module['_scram_H'] = wasmExports['scram_H'])(a0, a1, a2, a3, a4);
+var _pg_saslprep = Module['_pg_saslprep'] = (a0, a1) => (_pg_saslprep = Module['_pg_saslprep'] = wasmExports['pg_saslprep'])(a0, a1);
+var _scram_build_secret = Module['_scram_build_secret'] = (a0, a1, a2, a3, a4, a5, a6) => (_scram_build_secret = Module['_scram_build_secret'] = wasmExports['scram_build_secret'])(a0, a1, a2, a3, a4, a5, a6);
+var _scram_SaltedPassword = Module['_scram_SaltedPassword'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_scram_SaltedPassword = Module['_scram_SaltedPassword'] = wasmExports['scram_SaltedPassword'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _scram_ServerKey = Module['_scram_ServerKey'] = (a0, a1, a2, a3, a4) => (_scram_ServerKey = Module['_scram_ServerKey'] = wasmExports['scram_ServerKey'])(a0, a1, a2, a3, a4);
 var _logicalrep_write_begin = Module['_logicalrep_write_begin'] = (a0, a1) => (_logicalrep_write_begin = Module['_logicalrep_write_begin'] = wasmExports['logicalrep_write_begin'])(a0, a1);
 var _logicalrep_write_commit = Module['_logicalrep_write_commit'] = (a0, a1, a2) => (_logicalrep_write_commit = Module['_logicalrep_write_commit'] = wasmExports['logicalrep_write_commit'])(a0, a1, a2);
 var _logicalrep_write_begin_prepare = Module['_logicalrep_write_begin_prepare'] = (a0, a1) => (_logicalrep_write_begin_prepare = Module['_logicalrep_write_begin_prepare'] = wasmExports['logicalrep_write_begin_prepare'])(a0, a1);
@@ -10366,14 +10624,11 @@ var _logicalrep_write_stream_start = Module['_logicalrep_write_stream_start'] = 
 var _logicalrep_write_stream_stop = Module['_logicalrep_write_stream_stop'] = (a0) => (_logicalrep_write_stream_stop = Module['_logicalrep_write_stream_stop'] = wasmExports['logicalrep_write_stream_stop'])(a0);
 var _logicalrep_write_stream_commit = Module['_logicalrep_write_stream_commit'] = (a0, a1, a2) => (_logicalrep_write_stream_commit = Module['_logicalrep_write_stream_commit'] = wasmExports['logicalrep_write_stream_commit'])(a0, a1, a2);
 var _logicalrep_write_stream_abort = Module['_logicalrep_write_stream_abort'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_stream_abort = Module['_logicalrep_write_stream_abort'] = wasmExports['logicalrep_write_stream_abort'])(a0, a1, a2, a3, a4, a5);
-var _fd_fsync_fname = Module['_fd_fsync_fname'] = (a0, a1) => (_fd_fsync_fname = Module['_fd_fsync_fname'] = wasmExports['fd_fsync_fname'])(a0, a1);
-var _BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = (a0) => (_BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = wasmExports['BeginInternalSubTransaction'])(a0);
-var _RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = () => (_RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = wasmExports['RollbackAndReleaseCurrentSubTransaction'])();
+var _OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = (a0, a1) => (_OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = wasmExports['OutputPluginPrepareWrite'])(a0, a1);
+var _OutputPluginWrite = Module['_OutputPluginWrite'] = (a0, a1) => (_OutputPluginWrite = Module['_OutputPluginWrite'] = wasmExports['OutputPluginWrite'])(a0, a1);
+var _OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = (a0, a1) => (_OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = wasmExports['OutputPluginUpdateProgress'])(a0, a1);
 var _replorigin_by_oid = Module['_replorigin_by_oid'] = (a0, a1, a2) => (_replorigin_by_oid = Module['_replorigin_by_oid'] = wasmExports['replorigin_by_oid'])(a0, a1, a2);
-var _free_attrmap = Module['_free_attrmap'] = (a0) => (_free_attrmap = Module['_free_attrmap'] = wasmExports['free_attrmap'])(a0);
-var _addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = (a0, a1) => (_addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = wasmExports['addRTEPermissionInfo'])(a0, a1);
 var _ProcessWalRcvInterrupts = Module['_ProcessWalRcvInterrupts'] = () => (_ProcessWalRcvInterrupts = Module['_ProcessWalRcvInterrupts'] = wasmExports['ProcessWalRcvInterrupts'])();
-var _lseek = Module['_lseek'] = (a0, a1, a2) => (_lseek = Module['_lseek'] = wasmExports['lseek'])(a0, a1, a2);
 var _PQconnectStartParams = Module['_PQconnectStartParams'] = (a0, a1, a2) => (_PQconnectStartParams = Module['_PQconnectStartParams'] = wasmExports['PQconnectStartParams'])(a0, a1, a2);
 var _PQstatus = Module['_PQstatus'] = (a0) => (_PQstatus = Module['_PQstatus'] = wasmExports['PQstatus'])(a0);
 var _PQsocket = Module['_PQsocket'] = (a0) => (_PQsocket = Module['_PQsocket'] = wasmExports['PQsocket'])(a0);
@@ -10392,251 +10647,9 @@ var _PQresultErrorField = Module['_PQresultErrorField'] = (a0, a1) => (_PQresult
 var _PQsendQuery = Module['_PQsendQuery'] = (a0, a1) => (_PQsendQuery = Module['_PQsendQuery'] = wasmExports['PQsendQuery'])(a0, a1);
 var _PQisBusy = Module['_PQisBusy'] = (a0) => (_PQisBusy = Module['_PQisBusy'] = wasmExports['PQisBusy'])(a0);
 var _PQgetResult = Module['_PQgetResult'] = (a0) => (_PQgetResult = Module['_PQgetResult'] = wasmExports['PQgetResult'])(a0);
-var _pg_initdb = Module['_pg_initdb'] = () => (_pg_initdb = Module['_pg_initdb'] = wasmExports['pg_initdb'])();
-var _pg_initdb_main = Module['_pg_initdb_main'] = () => (_pg_initdb_main = Module['_pg_initdb_main'] = wasmExports['pg_initdb_main'])();
-var _dup = Module['_dup'] = (a0) => (_dup = Module['_dup'] = wasmExports['dup'])(a0);
-var ___cxa_throw = Module['___cxa_throw'] = (a0, a1, a2) => (___cxa_throw = Module['___cxa_throw'] = wasmExports['__cxa_throw'])(a0, a1, a2);
-var _main_repl = Module['_main_repl'] = () => (_main_repl = Module['_main_repl'] = wasmExports['main_repl'])();
-var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
-var _scanner_init = Module['_scanner_init'] = (a0, a1, a2, a3) => (_scanner_init = Module['_scanner_init'] = wasmExports['scanner_init'])(a0, a1, a2, a3);
-var _scanner_finish = Module['_scanner_finish'] = (a0) => (_scanner_finish = Module['_scanner_finish'] = wasmExports['scanner_finish'])(a0);
-var _core_yylex = Module['_core_yylex'] = (a0, a1, a2) => (_core_yylex = Module['_core_yylex'] = wasmExports['core_yylex'])(a0, a1, a2);
-var _LookupTypeName = Module['_LookupTypeName'] = (a0, a1, a2, a3) => (_LookupTypeName = Module['_LookupTypeName'] = wasmExports['LookupTypeName'])(a0, a1, a2, a3);
-var _typeStringToTypeName = Module['_typeStringToTypeName'] = (a0, a1) => (_typeStringToTypeName = Module['_typeStringToTypeName'] = wasmExports['typeStringToTypeName'])(a0, a1);
-var _pairingheap_free = Module['_pairingheap_free'] = (a0) => (_pairingheap_free = Module['_pairingheap_free'] = wasmExports['pairingheap_free'])(a0);
-var _bloom_create = Module['_bloom_create'] = (a0, a1, a2) => (_bloom_create = Module['_bloom_create'] = wasmExports['bloom_create'])(a0, a1, a2);
-var _bloom_free = Module['_bloom_free'] = (a0) => (_bloom_free = Module['_bloom_free'] = wasmExports['bloom_free'])(a0);
-var _bloom_add_element = Module['_bloom_add_element'] = (a0, a1, a2) => (_bloom_add_element = Module['_bloom_add_element'] = wasmExports['bloom_add_element'])(a0, a1, a2);
-var _bloom_lacks_element = Module['_bloom_lacks_element'] = (a0, a1, a2) => (_bloom_lacks_element = Module['_bloom_lacks_element'] = wasmExports['bloom_lacks_element'])(a0, a1, a2);
-var _bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = (a0) => (_bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = wasmExports['bloom_prop_bits_set'])(a0);
-var _add_path = Module['_add_path'] = (a0, a1) => (_add_path = Module['_add_path'] = wasmExports['add_path'])(a0, a1);
-var _extract_actual_clauses = Module['_extract_actual_clauses'] = (a0, a1) => (_extract_actual_clauses = Module['_extract_actual_clauses'] = wasmExports['extract_actual_clauses'])(a0, a1);
-var _cost_sort = Module['_cost_sort'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_cost_sort = Module['_cost_sort'] = wasmExports['cost_sort'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _pathkeys_contained_in = Module['_pathkeys_contained_in'] = (a0, a1) => (_pathkeys_contained_in = Module['_pathkeys_contained_in'] = wasmExports['pathkeys_contained_in'])(a0, a1);
-var _change_plan_targetlist = Module['_change_plan_targetlist'] = (a0, a1, a2) => (_change_plan_targetlist = Module['_change_plan_targetlist'] = wasmExports['change_plan_targetlist'])(a0, a1, a2);
-var _make_foreignscan = Module['_make_foreignscan'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_make_foreignscan = Module['_make_foreignscan'] = wasmExports['make_foreignscan'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _contain_mutable_functions = Module['_contain_mutable_functions'] = (a0) => (_contain_mutable_functions = Module['_contain_mutable_functions'] = wasmExports['contain_mutable_functions'])(a0);
-var _tlist_member = Module['_tlist_member'] = (a0, a1) => (_tlist_member = Module['_tlist_member'] = wasmExports['tlist_member'])(a0, a1);
-var _standard_planner = Module['_standard_planner'] = (a0, a1, a2, a3) => (_standard_planner = Module['_standard_planner'] = wasmExports['standard_planner'])(a0, a1, a2, a3);
-var _add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = (a0, a1) => (_add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = wasmExports['add_new_columns_to_pathtarget'])(a0, a1);
-var _get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = (a0, a1) => (_get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = wasmExports['get_sortgroupref_clause_noerr'])(a0, a1);
-var _get_agg_clause_costs = Module['_get_agg_clause_costs'] = (a0, a1, a2) => (_get_agg_clause_costs = Module['_get_agg_clause_costs'] = wasmExports['get_agg_clause_costs'])(a0, a1, a2);
-var _grouping_is_sortable = Module['_grouping_is_sortable'] = (a0) => (_grouping_is_sortable = Module['_grouping_is_sortable'] = wasmExports['grouping_is_sortable'])(a0);
-var _create_sort_path = Module['_create_sort_path'] = (a0, a1, a2, a3, a4) => (_create_sort_path = Module['_create_sort_path'] = wasmExports['create_sort_path'])(a0, a1, a2, a3, a4);
-var _copy_pathtarget = Module['_copy_pathtarget'] = (a0) => (_copy_pathtarget = Module['_copy_pathtarget'] = wasmExports['copy_pathtarget'])(a0);
-var _get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = (a0, a1) => (_get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = wasmExports['get_sortgrouplist_exprs'])(a0, a1);
-var _cost_qual_eval = Module['_cost_qual_eval'] = (a0, a1, a2) => (_cost_qual_eval = Module['_cost_qual_eval'] = wasmExports['cost_qual_eval'])(a0, a1, a2);
-var _plan_create_index_workers = Module['_plan_create_index_workers'] = (a0, a1) => (_plan_create_index_workers = Module['_plan_create_index_workers'] = wasmExports['plan_create_index_workers'])(a0, a1);
-var _create_projection_path = Module['_create_projection_path'] = (a0, a1, a2, a3) => (_create_projection_path = Module['_create_projection_path'] = wasmExports['create_projection_path'])(a0, a1, a2, a3);
-var _make_restrictinfo = Module['_make_restrictinfo'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_make_restrictinfo = Module['_make_restrictinfo'] = wasmExports['make_restrictinfo'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _make_canonical_pathkey = Module['_make_canonical_pathkey'] = (a0, a1, a2, a3, a4) => (_make_canonical_pathkey = Module['_make_canonical_pathkey'] = wasmExports['make_canonical_pathkey'])(a0, a1, a2, a3, a4);
-var _eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = (a0, a1, a2) => (_eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = wasmExports['eclass_useful_for_merging'])(a0, a1, a2);
-var _update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = (a0, a1) => (_update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = wasmExports['update_mergeclause_eclasses'])(a0, a1);
-var _set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = (a0, a1) => (_set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = wasmExports['set_baserel_size_estimates'])(a0, a1);
-var _generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = (a0, a1, a2, a3, a4) => (_generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = wasmExports['generate_implied_equalities_for_column'])(a0, a1, a2, a3, a4);
-var _join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = (a0, a1) => (_join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = wasmExports['join_clause_is_movable_to'])(a0, a1);
-var _get_plan_rowmark = Module['_get_plan_rowmark'] = (a0, a1) => (_get_plan_rowmark = Module['_get_plan_rowmark'] = wasmExports['get_plan_rowmark'])(a0, a1);
-var _get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = (a0, a1, a2, a3) => (_get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = wasmExports['get_translated_update_targetlist'])(a0, a1, a2, a3);
-var _add_row_identity_var = Module['_add_row_identity_var'] = (a0, a1, a2, a3) => (_add_row_identity_var = Module['_add_row_identity_var'] = wasmExports['add_row_identity_var'])(a0, a1, a2, a3);
-var _get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = (a0, a1, a2) => (_get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = wasmExports['get_baserel_parampathinfo'])(a0, a1, a2);
-var _create_foreignscan_path = Module['_create_foreignscan_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreignscan_path = Module['_create_foreignscan_path'] = wasmExports['create_foreignscan_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _create_foreign_join_path = Module['_create_foreign_join_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreign_join_path = Module['_create_foreign_join_path'] = wasmExports['create_foreign_join_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _create_foreign_upper_path = Module['_create_foreign_upper_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_create_foreign_upper_path = Module['_create_foreign_upper_path'] = wasmExports['create_foreign_upper_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = (a0, a1, a2, a3, a4) => (_adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = wasmExports['adjust_limit_rows_costs'])(a0, a1, a2, a3, a4);
-var _get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = (a0, a1) => (_get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = wasmExports['get_rel_all_updated_cols'])(a0, a1);
-var _RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = (a0, a1) => (_RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = wasmExports['RelationGetNumberOfBlocksInFork'])(a0, a1);
-var _add_to_flat_tlist = Module['_add_to_flat_tlist'] = (a0, a1) => (_add_to_flat_tlist = Module['_add_to_flat_tlist'] = wasmExports['add_to_flat_tlist'])(a0, a1);
-var _replace_percent_placeholders = Module['_replace_percent_placeholders'] = (a0, a1, a2, a3) => (_replace_percent_placeholders = Module['_replace_percent_placeholders'] = wasmExports['replace_percent_placeholders'])(a0, a1, a2, a3);
-var _BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = (a0, a1, a2) => (_BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = wasmExports['BaseBackupAddTarget'])(a0, a1, a2);
-var _bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = (a0) => (_bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = wasmExports['bbsink_forward_begin_backup'])(a0);
-var _bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = (a0, a1) => (_bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = wasmExports['bbsink_forward_archive_contents'])(a0, a1);
-var _bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = (a0) => (_bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = wasmExports['bbsink_forward_end_archive'])(a0);
-var _bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = (a0, a1) => (_bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = wasmExports['bbsink_forward_begin_archive'])(a0, a1);
-var _bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = (a0) => (_bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = wasmExports['bbsink_forward_begin_manifest'])(a0);
-var _bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = (a0, a1) => (_bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = wasmExports['bbsink_forward_manifest_contents'])(a0, a1);
-var _bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = (a0) => (_bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = wasmExports['bbsink_forward_end_manifest'])(a0);
-var _bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = (a0, a1, a2) => (_bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = wasmExports['bbsink_forward_end_backup'])(a0, a1, a2);
-var _bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = (a0) => (_bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = wasmExports['bbsink_forward_cleanup'])(a0);
-var _cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = (a0, a1) => (_cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = wasmExports['cancel_before_shmem_exit'])(a0, a1);
-var _geteuid = Module['_geteuid'] = () => (_geteuid = Module['_geteuid'] = wasmExports['geteuid'])();
-var _pg_checksum_page = Module['_pg_checksum_page'] = (a0, a1) => (_pg_checksum_page = Module['_pg_checksum_page'] = wasmExports['pg_checksum_page'])(a0, a1);
-var _smgrsetowner = Module['_smgrsetowner'] = (a0, a1) => (_smgrsetowner = Module['_smgrsetowner'] = wasmExports['smgrsetowner'])(a0, a1);
-var _smgrexists = Module['_smgrexists'] = (a0, a1) => (_smgrexists = Module['_smgrexists'] = wasmExports['smgrexists'])(a0, a1);
-var _smgrread = Module['_smgrread'] = (a0, a1, a2, a3) => (_smgrread = Module['_smgrread'] = wasmExports['smgrread'])(a0, a1, a2, a3);
-var _smgrtruncate = Module['_smgrtruncate'] = (a0, a1, a2, a3) => (_smgrtruncate = Module['_smgrtruncate'] = wasmExports['smgrtruncate'])(a0, a1, a2, a3);
-var _LockBuffer = Module['_LockBuffer'] = (a0, a1) => (_LockBuffer = Module['_LockBuffer'] = wasmExports['LockBuffer'])(a0, a1);
-var _UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = (a0) => (_UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = wasmExports['UnlockReleaseBuffer'])(a0);
-var _PageInit = Module['_PageInit'] = (a0, a1, a2) => (_PageInit = Module['_PageInit'] = wasmExports['PageInit'])(a0, a1, a2);
-var _GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = (a0, a1) => (_GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = wasmExports['GetRecordedFreeSpace'])(a0, a1);
-var _ReadBufferExtended = Module['_ReadBufferExtended'] = (a0, a1, a2, a3, a4) => (_ReadBufferExtended = Module['_ReadBufferExtended'] = wasmExports['ReadBufferExtended'])(a0, a1, a2, a3, a4);
-var _MarkBufferDirty = Module['_MarkBufferDirty'] = (a0) => (_MarkBufferDirty = Module['_MarkBufferDirty'] = wasmExports['MarkBufferDirty'])(a0);
-var _log_newpage_buffer = Module['_log_newpage_buffer'] = (a0, a1) => (_log_newpage_buffer = Module['_log_newpage_buffer'] = wasmExports['log_newpage_buffer'])(a0, a1);
-var _GetFreeIndexPage = Module['_GetFreeIndexPage'] = (a0) => (_GetFreeIndexPage = Module['_GetFreeIndexPage'] = wasmExports['GetFreeIndexPage'])(a0);
-var _RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = (a0, a1) => (_RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = wasmExports['RecordFreeIndexPage'])(a0, a1);
-var _IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = (a0) => (_IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = wasmExports['IndexFreeSpaceMapVacuum'])(a0);
-var _copy_file = Module['_copy_file'] = (a0, a1) => (_copy_file = Module['_copy_file'] = wasmExports['copy_file'])(a0, a1);
-var _wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = (a0, a1) => (_wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = wasmExports['wasm_OpenPipeStream'])(a0, a1);
-var _fiprintf = Module['_fiprintf'] = (a0, a1, a2) => (_fiprintf = Module['_fiprintf'] = wasmExports['fiprintf'])(a0, a1, a2);
-var _fsync_fname_ext = Module['_fsync_fname_ext'] = (a0, a1, a2, a3) => (_fsync_fname_ext = Module['_fsync_fname_ext'] = wasmExports['fsync_fname_ext'])(a0, a1, a2, a3);
-var _AcquireExternalFD = Module['_AcquireExternalFD'] = () => (_AcquireExternalFD = Module['_AcquireExternalFD'] = wasmExports['AcquireExternalFD'])();
-var _ftruncate = Module['_ftruncate'] = (a0, a1) => (_ftruncate = Module['_ftruncate'] = wasmExports['ftruncate'])(a0, a1);
-var _pclose = Module['_pclose'] = (a0) => (_pclose = Module['_pclose'] = wasmExports['pclose'])(a0);
-var _ClosePipeStream = Module['_ClosePipeStream'] = (a0) => (_ClosePipeStream = Module['_ClosePipeStream'] = wasmExports['ClosePipeStream'])(a0);
-var _AtEOSubXact_Files = Module['_AtEOSubXact_Files'] = (a0, a1, a2) => (_AtEOSubXact_Files = Module['_AtEOSubXact_Files'] = wasmExports['AtEOSubXact_Files'])(a0, a1, a2);
-var _LockBufHdr = Module['_LockBufHdr'] = (a0) => (_LockBufHdr = Module['_LockBufHdr'] = wasmExports['LockBufHdr'])(a0);
-var _ReadBuffer = Module['_ReadBuffer'] = (a0, a1) => (_ReadBuffer = Module['_ReadBuffer'] = wasmExports['ReadBuffer'])(a0, a1);
-var _ExtendBufferedRel = Module['_ExtendBufferedRel'] = (a0, a1, a2, a3) => (_ExtendBufferedRel = Module['_ExtendBufferedRel'] = wasmExports['ExtendBufferedRel'])(a0, a1, a2, a3);
-var _LockBufferForCleanup = Module['_LockBufferForCleanup'] = (a0) => (_LockBufferForCleanup = Module['_LockBufferForCleanup'] = wasmExports['LockBufferForCleanup'])(a0);
-var _LockRelationForExtension = Module['_LockRelationForExtension'] = (a0, a1) => (_LockRelationForExtension = Module['_LockRelationForExtension'] = wasmExports['LockRelationForExtension'])(a0, a1);
-var _UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = (a0, a1) => (_UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = wasmExports['UnlockRelationForExtension'])(a0, a1);
-var _BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = (a0) => (_BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = wasmExports['BufferGetBlockNumber'])(a0);
-var _GetAccessStrategy = Module['_GetAccessStrategy'] = (a0) => (_GetAccessStrategy = Module['_GetAccessStrategy'] = wasmExports['GetAccessStrategy'])(a0);
-var _FreeAccessStrategy = Module['_FreeAccessStrategy'] = (a0) => (_FreeAccessStrategy = Module['_FreeAccessStrategy'] = wasmExports['FreeAccessStrategy'])(a0);
-var _ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = (a0) => (_ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = wasmExports['ConditionalLockBuffer'])(a0);
-var _TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = (a0, a1) => (_TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = wasmExports['TestForOldSnapshot_impl'])(a0, a1);
-var _have_free_buffer = Module['_have_free_buffer'] = () => (_have_free_buffer = Module['_have_free_buffer'] = wasmExports['have_free_buffer'])();
-var _ShmemInitHash = Module['_ShmemInitHash'] = (a0, a1, a2, a3, a4) => (_ShmemInitHash = Module['_ShmemInitHash'] = wasmExports['ShmemInitHash'])(a0, a1, a2, a3, a4);
-var _poll = Module['_poll'] = (a0, a1, a2) => (_poll = Module['_poll'] = wasmExports['poll'])(a0, a1, a2);
-var _GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = (a0) => (_GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = wasmExports['GetOldestNonRemovableTransactionId'])(a0);
-var _BackendXidGetPid = Module['_BackendXidGetPid'] = (a0) => (_BackendXidGetPid = Module['_BackendXidGetPid'] = wasmExports['BackendXidGetPid'])(a0);
-var _RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = (a0) => (_RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = wasmExports['RequestAddinShmemSpace'])(a0);
-var _LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = (a0, a1) => (_LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = wasmExports['LWLockRegisterTranche'])(a0, a1);
-var _GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = (a0) => (_GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = wasmExports['GetNamedLWLockTranche'])(a0);
-var _LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = () => (_LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = wasmExports['LWLockNewTrancheId'])();
-var _RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = (a0, a1) => (_RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = wasmExports['RequestNamedLWLockTranche'])(a0, a1);
-var _LockPage = Module['_LockPage'] = (a0, a1, a2) => (_LockPage = Module['_LockPage'] = wasmExports['LockPage'])(a0, a1, a2);
-var _UnlockPage = Module['_UnlockPage'] = (a0, a1, a2) => (_UnlockPage = Module['_UnlockPage'] = wasmExports['UnlockPage'])(a0, a1, a2);
-var _ConditionVariableSignal = Module['_ConditionVariableSignal'] = (a0) => (_ConditionVariableSignal = Module['_ConditionVariableSignal'] = wasmExports['ConditionVariableSignal'])(a0);
-var _PageAddItemExtended = Module['_PageAddItemExtended'] = (a0, a1, a2, a3, a4) => (_PageAddItemExtended = Module['_PageAddItemExtended'] = wasmExports['PageAddItemExtended'])(a0, a1, a2, a3, a4);
-var _PageGetFreeSpace = Module['_PageGetFreeSpace'] = (a0) => (_PageGetFreeSpace = Module['_PageGetFreeSpace'] = wasmExports['PageGetFreeSpace'])(a0);
-var _PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = (a0) => (_PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = wasmExports['PageGetExactFreeSpace'])(a0);
-var _PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = (a0) => (_PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = wasmExports['PageGetHeapFreeSpace'])(a0);
-var _PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = (a0, a1, a2) => (_PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = wasmExports['PageIndexMultiDelete'])(a0, a1, a2);
-var _PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = (a0, a1, a2, a3) => (_PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = wasmExports['PageIndexTupleOverwrite'])(a0, a1, a2, a3);
-var _function_parse_error_transpose = Module['_function_parse_error_transpose'] = (a0) => (_function_parse_error_transpose = Module['_function_parse_error_transpose'] = wasmExports['function_parse_error_transpose'])(a0);
-var _GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = (a0, a1, a2) => (_GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = wasmExports['GetTopMostAncestorInPublication'])(a0, a1, a2);
-var _pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = (a0, a1, a2) => (_pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = wasmExports['pub_collist_to_bitmapset'])(a0, a1, a2);
-var _GetPublicationByName = Module['_GetPublicationByName'] = (a0, a1) => (_GetPublicationByName = Module['_GetPublicationByName'] = wasmExports['GetPublicationByName'])(a0, a1);
 var _RelnameGetRelid = Module['_RelnameGetRelid'] = (a0) => (_RelnameGetRelid = Module['_RelnameGetRelid'] = wasmExports['RelnameGetRelid'])(a0);
-var _getExtensionOfObject = Module['_getExtensionOfObject'] = (a0, a1) => (_getExtensionOfObject = Module['_getExtensionOfObject'] = wasmExports['getExtensionOfObject'])(a0, a1);
-var _IndexGetRelation = Module['_IndexGetRelation'] = (a0, a1) => (_IndexGetRelation = Module['_IndexGetRelation'] = wasmExports['IndexGetRelation'])(a0, a1);
-var _visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = (a0, a1) => (_visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = wasmExports['visibilitymap_prepare_truncate'])(a0, a1);
-var _log_newpage_range = Module['_log_newpage_range'] = (a0, a1, a2, a3, a4) => (_log_newpage_range = Module['_log_newpage_range'] = wasmExports['log_newpage_range'])(a0, a1, a2, a3, a4);
-var _getpeereid = Module['_getpeereid'] = (a0, a1, a2) => (_getpeereid = Module['_getpeereid'] = wasmExports['getpeereid'])(a0, a1, a2);
-var _pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = (a0, a1, a2, a3) => (_pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = wasmExports['pg_getaddrinfo_all'])(a0, a1, a2, a3);
-var _socket = Module['_socket'] = (a0, a1, a2) => (_socket = Module['_socket'] = wasmExports['socket'])(a0, a1, a2);
-var _connect = Module['_connect'] = (a0, a1, a2) => (_connect = Module['_connect'] = wasmExports['connect'])(a0, a1, a2);
-var _recv = Module['_recv'] = (a0, a1, a2, a3) => (_recv = Module['_recv'] = wasmExports['recv'])(a0, a1, a2, a3);
-var _pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = (a0, a1) => (_pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = wasmExports['pg_freeaddrinfo_all'])(a0, a1);
-var _plain_crypt_verify = Module['_plain_crypt_verify'] = (a0, a1, a2, a3) => (_plain_crypt_verify = Module['_plain_crypt_verify'] = wasmExports['plain_crypt_verify'])(a0, a1, a2, a3);
-var _pg_strip_crlf = Module['_pg_strip_crlf'] = (a0) => (_pg_strip_crlf = Module['_pg_strip_crlf'] = wasmExports['pg_strip_crlf'])(a0);
-var _pg_md5_encrypt = Module['_pg_md5_encrypt'] = (a0, a1, a2, a3, a4) => (_pg_md5_encrypt = Module['_pg_md5_encrypt'] = wasmExports['pg_md5_encrypt'])(a0, a1, a2, a3, a4);
-var _pg_b64_enc_len = Module['_pg_b64_enc_len'] = (a0) => (_pg_b64_enc_len = Module['_pg_b64_enc_len'] = wasmExports['pg_b64_enc_len'])(a0);
-var _pg_b64_encode = Module['_pg_b64_encode'] = (a0, a1, a2, a3) => (_pg_b64_encode = Module['_pg_b64_encode'] = wasmExports['pg_b64_encode'])(a0, a1, a2, a3);
-var _pg_b64_dec_len = Module['_pg_b64_dec_len'] = (a0) => (_pg_b64_dec_len = Module['_pg_b64_dec_len'] = wasmExports['pg_b64_dec_len'])(a0);
-var _pg_b64_decode = Module['_pg_b64_decode'] = (a0, a1, a2, a3) => (_pg_b64_decode = Module['_pg_b64_decode'] = wasmExports['pg_b64_decode'])(a0, a1, a2, a3);
-var _pg_hmac_create = Module['_pg_hmac_create'] = (a0) => (_pg_hmac_create = Module['_pg_hmac_create'] = wasmExports['pg_hmac_create'])(a0);
-var _pg_hmac_init = Module['_pg_hmac_init'] = (a0, a1, a2) => (_pg_hmac_init = Module['_pg_hmac_init'] = wasmExports['pg_hmac_init'])(a0, a1, a2);
-var _pg_hmac_update = Module['_pg_hmac_update'] = (a0, a1, a2) => (_pg_hmac_update = Module['_pg_hmac_update'] = wasmExports['pg_hmac_update'])(a0, a1, a2);
-var _pg_hmac_final = Module['_pg_hmac_final'] = (a0, a1, a2) => (_pg_hmac_final = Module['_pg_hmac_final'] = wasmExports['pg_hmac_final'])(a0, a1, a2);
-var _pg_hmac_error = Module['_pg_hmac_error'] = (a0) => (_pg_hmac_error = Module['_pg_hmac_error'] = wasmExports['pg_hmac_error'])(a0);
-var _scram_H = Module['_scram_H'] = (a0, a1, a2, a3, a4) => (_scram_H = Module['_scram_H'] = wasmExports['scram_H'])(a0, a1, a2, a3, a4);
-var _pg_saslprep = Module['_pg_saslprep'] = (a0, a1) => (_pg_saslprep = Module['_pg_saslprep'] = wasmExports['pg_saslprep'])(a0, a1);
-var _scram_build_secret = Module['_scram_build_secret'] = (a0, a1, a2, a3, a4, a5, a6) => (_scram_build_secret = Module['_scram_build_secret'] = wasmExports['scram_build_secret'])(a0, a1, a2, a3, a4, a5, a6);
-var _scram_SaltedPassword = Module['_scram_SaltedPassword'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_scram_SaltedPassword = Module['_scram_SaltedPassword'] = wasmExports['scram_SaltedPassword'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _scram_ServerKey = Module['_scram_ServerKey'] = (a0, a1, a2, a3, a4) => (_scram_ServerKey = Module['_scram_ServerKey'] = wasmExports['scram_ServerKey'])(a0, a1, a2, a3, a4);
-var _explicit_bzero = Module['_explicit_bzero'] = (a0, a1) => (_explicit_bzero = Module['_explicit_bzero'] = wasmExports['explicit_bzero'])(a0, a1);
-var _wait_result_to_str = Module['_wait_result_to_str'] = (a0) => (_wait_result_to_str = Module['_wait_result_to_str'] = wasmExports['wait_result_to_str'])(a0);
-var _setsockopt = Module['_setsockopt'] = (a0, a1, a2, a3, a4) => (_setsockopt = Module['_setsockopt'] = wasmExports['setsockopt'])(a0, a1, a2, a3, a4);
-var _getsockname = Module['_getsockname'] = (a0, a1, a2) => (_getsockname = Module['_getsockname'] = wasmExports['getsockname'])(a0, a1, a2);
-var _getsockopt = Module['_getsockopt'] = (a0, a1, a2, a3, a4) => (_getsockopt = Module['_getsockopt'] = wasmExports['getsockopt'])(a0, a1, a2, a3, a4);
-var _sigemptyset = Module['_sigemptyset'] = (a0) => (_sigemptyset = Module['_sigemptyset'] = wasmExports['sigemptyset'])(a0);
-var _toupper = Module['_toupper'] = (a0) => (_toupper = Module['_toupper'] = wasmExports['toupper'])(a0);
-var _pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = (a0) => (_pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = wasmExports['pg_reg_getinitialstate'])(a0);
-var _pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = (a0) => (_pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = wasmExports['pg_reg_getfinalstate'])(a0);
-var _pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = (a0, a1) => (_pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = wasmExports['pg_reg_getnumoutarcs'])(a0, a1);
-var _pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = (a0, a1, a2, a3) => (_pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = wasmExports['pg_reg_getoutarcs'])(a0, a1, a2, a3);
-var _pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = (a0) => (_pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = wasmExports['pg_reg_getnumcolors'])(a0);
-var _pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = (a0, a1) => (_pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = wasmExports['pg_reg_colorisbegin'])(a0, a1);
-var _pg_reg_colorisend = Module['_pg_reg_colorisend'] = (a0, a1) => (_pg_reg_colorisend = Module['_pg_reg_colorisend'] = wasmExports['pg_reg_colorisend'])(a0, a1);
-var _pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = (a0, a1) => (_pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = wasmExports['pg_reg_getnumcharacters'])(a0, a1);
-var _pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = (a0, a1, a2, a3) => (_pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = wasmExports['pg_reg_getcharacters'])(a0, a1, a2, a3);
-var _HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = (a0, a1, a2) => (_HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = wasmExports['HeapTupleSatisfiesUpdate'])(a0, a1, a2);
-var _HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = (a0) => (_HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = wasmExports['HeapTupleGetUpdateXid'])(a0);
-var _HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = (a0, a1, a2) => (_HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = wasmExports['HeapTupleSatisfiesVacuum'])(a0, a1, a2);
-var _HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = (a0, a1, a2) => (_HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = wasmExports['HeapTupleSatisfiesVisibility'])(a0, a1, a2);
-var _GetMultiXactIdMembers = Module['_GetMultiXactIdMembers'] = (a0, a1, a2, a3) => (_GetMultiXactIdMembers = Module['_GetMultiXactIdMembers'] = wasmExports['GetMultiXactIdMembers'])(a0, a1, a2, a3);
-var _visibilitymap_clear = Module['_visibilitymap_clear'] = (a0, a1, a2, a3) => (_visibilitymap_clear = Module['_visibilitymap_clear'] = wasmExports['visibilitymap_clear'])(a0, a1, a2, a3);
-var _visibilitymap_pin = Module['_visibilitymap_pin'] = (a0, a1, a2) => (_visibilitymap_pin = Module['_visibilitymap_pin'] = wasmExports['visibilitymap_pin'])(a0, a1, a2);
-var _heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = (a0) => (_heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = wasmExports['heap_tuple_needs_eventual_freeze'])(a0);
-var _XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = (a0, a1, a2, a3, a4, a5) => (_XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = wasmExports['XLogRecGetBlockTagExtended'])(a0, a1, a2, a3, a4, a5);
-var _vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = (a0, a1, a2, a3) => (_vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = wasmExports['vac_estimate_reltuples'])(a0, a1, a2, a3);
-var _toast_open_indexes = Module['_toast_open_indexes'] = (a0, a1, a2, a3) => (_toast_open_indexes = Module['_toast_open_indexes'] = wasmExports['toast_open_indexes'])(a0, a1, a2, a3);
-var _init_toast_snapshot = Module['_init_toast_snapshot'] = (a0) => (_init_toast_snapshot = Module['_init_toast_snapshot'] = wasmExports['init_toast_snapshot'])(a0);
-var _toast_close_indexes = Module['_toast_close_indexes'] = (a0, a1, a2) => (_toast_close_indexes = Module['_toast_close_indexes'] = wasmExports['toast_close_indexes'])(a0, a1, a2);
-var __bt_form_posting = Module['__bt_form_posting'] = (a0, a1, a2) => (__bt_form_posting = Module['__bt_form_posting'] = wasmExports['_bt_form_posting'])(a0, a1, a2);
-var __bt_allequalimage = Module['__bt_allequalimage'] = (a0, a1) => (__bt_allequalimage = Module['__bt_allequalimage'] = wasmExports['_bt_allequalimage'])(a0, a1);
-var _index_form_tuple = Module['_index_form_tuple'] = (a0, a1, a2) => (_index_form_tuple = Module['_index_form_tuple'] = wasmExports['index_form_tuple'])(a0, a1, a2);
-var _RelationGetIndexScan = Module['_RelationGetIndexScan'] = (a0, a1, a2) => (_RelationGetIndexScan = Module['_RelationGetIndexScan'] = wasmExports['RelationGetIndexScan'])(a0, a1, a2);
-var __bt_checkpage = Module['__bt_checkpage'] = (a0, a1) => (__bt_checkpage = Module['__bt_checkpage'] = wasmExports['_bt_checkpage'])(a0, a1);
-var __bt_relbuf = Module['__bt_relbuf'] = (a0, a1) => (__bt_relbuf = Module['__bt_relbuf'] = wasmExports['_bt_relbuf'])(a0, a1);
-var __bt_metaversion = Module['__bt_metaversion'] = (a0, a1, a2) => (__bt_metaversion = Module['__bt_metaversion'] = wasmExports['_bt_metaversion'])(a0, a1, a2);
-var _index_getprocinfo = Module['_index_getprocinfo'] = (a0, a1, a2) => (_index_getprocinfo = Module['_index_getprocinfo'] = wasmExports['index_getprocinfo'])(a0, a1, a2);
-var __bt_freestack = Module['__bt_freestack'] = (a0) => (__bt_freestack = Module['__bt_freestack'] = wasmExports['_bt_freestack'])(a0);
-var _build_reloptions = Module['_build_reloptions'] = (a0, a1, a2, a3, a4, a5) => (_build_reloptions = Module['_build_reloptions'] = wasmExports['build_reloptions'])(a0, a1, a2, a3, a4, a5);
-var __bt_check_natts = Module['__bt_check_natts'] = (a0, a1, a2, a3) => (__bt_check_natts = Module['__bt_check_natts'] = wasmExports['_bt_check_natts'])(a0, a1, a2, a3);
-var __bt_compare = Module['__bt_compare'] = (a0, a1, a2, a3) => (__bt_compare = Module['__bt_compare'] = wasmExports['_bt_compare'])(a0, a1, a2, a3);
-var __bt_search = Module['__bt_search'] = (a0, a1, a2, a3, a4, a5) => (__bt_search = Module['__bt_search'] = wasmExports['_bt_search'])(a0, a1, a2, a3, a4, a5);
-var __bt_binsrch_insert = Module['__bt_binsrch_insert'] = (a0, a1) => (__bt_binsrch_insert = Module['__bt_binsrch_insert'] = wasmExports['_bt_binsrch_insert'])(a0, a1);
-var _check_amproc_signature = Module['_check_amproc_signature'] = (a0, a1, a2, a3, a4, a5) => (_check_amproc_signature = Module['_check_amproc_signature'] = wasmExports['check_amproc_signature'])(a0, a1, a2, a3, a4, a5);
-var _check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = (a0) => (_check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = wasmExports['check_amoptsproc_signature'])(a0);
-var _check_amop_signature = Module['_check_amop_signature'] = (a0, a1, a2, a3) => (_check_amop_signature = Module['_check_amop_signature'] = wasmExports['check_amop_signature'])(a0, a1, a2, a3);
-var _identify_opfamily_groups = Module['_identify_opfamily_groups'] = (a0, a1) => (_identify_opfamily_groups = Module['_identify_opfamily_groups'] = wasmExports['identify_opfamily_groups'])(a0, a1);
-var _WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = (a0) => (_WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = wasmExports['WaitForParallelWorkersToAttach'])(a0);
-var _add_reloption_kind = Module['_add_reloption_kind'] = () => (_add_reloption_kind = Module['_add_reloption_kind'] = wasmExports['add_reloption_kind'])();
-var _register_reloptions_validator = Module['_register_reloptions_validator'] = (a0, a1) => (_register_reloptions_validator = Module['_register_reloptions_validator'] = wasmExports['register_reloptions_validator'])(a0, a1);
-var _add_int_reloption = Module['_add_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_int_reloption = Module['_add_int_reloption'] = wasmExports['add_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
-var _RestoreBlockImage = Module['_RestoreBlockImage'] = (a0, a1, a2) => (_RestoreBlockImage = Module['_RestoreBlockImage'] = wasmExports['RestoreBlockImage'])(a0, a1, a2);
-var _read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = (a0, a1, a2, a3, a4) => (_read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = wasmExports['read_local_xlog_page_no_wait'])(a0, a1, a2, a3, a4);
-var _XLogFindNextRecord = Module['_XLogFindNextRecord'] = (a0, a1) => (_XLogFindNextRecord = Module['_XLogFindNextRecord'] = wasmExports['XLogFindNextRecord'])(a0, a1);
-var _RegisterXactCallback = Module['_RegisterXactCallback'] = (a0, a1) => (_RegisterXactCallback = Module['_RegisterXactCallback'] = wasmExports['RegisterXactCallback'])(a0, a1);
-var _RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = (a0, a1) => (_RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = wasmExports['RegisterSubXactCallback'])(a0, a1);
-var _ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = () => (_ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = wasmExports['ReleaseCurrentSubTransaction'])();
-var _ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = (a0, a1) => (_ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = wasmExports['ReadMultiXactIdRange'])(a0, a1);
-var _MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = (a0, a1) => (_MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = wasmExports['MultiXactIdPrecedesOrEquals'])(a0, a1);
-var _GenericXLogStart = Module['_GenericXLogStart'] = (a0) => (_GenericXLogStart = Module['_GenericXLogStart'] = wasmExports['GenericXLogStart'])(a0);
-var _GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = (a0, a1, a2) => (_GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = wasmExports['GenericXLogRegisterBuffer'])(a0, a1, a2);
-var _GenericXLogFinish = Module['_GenericXLogFinish'] = (a0) => (_GenericXLogFinish = Module['_GenericXLogFinish'] = wasmExports['GenericXLogFinish'])(a0);
-var _GenericXLogAbort = Module['_GenericXLogAbort'] = (a0) => (_GenericXLogAbort = Module['_GenericXLogAbort'] = wasmExports['GenericXLogAbort'])(a0);
-var _XLogRecStoreStats = Module['_XLogRecStoreStats'] = (a0, a1) => (_XLogRecStoreStats = Module['_XLogRecStoreStats'] = wasmExports['XLogRecStoreStats'])(a0, a1);
-var __hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = (a0) => (__hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = wasmExports['_hash_get_indextuple_hashkey'])(a0);
-var __hash_getbuf = Module['__hash_getbuf'] = (a0, a1, a2, a3) => (__hash_getbuf = Module['__hash_getbuf'] = wasmExports['_hash_getbuf'])(a0, a1, a2, a3);
-var __hash_relbuf = Module['__hash_relbuf'] = (a0, a1) => (__hash_relbuf = Module['__hash_relbuf'] = wasmExports['_hash_relbuf'])(a0, a1);
-var __hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = (a0, a1) => (__hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = wasmExports['_hash_ovflblkno_to_bitno'])(a0, a1);
-var __hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = (a0, a1, a2, a3, a4) => (__hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = wasmExports['_hash_getbuf_with_strategy'])(a0, a1, a2, a3, a4);
-var _ginPostingListDecode = Module['_ginPostingListDecode'] = (a0, a1) => (_ginPostingListDecode = Module['_ginPostingListDecode'] = wasmExports['ginPostingListDecode'])(a0, a1);
-var _gistcheckpage = Module['_gistcheckpage'] = (a0, a1) => (_gistcheckpage = Module['_gistcheckpage'] = wasmExports['gistcheckpage'])(a0, a1);
-var _XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = (a0, a1, a2, a3, a4) => (_XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = wasmExports['XLogRecGetBlockRefInfo'])(a0, a1, a2, a3, a4);
-var _brin_deform_tuple = Module['_brin_deform_tuple'] = (a0, a1, a2) => (_brin_deform_tuple = Module['_brin_deform_tuple'] = wasmExports['brin_deform_tuple'])(a0, a1, a2);
-var _brin_build_desc = Module['_brin_build_desc'] = (a0) => (_brin_build_desc = Module['_brin_build_desc'] = wasmExports['brin_build_desc'])(a0);
-var _brin_free_desc = Module['_brin_free_desc'] = (a0) => (_brin_free_desc = Module['_brin_free_desc'] = wasmExports['brin_free_desc'])(a0);
-var _pg_is_ascii = Module['_pg_is_ascii'] = (a0) => (_pg_is_ascii = Module['_pg_is_ascii'] = wasmExports['pg_is_ascii'])(a0);
-var _ExplainBeginOutput = Module['_ExplainBeginOutput'] = (a0) => (_ExplainBeginOutput = Module['_ExplainBeginOutput'] = wasmExports['ExplainBeginOutput'])(a0);
-var _NewExplainState = Module['_NewExplainState'] = () => (_NewExplainState = Module['_NewExplainState'] = wasmExports['NewExplainState'])();
-var _ExplainEndOutput = Module['_ExplainEndOutput'] = (a0) => (_ExplainEndOutput = Module['_ExplainEndOutput'] = wasmExports['ExplainEndOutput'])(a0);
-var _ExplainPrintPlan = Module['_ExplainPrintPlan'] = (a0, a1) => (_ExplainPrintPlan = Module['_ExplainPrintPlan'] = wasmExports['ExplainPrintPlan'])(a0, a1);
-var _ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = (a0, a1) => (_ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = wasmExports['ExplainPrintTriggers'])(a0, a1);
-var _ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = (a0, a1) => (_ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = wasmExports['ExplainPrintJITSummary'])(a0, a1);
-var _ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = (a0, a1, a2, a3) => (_ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = wasmExports['ExplainPropertyInteger'])(a0, a1, a2, a3);
-var _ExplainQueryText = Module['_ExplainQueryText'] = (a0, a1) => (_ExplainQueryText = Module['_ExplainQueryText'] = wasmExports['ExplainQueryText'])(a0, a1);
-var _ExplainPropertyText = Module['_ExplainPropertyText'] = (a0, a1, a2) => (_ExplainPropertyText = Module['_ExplainPropertyText'] = wasmExports['ExplainPropertyText'])(a0, a1, a2);
-var _ExplainQueryParameters = Module['_ExplainQueryParameters'] = (a0, a1, a2) => (_ExplainQueryParameters = Module['_ExplainQueryParameters'] = wasmExports['ExplainQueryParameters'])(a0, a1, a2);
-var _NextCopyFrom = Module['_NextCopyFrom'] = (a0, a1, a2, a3) => (_NextCopyFrom = Module['_NextCopyFrom'] = wasmExports['NextCopyFrom'])(a0, a1, a2, a3);
-var _ProcessCopyOptions = Module['_ProcessCopyOptions'] = (a0, a1, a2, a3) => (_ProcessCopyOptions = Module['_ProcessCopyOptions'] = wasmExports['ProcessCopyOptions'])(a0, a1, a2, a3);
-var _EndCopyFrom = Module['_EndCopyFrom'] = (a0) => (_EndCopyFrom = Module['_EndCopyFrom'] = wasmExports['EndCopyFrom'])(a0);
-var _defGetStreamingMode = Module['_defGetStreamingMode'] = (a0) => (_defGetStreamingMode = Module['_defGetStreamingMode'] = wasmExports['defGetStreamingMode'])(a0);
-var _CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = (a0) => (_CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = wasmExports['CopyFromErrorCallback'])(a0);
-var _nextval = Module['_nextval'] = (a0) => (_nextval = Module['_nextval'] = wasmExports['nextval'])(a0);
+var _GetPublicationByName = Module['_GetPublicationByName'] = (a0, a1) => (_GetPublicationByName = Module['_GetPublicationByName'] = wasmExports['GetPublicationByName'])(a0, a1);
+var _function_parse_error_transpose = Module['_function_parse_error_transpose'] = (a0) => (_function_parse_error_transpose = Module['_function_parse_error_transpose'] = wasmExports['function_parse_error_transpose'])(a0);
 var _fputs = Module['_fputs'] = (a0, a1) => (_fputs = Module['_fputs'] = wasmExports['fputs'])(a0, a1);
 var _popen = Module['_popen'] = (a0, a1) => (_popen = Module['_popen'] = wasmExports['popen'])(a0, a1);
 var _float_to_shortest_decimal_bufn = Module['_float_to_shortest_decimal_bufn'] = (a0, a1) => (_float_to_shortest_decimal_bufn = Module['_float_to_shortest_decimal_bufn'] = wasmExports['float_to_shortest_decimal_bufn'])(a0, a1);
@@ -10948,159 +10961,148 @@ var ___fixtfsi = Module['___fixtfsi'] = (a0, a1) => (___fixtfsi = Module['___fix
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
-var _ScanKeywords = Module['_ScanKeywords'] = 69109860;
-var _stderr = Module['_stderr'] = 69132288;
-var _stdout = Module['_stdout'] = 69132592;
-var _CurrentMemoryContext = Module['_CurrentMemoryContext'] = 69146928;
-var _TTSOpsHeapTuple = Module['_TTSOpsHeapTuple'] = 69078900;
-var _TopTransactionContext = Module['_TopTransactionContext'] = 69146952;
-var _old_snapshot_threshold = Module['_old_snapshot_threshold'] = 69134004;
-var _oldSnapshotControl = Module['_oldSnapshotControl'] = 69134008;
-var _MyProc = Module['_MyProc'] = 69177064;
-var _XactIsoLevel = Module['_XactIsoLevel'] = 69105900;
-var _CurrentResourceOwner = Module['_CurrentResourceOwner'] = 69134228;
-var _MyProcPid = Module['_MyProcPid'] = 69140460;
-var _MyDatabaseId = Module['_MyDatabaseId'] = 69140376;
-var _wal_level = Module['_wal_level'] = 69105604;
-var _MainLWLockArray = Module['_MainLWLockArray'] = 69177100;
-var _SnapshotAnyData = Module['_SnapshotAnyData'] = 68967848;
-var _InterruptPending = Module['_InterruptPending'] = 69140320;
-var _TopMemoryContext = Module['_TopMemoryContext'] = 69146932;
-var _TopTransactionResourceOwner = Module['_TopTransactionResourceOwner'] = 69134236;
-var _CacheMemoryContext = Module['_CacheMemoryContext'] = 69146944;
-var _cpu_operator_cost = Module['_cpu_operator_cost'] = 69090608;
-var _CritSectionCount = Module['_CritSectionCount'] = 69140368;
-var ___THREW__ = Module['___THREW__'] = 69290084;
-var ___threwValue = Module['___threwValue'] = 69290088;
-var _error_context_stack = Module['_error_context_stack'] = 69166836;
-var _PG_exception_stack = Module['_PG_exception_stack'] = 69166840;
-var _ParallelWorkerNumber = Module['_ParallelWorkerNumber'] = 69097368;
-var _seq_page_cost = Module['_seq_page_cost'] = 69090576;
-var _IsUnderPostmaster = Module['_IsUnderPostmaster'] = 69140393;
-var _MyLatch = Module['_MyLatch'] = 69140492;
-var _DataDir = Module['_DataDir'] = 69140372;
-var _MyStartTime = Module['_MyStartTime'] = 69140464;
-var _process_shared_preload_libraries_in_progress = Module['_process_shared_preload_libraries_in_progress'] = 69140308;
-var _shmem_request_hook = Module['_shmem_request_hook'] = 69140312;
-var _MyProcPort = Module['_MyProcPort'] = 69140480;
-var _InterruptHoldoffCount = Module['_InterruptHoldoffCount'] = 69140360;
-var _DateStyle = Module['_DateStyle'] = 69015988;
-var _IntervalStyle = Module['_IntervalStyle'] = 69140400;
-var _work_mem = Module['_work_mem'] = 69016000;
-var _maintenance_work_mem = Module['_maintenance_work_mem'] = 69016016;
-var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 69016020;
-var _NBuffers = Module['_NBuffers'] = 69016024;
-var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69276336;
-var _pg_crc32_table = Module['_pg_crc32_table'] = 67933600;
-var _stdin = Module['_stdin'] = 69132440;
-var _SPI_result = Module['_SPI_result'] = 69167716;
-var _SPI_processed = Module['_SPI_processed'] = 69167704;
-var _SPI_tuptable = Module['_SPI_tuptable'] = 69167712;
-var _TTSOpsVirtual = Module['_TTSOpsVirtual'] = 69078852;
-var _xmlStructuredError = Module['_xmlStructuredError'] = 69276700;
-var _xmlStructuredErrorContext = Module['_xmlStructuredErrorContext'] = 69276708;
-var _xmlGenericErrorContext = Module['_xmlGenericErrorContext'] = 69276704;
-var _xmlGenericError = Module['_xmlGenericError'] = 69114164;
-var _xmlIsBaseCharGroup = Module['_xmlIsBaseCharGroup'] = 69113928;
-var _xmlIsDigitGroup = Module['_xmlIsDigitGroup'] = 69113960;
-var _xmlIsCombiningGroup = Module['_xmlIsCombiningGroup'] = 69113944;
-var _xmlIsExtenderGroup = Module['_xmlIsExtenderGroup'] = 69113976;
-var _xmlFree = Module['_xmlFree'] = 69114128;
-var _quote_all_identifiers = Module['_quote_all_identifiers'] = 69168781;
-var _extra_float_digits = Module['_extra_float_digits'] = 69020772;
-var _TTSOpsMinimalTuple = Module['_TTSOpsMinimalTuple'] = 69078948;
-var _debug_query_string = Module['_debug_query_string'] = 69169004;
-var _Log_directory = Module['_Log_directory'] = 69169236;
+var _ScanKeywords = Module['_ScanKeywords'] = 69109908;
+var _stderr = Module['_stderr'] = 69132336;
+var _stdout = Module['_stdout'] = 69132640;
+var _CurrentMemoryContext = Module['_CurrentMemoryContext'] = 69164620;
+var _TopMemoryContext = Module['_TopMemoryContext'] = 69164624;
+var _TTSOpsVirtual = Module['_TTSOpsVirtual'] = 68971032;
+var ___THREW__ = Module['___THREW__'] = 69290132;
+var ___threwValue = Module['___threwValue'] = 69290136;
+var _error_context_stack = Module['_error_context_stack'] = 69179676;
+var _PG_exception_stack = Module['_PG_exception_stack'] = 69179680;
+var _CurrentResourceOwner = Module['_CurrentResourceOwner'] = 69164700;
+var _wal_segment_size = Module['_wal_segment_size'] = 68980232;
+var _InterruptPending = Module['_InterruptPending'] = 69170484;
+var _MyLatch = Module['_MyLatch'] = 69170652;
+var _InterruptHoldoffCount = Module['_InterruptHoldoffCount'] = 69170524;
+var _CritSectionCount = Module['_CritSectionCount'] = 69170532;
+var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69276384;
+var _MyProc = Module['_MyProc'] = 69138204;
+var _GUC_check_errdetail_string = Module['_GUC_check_errdetail_string'] = 69165656;
+var _IsUnderPostmaster = Module['_IsUnderPostmaster'] = 69170557;
+var _progname = Module['_progname'] = 69134004;
+var _MyDatabaseId = Module['_MyDatabaseId'] = 69170540;
+var _MyProcPid = Module['_MyProcPid'] = 69170620;
+var _MyProcPort = Module['_MyProcPort'] = 69170640;
+var _single_mode_feed = Module['_single_mode_feed'] = 69134020;
+var _stdin = Module['_stdin'] = 69132488;
+var _SOCKET_DATA = Module['_SOCKET_DATA'] = 69194392;
+var _SOCKET_FILE = Module['_SOCKET_FILE'] = 69194388;
+var _cma_rsize = Module['_cma_rsize'] = 69134052;
+var _debug_query_string = Module['_debug_query_string'] = 69134236;
+var _cma_wsize = Module['_cma_wsize'] = 69134060;
+var _quote_all_identifiers = Module['_quote_all_identifiers'] = 69134009;
+var _TopTransactionContext = Module['_TopTransactionContext'] = 69164644;
+var _TopTransactionResourceOwner = Module['_TopTransactionResourceOwner'] = 69164708;
+var _TTSOpsMinimalTuple = Module['_TTSOpsMinimalTuple'] = 68971128;
+var _ProcessUtility_hook = Module['_ProcessUtility_hook'] = 69134424;
+var _work_mem = Module['_work_mem'] = 69103744;
+var _ParallelWorkerNumber = Module['_ParallelWorkerNumber'] = 68971576;
+var _XactIsoLevel = Module['_XactIsoLevel'] = 68979988;
+var _SnapshotAnyData = Module['_SnapshotAnyData'] = 69042632;
+var _SPI_processed = Module['_SPI_processed'] = 69134936;
+var _SPI_tuptable = Module['_SPI_tuptable'] = 69134944;
+var _SPI_result = Module['_SPI_result'] = 69134948;
+var _CacheMemoryContext = Module['_CacheMemoryContext'] = 69164636;
+var _pgBufferUsage = Module['_pgBufferUsage'] = 69135808;
+var _pgWalUsage = Module['_pgWalUsage'] = 69135920;
+var _TTSOpsHeapTuple = Module['_TTSOpsHeapTuple'] = 68971080;
+var _ExecutorStart_hook = Module['_ExecutorStart_hook'] = 69135944;
+var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69135948;
+var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69135952;
+var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69135956;
+var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69146636;
+var _BufferBlocks = Module['_BufferBlocks'] = 69141384;
+var _maintenance_work_mem = Module['_maintenance_work_mem'] = 69103760;
+var _wal_level = Module['_wal_level'] = 68980212;
+var _NBuffers = Module['_NBuffers'] = 69103768;
+var _old_snapshot_threshold = Module['_old_snapshot_threshold'] = 69164836;
+var _MainLWLockArray = Module['_MainLWLockArray'] = 69138236;
+var _ShmemVariableCache = Module['_ShmemVariableCache'] = 69137020;
+var _RmgrTable = Module['_RmgrTable'] = 68971792;
+var _process_shared_preload_libraries_in_progress = Module['_process_shared_preload_libraries_in_progress'] = 69170472;
+var _DataDir = Module['_DataDir'] = 69170536;
+var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69141156;
+var _BufferDescriptors = Module['_BufferDescriptors'] = 69141380;
+var _application_name = Module['_application_name'] = 69166860;
+var _pg_crc32_table = Module['_pg_crc32_table'] = 67834240;
+var _oldSnapshotControl = Module['_oldSnapshotControl'] = 69164840;
+var _check_function_bodies = Module['_check_function_bodies'] = 69042806;
+var _cluster_name = Module['_cluster_name'] = 69042860;
+var _extra_float_digits = Module['_extra_float_digits'] = 69092388;
+var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 69103764;
+var _seq_page_cost = Module['_seq_page_cost'] = 69104632;
+var _cpu_tuple_cost = Module['_cpu_tuple_cost'] = 69104648;
+var _cpu_operator_cost = Module['_cpu_operator_cost'] = 69104664;
+var _Log_directory = Module['_Log_directory'] = 69180580;
+var _Log_filename = Module['_Log_filename'] = 69180584;
+var _IntervalStyle = Module['_IntervalStyle'] = 69170564;
+var _DateStyle = Module['_DateStyle'] = 69103732;
+var _xmlStructuredError = Module['_xmlStructuredError'] = 69276748;
+var _xmlStructuredErrorContext = Module['_xmlStructuredErrorContext'] = 69276756;
+var _xmlGenericErrorContext = Module['_xmlGenericErrorContext'] = 69276752;
+var _xmlGenericError = Module['_xmlGenericError'] = 69114212;
+var _xmlIsBaseCharGroup = Module['_xmlIsBaseCharGroup'] = 69113976;
+var _xmlIsDigitGroup = Module['_xmlIsDigitGroup'] = 69114008;
+var _xmlIsCombiningGroup = Module['_xmlIsCombiningGroup'] = 69113992;
+var _xmlIsExtenderGroup = Module['_xmlIsExtenderGroup'] = 69114024;
+var _xmlFree = Module['_xmlFree'] = 69114176;
 var _pg_number_of_ones = Module['_pg_number_of_ones'] = 68773200;
-var _ShmemVariableCache = Module['_ShmemVariableCache'] = 69189676;
-var _check_function_bodies = Module['_check_function_bodies'] = 69027585;
-var _cluster_name = Module['_cluster_name'] = 69027636;
-var _wal_segment_size = Module['_wal_segment_size'] = 69105624;
-var _cpu_tuple_cost = Module['_cpu_tuple_cost'] = 69090592;
-var _application_name = Module['_application_name'] = 69147964;
-var _Log_filename = Module['_Log_filename'] = 69169240;
-var _GUC_check_errdetail_string = Module['_GUC_check_errdetail_string'] = 69148632;
-var _pgBufferUsage = Module['_pgBufferUsage'] = 69168576;
-var _pgWalUsage = Module['_pgWalUsage'] = 69168688;
-var _ExecutorStart_hook = Module['_ExecutorStart_hook'] = 69168712;
-var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69168716;
-var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69168720;
-var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69168724;
-var _progname = Module['_progname'] = 69168776;
-var _single_mode_feed = Module['_single_mode_feed'] = 69168792;
-var _SOCKET_DATA = Module['_SOCKET_DATA'] = 69194344;
-var _SOCKET_FILE = Module['_SOCKET_FILE'] = 69194340;
-var _cma_rsize = Module['_cma_rsize'] = 69168824;
-var _cma_wsize = Module['_cma_wsize'] = 69168832;
-var _ProcessUtility_hook = Module['_ProcessUtility_hook'] = 69169188;
-var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69169304;
-var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69169308;
-var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69169720;
-var _RmgrTable = Module['_RmgrTable'] = 69097392;
-var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458480;
-var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69170172;
-var _planner_hook = Module['_planner_hook'] = 69170184;
-var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69175628;
-var _BufferBlocks = Module['_BufferBlocks'] = 69170380;
-var _BufferDescriptors = Module['_BufferDescriptors'] = 69170376;
-var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69177016;
-var _ClientAuthentication_hook = Module['_ClientAuthentication_hook'] = 69179636;
-var _check_password_hook = Module['_check_password_hook'] = 69190876;
-var _IDB_STAGE = Module['_IDB_STAGE'] = 69194352;
-var _IDB_PIPE_FP = Module['_IDB_PIPE_FP'] = 69194348;
-var _pg_scram_mech = Module['_pg_scram_mech'] = 69113872;
-var _pg_g_threadlock = Module['_pg_g_threadlock'] = 69111976;
-var _pgresStatus = Module['_pgresStatus'] = 69113664;
+var _MyStartTime = Module['_MyStartTime'] = 69170624;
+var _shmem_request_hook = Module['_shmem_request_hook'] = 69170476;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458576;
+var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69180572;
+var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69180604;
+var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69180608;
+var _planner_hook = Module['_planner_hook'] = 69181048;
+var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69190728;
+var _check_password_hook = Module['_check_password_hook'] = 69181156;
+var _ClientAuthentication_hook = Module['_ClientAuthentication_hook'] = 69181912;
+var _IDB_STAGE = Module['_IDB_STAGE'] = 69194400;
+var _IDB_PIPE_FP = Module['_IDB_PIPE_FP'] = 69194396;
+var _pg_scram_mech = Module['_pg_scram_mech'] = 69113920;
+var _pg_g_threadlock = Module['_pg_g_threadlock'] = 69112024;
+var _pgresStatus = Module['_pgresStatus'] = 69113712;
 var _xmlIsPubidChar_tab = Module['_xmlIsPubidChar_tab'] = 68773488;
-var _xmlGetWarningsDefaultValue = Module['_xmlGetWarningsDefaultValue'] = 69114156;
-var _xmlMalloc = Module['_xmlMalloc'] = 69114132;
-var _xmlRealloc = Module['_xmlRealloc'] = 69114140;
-var _xmlLastError = Module['_xmlLastError'] = 69276720;
-var _xmlMallocAtomic = Module['_xmlMallocAtomic'] = 69114136;
-var _xmlMemStrdup = Module['_xmlMemStrdup'] = 69114144;
-var _xmlBufferAllocScheme = Module['_xmlBufferAllocScheme'] = 69114148;
-var _xmlDefaultBufferSize = Module['_xmlDefaultBufferSize'] = 69114152;
-var _xmlParserDebugEntities = Module['_xmlParserDebugEntities'] = 69276660;
-var _xmlDoValidityCheckingDefaultValue = Module['_xmlDoValidityCheckingDefaultValue'] = 69276664;
-var _xmlLoadExtDtdDefaultValue = Module['_xmlLoadExtDtdDefaultValue'] = 69276668;
-var _xmlPedanticParserDefaultValue = Module['_xmlPedanticParserDefaultValue'] = 69276672;
-var _xmlLineNumbersDefaultValue = Module['_xmlLineNumbersDefaultValue'] = 69276676;
-var _xmlKeepBlanksDefaultValue = Module['_xmlKeepBlanksDefaultValue'] = 69114160;
-var _xmlSubstituteEntitiesDefaultValue = Module['_xmlSubstituteEntitiesDefaultValue'] = 69276680;
-var _xmlRegisterNodeDefaultValue = Module['_xmlRegisterNodeDefaultValue'] = 69276684;
-var _xmlDeregisterNodeDefaultValue = Module['_xmlDeregisterNodeDefaultValue'] = 69276688;
-var _xmlParserInputBufferCreateFilenameValue = Module['_xmlParserInputBufferCreateFilenameValue'] = 69276692;
-var _xmlOutputBufferCreateFilenameValue = Module['_xmlOutputBufferCreateFilenameValue'] = 69276696;
-var _xmlIndentTreeOutput = Module['_xmlIndentTreeOutput'] = 69114168;
-var _xmlTreeIndentString = Module['_xmlTreeIndentString'] = 69114172;
-var _xmlSaveNoEmptyTags = Module['_xmlSaveNoEmptyTags'] = 69276712;
-var _xmlDefaultSAXHandler = Module['_xmlDefaultSAXHandler'] = 69114176;
-var _xmlDefaultSAXLocator = Module['_xmlDefaultSAXLocator'] = 69114288;
-var _xmlParserMaxDepth = Module['_xmlParserMaxDepth'] = 69114948;
+var _xmlGetWarningsDefaultValue = Module['_xmlGetWarningsDefaultValue'] = 69114204;
+var _xmlMalloc = Module['_xmlMalloc'] = 69114180;
+var _xmlRealloc = Module['_xmlRealloc'] = 69114188;
+var _xmlLastError = Module['_xmlLastError'] = 69276768;
+var _xmlMallocAtomic = Module['_xmlMallocAtomic'] = 69114184;
+var _xmlMemStrdup = Module['_xmlMemStrdup'] = 69114192;
+var _xmlBufferAllocScheme = Module['_xmlBufferAllocScheme'] = 69114196;
+var _xmlDefaultBufferSize = Module['_xmlDefaultBufferSize'] = 69114200;
+var _xmlParserDebugEntities = Module['_xmlParserDebugEntities'] = 69276708;
+var _xmlDoValidityCheckingDefaultValue = Module['_xmlDoValidityCheckingDefaultValue'] = 69276712;
+var _xmlLoadExtDtdDefaultValue = Module['_xmlLoadExtDtdDefaultValue'] = 69276716;
+var _xmlPedanticParserDefaultValue = Module['_xmlPedanticParserDefaultValue'] = 69276720;
+var _xmlLineNumbersDefaultValue = Module['_xmlLineNumbersDefaultValue'] = 69276724;
+var _xmlKeepBlanksDefaultValue = Module['_xmlKeepBlanksDefaultValue'] = 69114208;
+var _xmlSubstituteEntitiesDefaultValue = Module['_xmlSubstituteEntitiesDefaultValue'] = 69276728;
+var _xmlRegisterNodeDefaultValue = Module['_xmlRegisterNodeDefaultValue'] = 69276732;
+var _xmlDeregisterNodeDefaultValue = Module['_xmlDeregisterNodeDefaultValue'] = 69276736;
+var _xmlParserInputBufferCreateFilenameValue = Module['_xmlParserInputBufferCreateFilenameValue'] = 69276740;
+var _xmlOutputBufferCreateFilenameValue = Module['_xmlOutputBufferCreateFilenameValue'] = 69276744;
+var _xmlIndentTreeOutput = Module['_xmlIndentTreeOutput'] = 69114216;
+var _xmlTreeIndentString = Module['_xmlTreeIndentString'] = 69114220;
+var _xmlSaveNoEmptyTags = Module['_xmlSaveNoEmptyTags'] = 69276760;
+var _xmlDefaultSAXHandler = Module['_xmlDefaultSAXHandler'] = 69114224;
+var _xmlDefaultSAXLocator = Module['_xmlDefaultSAXLocator'] = 69114336;
+var _xmlParserMaxDepth = Module['_xmlParserMaxDepth'] = 69114996;
 var _xmlStringText = Module['_xmlStringText'] = 68775296;
 var _xmlStringComment = Module['_xmlStringComment'] = 68775311;
 var _xmlStringTextNoenc = Module['_xmlStringTextNoenc'] = 68775301;
-var _xmlXPathNAN = Module['_xmlXPathNAN'] = 69277384;
-var _xmlXPathNINF = Module['_xmlXPathNINF'] = 69277400;
-var _xmlXPathPINF = Module['_xmlXPathPINF'] = 69277392;
-var _z_errmsg = Module['_z_errmsg'] = 69131504;
+var _xmlXPathNAN = Module['_xmlXPathNAN'] = 69277432;
+var _xmlXPathNINF = Module['_xmlXPathNINF'] = 69277448;
+var _xmlXPathPINF = Module['_xmlXPathPINF'] = 69277440;
+var _z_errmsg = Module['_z_errmsg'] = 69131552;
 var __length_code = Module['__length_code'] = 68794960;
 var __dist_code = Module['__dist_code'] = 68794448;
-function invoke_iiii(index,a1,a2,a3) {
+function invoke_i(index) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vii(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2);
+    return getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -11119,6 +11121,17 @@ function invoke_iii(index,a1,a2) {
   }
 }
 
+function invoke_ii(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_viii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
@@ -11130,10 +11143,44 @@ function invoke_viii(index,a1,a2,a3) {
   }
 }
 
-function invoke_ii(index,a1) {
+function invoke_ji(index,a1) {
   var sp = stackSave();
   try {
     return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_vi(index,a1) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiii(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -11152,10 +11199,134 @@ function invoke_v(index) {
   }
 }
 
-function invoke_vi(index,a1) {
+function invoke_viiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)(a1);
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_jiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_jiiiii(index,a1,a2,a3,a4,a5) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_viiii(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vji(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiii(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiijii(index,a1,a2,a3,a4,a5,a6) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vijiji(index,a1,a2,a3,a4,a5) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viji(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_jiiii(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_viiiiii(index,a1,a2,a3,a4,a5,a6) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -11174,10 +11345,10 @@ function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
   }
 }
 
-function invoke_i(index) {
+function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)();
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -11185,10 +11356,66 @@ function invoke_i(index) {
   }
 }
 
-function invoke_viiii(index,a1,a2,a3,a4) {
+function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)(a1,a2,a3,a4);
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_jii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_iiij(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -11218,50 +11445,6 @@ function invoke_id(index,a1) {
   }
 }
 
-function invoke_iiiii(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_ijiiiii(index,a1,a2,a3,a4,a5,a6) {
   var sp = stackSave();
   try {
@@ -11270,96 +11453,6 @@ function invoke_ijiiiii(index,a1,a2,a3,a4,a5,a6) {
     stackRestore(sp);
     if (e !== e+0) throw e;
     _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiii(index,a1,a2,a3,a4,a5) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiij(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiiii(index,a1,a2,a3,a4,a5,a6) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_jiiii(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-
-function invoke_ji(index,a1) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
   }
 }
 
@@ -11374,10 +11467,54 @@ function invoke_ij(index,a1) {
   }
 }
 
-function invoke_ijiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
+function invoke_iiiij(index,a1,a2,a3,a4) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
+    return getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiij(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiji(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiji(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -11396,10 +11533,54 @@ function invoke_vij(index,a1,a2) {
   }
 }
 
+function invoke_iiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vid(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_vj(index,a1) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_ijiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -11444,174 +11625,6 @@ function invoke_viij(index,a1,a2,a3) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_jiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-
-function invoke_jiiiii(index,a1,a2,a3,a4,a5) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-
-function invoke_vji(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiijii(index,a1,a2,a3,a4,a5,a6) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vijiji(index,a1,a2,a3,a4,a5) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viji(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_jii(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-
-function invoke_iiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiij(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiji(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiji(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vid(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiij(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
