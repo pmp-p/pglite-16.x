@@ -33,7 +33,7 @@ const setup = async (pg: PGliteInterface, _emscriptenOpts: any) => {
       const init = async () => {
         await pg.transaction(async (tx) => {
           // Create a temporary view with the query
-          const formattedQuery = await formatQuery(tx, query, params)
+          const formattedQuery = await formatQuery(pg, query, params, tx)
           await tx.query(
             `CREATE OR REPLACE TEMP VIEW live_query_${id}_view AS ${formattedQuery}`,
           )
@@ -124,7 +124,7 @@ const setup = async (pg: PGliteInterface, _emscriptenOpts: any) => {
       const init = async () => {
         await pg.transaction(async (tx) => {
           // Create a temporary view with the query
-          const formattedQuery = await formatQuery(tx, query, params)
+          const formattedQuery = await formatQuery(pg, query, params, tx)
           await tx.query(
             `CREATE OR REPLACE TEMP VIEW live_query_${id}_view AS ${formattedQuery}`,
           )
@@ -483,15 +483,15 @@ async function addNotifyTriggersToTables(
     )
     .map((table) => {
       return `
-      CREATE OR REPLACE FUNCTION _notify_${table.schema_name}_${table.table_name}() RETURNS TRIGGER AS $$
+      CREATE OR REPLACE FUNCTION "_notify_${table.schema_name}_${table.table_name}"() RETURNS TRIGGER AS $$
       BEGIN
         PERFORM pg_notify('table_change__${table.schema_name}__${table.table_name}', '');
         RETURN NULL;
       END;
       $$ LANGUAGE plpgsql;
-      CREATE OR REPLACE TRIGGER _notify_trigger_${table.schema_name}_${table.table_name}
-      AFTER INSERT OR UPDATE OR DELETE ON ${table.schema_name}.${table.table_name}
-      FOR EACH STATEMENT EXECUTE FUNCTION _notify_${table.schema_name}_${table.table_name}();
+      CREATE OR REPLACE TRIGGER "_notify_trigger_${table.schema_name}_${table.table_name}"
+      AFTER INSERT OR UPDATE OR DELETE ON "${table.schema_name}"."${table.table_name}"
+      FOR EACH STATEMENT EXECUTE FUNCTION "_notify_${table.schema_name}_${table.table_name}"();
       `
     })
     .join('\n')

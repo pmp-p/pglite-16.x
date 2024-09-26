@@ -20,7 +20,7 @@ export interface QueryOptions {
   parsers?: ParserOptions
   blob?: Blob | File
   onNotice?: (notice: NoticeMessage) => void
-  setAllTypes?: boolean
+  paramTypes?: number[]
 }
 
 export interface ExecProtocolOptions {
@@ -68,6 +68,8 @@ export interface PGliteOptions {
   extensions?: Extensions
   loadDataDir?: Blob | File
   initialMemory?: number
+  wasmModule?: WebAssembly.Module
+  fsBundle?: Blob | File
 }
 
 export type PGliteInterface = {

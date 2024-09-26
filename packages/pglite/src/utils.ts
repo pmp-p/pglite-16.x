@@ -1,34 +1,81 @@
 import type { PGliteInterface, Transaction } from './interface.js'
+import { serialize as serializeProtocol } from '@electric-sql/pg-protocol'
+import { parseDescribeStatementResults } from './parse.js'
+import { TEXT } from './types.js'
 
 export const IN_NODE =
   typeof process === 'object' &&
   typeof process.versions === 'object' &&
   typeof process.versions.node === 'string'
 
-export async function makeLocateFile() {
-  const PGWASM_URL = new URL('../release/postgres.wasm', import.meta.url)
-  const PGSHARE_URL = new URL('../release/postgres.data', import.meta.url)
-  let fileURLToPath = (fileUrl: URL) => fileUrl.pathname
-  if (IN_NODE) {
-    fileURLToPath = (await import('url')).fileURLToPath
-  }
-  return (base: string) => {
-    let url: URL | null = null
-    switch (base) {
-      case 'postgres.data':
-        url = PGSHARE_URL
-        break
-      case 'postgres.wasm':
-        url = PGWASM_URL
-        break
-      default:
-        console.error('makeLocateFile', base)
-    }
+let wasmDownloadPromise: Promise<Response> | undefined
 
-    if (url?.protocol === 'file:') {
-      return fileURLToPath(url)
+export async function startWasmDownload() {
+  if (IN_NODE || wasmDownloadPromise) {
+    return
+  }
+  const moduleUrl = new URL('../release/postgres.wasm', import.meta.url)
+  wasmDownloadPromise = fetch(moduleUrl)
+}
+
+// This is a global cache of the PGlite Wasm module to avoid having to re-download or
+// compile it on subsequent calls.
+let cachedWasmModule: WebAssembly.Module | undefined
+
+export async function instantiateWasm(
+  imports: WebAssembly.Imports,
+  module?: WebAssembly.Module,
+): Promise<{
+  instance: WebAssembly.Instance
+  module: WebAssembly.Module
+}> {
+  if (module || cachedWasmModule) {
+    WebAssembly.instantiate(module || cachedWasmModule!, imports)
+    return {
+      instance: await WebAssembly.instantiate(
+        module || cachedWasmModule!,
+        imports,
+      ),
+      module: module || cachedWasmModule!,
     }
-    return url?.toString() ?? ''
+  }
+  const moduleUrl = new URL('../release/postgres.wasm', import.meta.url)
+  if (IN_NODE) {
+    const fs = await import('fs/promises')
+    const buffer = await fs.readFile(moduleUrl)
+    const { module: newModule, instance } = await WebAssembly.instantiate(
+      buffer,
+      imports,
+    )
+    cachedWasmModule = newModule
+    return {
+      instance,
+      module: newModule,
+    }
+  } else {
+    if (!wasmDownloadPromise) {
+      wasmDownloadPromise = fetch(moduleUrl)
+    }
+    const response = await wasmDownloadPromise
+    const { module: newModule, instance } =
+      await WebAssembly.instantiateStreaming(response, imports)
+    cachedWasmModule = newModule
+    return {
+      instance,
+      module: newModule,
+    }
+  }
+}
+
+export async function getFsBundle(): Promise<ArrayBuffer> {
+  const fsBundleUrl = new URL('../release/postgres.data', import.meta.url)
+  if (IN_NODE) {
+    const fs = await import('fs/promises')
+    const fileData = await fs.readFile(fsBundleUrl)
+    return fileData.buffer
+  } else {
+    const response = await fetch(fsBundleUrl)
+    return response.arrayBuffer()
   }
 }
 
@@ -71,14 +118,46 @@ export const uuid = (): string => {
   )
 }
 
+/**
+ * Formats a query with parameters
+ * Expects that any tables/relations referenced in the query exist in the database
+ * due to requiring them to be present to describe the parameters types.
+ * `tx` is optional, and to be used when formatQuery is called during a transaction.
+ * @param pg - The PGlite instance
+ * @param query - The query to format
+ * @param params - The parameters to format the query with
+ * @param tx - The transaction to use, defaults to the PGlite instance
+ * @returns The formatted query
+ */
 export async function formatQuery(
-  pg: PGliteInterface | Transaction,
+  pg: PGliteInterface,
   query: string,
   params?: any[] | null,
+  tx?: Transaction | PGliteInterface,
 ) {
   if (!params || params.length === 0) {
     // no params so no formatting needed
     return query
+  }
+
+  tx = tx ?? pg
+
+  // Get the types of the parameters
+  let dataTypeIDs: number[]
+  try {
+    await pg.execProtocol(serializeProtocol.parse({ text: query }), {
+      syncToFs: false,
+    })
+
+    dataTypeIDs = parseDescribeStatementResults(
+      (
+        await pg.execProtocol(serializeProtocol.describe({ type: 'S' }), {
+          syncToFs: false,
+        })
+      ).map(([msg]) => msg),
+    )
+  } finally {
+    await pg.execProtocol(serializeProtocol.sync(), { syncToFs: false })
   }
 
   // replace $1, $2, etc with  %1L, %2L, etc
@@ -86,14 +165,12 @@ export async function formatQuery(
     return '%' + num + 'L'
   })
 
-  const ret = await pg.query<{
+  const ret = await tx.query<{
     query: string
   }>(
     `SELECT format($1, ${params.map((_, i) => `$${i + 2}`).join(', ')}) as query`,
     [subbedQuery, ...params],
-    {
-      setAllTypes: true,
-    },
+    { paramTypes: [TEXT, ...dataTypeIDs] },
   )
   return ret.rows[0].query
 }
