@@ -53,7 +53,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpeurj75r7.js
+// include: /tmp/tmpw4savxpc.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -290,7 +290,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmpeurj75r7.js
+// end include: /tmp/tmpw4savxpc.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -11024,7 +11024,7 @@ var _DataDir = Module['_DataDir'] = 69170536;
 var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69141156;
 var _BufferDescriptors = Module['_BufferDescriptors'] = 69141380;
 var _application_name = Module['_application_name'] = 69166860;
-var _pg_crc32_table = Module['_pg_crc32_table'] = 67834464;
+var _pg_crc32_table = Module['_pg_crc32_table'] = 67834336;
 var _oldSnapshotControl = Module['_oldSnapshotControl'] = 69164840;
 var _check_function_bodies = Module['_check_function_bodies'] = 69042806;
 var _cluster_name = Module['_cluster_name'] = 69042860;
@@ -11049,7 +11049,7 @@ var _xmlFree = Module['_xmlFree'] = 69114176;
 var _pg_number_of_ones = Module['_pg_number_of_ones'] = 68773200;
 var _MyStartTime = Module['_MyStartTime'] = 69170624;
 var _shmem_request_hook = Module['_shmem_request_hook'] = 69170476;
-var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458800;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68458672;
 var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69180572;
 var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69180604;
 var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69180608;
