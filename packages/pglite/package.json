@@ -1,6 +1,6 @@
 {
   "name": "@electric-sql/pglite",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -106,6 +106,7 @@
   },
   "browser": {
     "fs": false,
+    "fs/promises": false,
     "path": false,
     "url": false,
     "zlib": false,
