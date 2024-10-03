@@ -351,3 +351,55 @@ FILE *tmpfile(void) {
 }
 
 
+
+volatile int fd_sock=0;
+volatile FILE *fd_FILE = NULL;
+
+int connect(int socket, void *address, socklen_t address_len) {
+    puts("# 38: connect STUB");
+}
+
+int socket(int domain, int type, int protocol) {
+    printf("# 359 : domain =%d type=%d proto=%d\n", domain , type, protocol);
+    // default to stderr
+    int fd=2;
+    if (domain|AF_UNIX) {
+        fd_FILE = fopen(PGS_ILOCK, "w+");
+        fd_sock = fileno(fd_FILE);
+        printf("# 361 AF_UNIX sock=%d, fd=%d\n",fd, fd_sock);
+    }
+    return fd;
+}
+
+
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, void *dest_addr, socklen_t addrlen) {
+    printf("# 367: sendto(%d)\n", len);
+    return 0;
+}
+
+ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
+    return sendto(sockfd, buf, len, flags, NULL, 0);
+}
+
+
+
+ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
+    printf("# 386 implicit (sendto) tell=%d\n", ftell(fd_FILE));
+    fclose(fd_FILE);
+    rename(PGS_ILOCK, PGS_IN);
+    fd_FILE = fopen(PGS_ILOCK, "w+");
+    fd_sock = fileno(fd_FILE);
+    printf("# 392: fd=%d\n", fd_sock);
+
+    puts("# 394: recvfrom STUB");
+    char *buf = buffer;
+    buf[0] = '0';
+    return 0;
+}
+
+ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
+    return recvfrom(sockfd, buf, len, flags, NULL, NULL);
+}
+
+
+

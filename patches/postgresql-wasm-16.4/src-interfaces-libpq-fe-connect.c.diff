@@ -78,3 +78,23 @@
  			/*
  			 * Give up on current server/address, try the next one.
  			 */
+@@ -3093,7 +3103,7 @@
+ 				 * Now check (using getsockopt) that there is not an error
+ 				 * state waiting for us on the socket.
+ 				 */
+-
++#if !defined(__wasi__)
+ 				if (getsockopt(conn->sock, SOL_SOCKET, SO_ERROR,
+ 							   (char *) &optval, &optlen) == -1)
+ 				{
+@@ -3128,7 +3138,9 @@
+ 											SOCK_STRERROR(SOCK_ERRNO, sebuf, sizeof(sebuf)));
+ 					goto error_return;
+ 				}
+-
++#else
++puts("# 31076 getsockopt/getsockname skip");
++#endif // __wasi__
+ 				/*
+ 				 * Make sure we can write before advancing to next step.
+ 				 */

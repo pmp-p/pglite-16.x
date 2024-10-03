@@ -396,8 +396,8 @@ PDEBUG("# 334");
     initStringInfo(&row_description_buf);
     MemoryContextSwitchTo(TopMemoryContext);
 
-#if 1 //PGDEBUG
-    PDEBUG("# 415: exception handler off");
+#if defined(__wasi__) //PGDEBUG
+    puts("# 400: sjlj exception handler off");
 #else
     if (sigsetjmp(local_sigjmp_buf, 1) != 0)
     {

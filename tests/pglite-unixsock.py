@@ -42,6 +42,8 @@ SLOCK = f"{io_path}.lock.in"
 CINPUT = f"{io_path}.out"
 CLOCK = f"{io_path}.lock.out"
 
+CLOCK_in_progress = False
+
 
 def dbg(code, data):
     fit=int( 100 / 2 )
@@ -51,46 +53,47 @@ def dbg(code, data):
         print(code,str(len(data)).zfill(2), data)
 
 
+
 class Client:
     def __init__(self, clientSocket, targetHost, targetPort):
         self.__clientSocket = clientSocket
 
     def run(self):
 
+        # initial clean up
+        for f in [SINPUT,CINPUT]:
+            try:
+                os.remove(f)
+                print(f"removed {f}")
+            except:
+                pass
+
         print("Client Thread started")
         steps = 0
 
         hcmp = b""
 
-
         def pump():
-            global SKIPS
+            global CLOCK_in_progress
             nonlocal steps, hcmp
             cdata = None
-            if os.path.isfile(CLOCK):
-                print("found lock",CLOCK)
-                if os.path.isfile(CINPUT):
-                    with open(CINPUT, "rb") as file:
-                        cdata = file.read()
-                    if len(cdata)!=len(hcmp or b""):
-                        print()
-                        print(f"W/A {len(cdata)} != NA {len(hcmp)}")
-                        dbg("W", cdata)
-                        dbg("N", hcmp)
-                        print()
-                        # cdata = hcmp
-                    else:
-                        print(f"W/A match  {len(cdata)}")
-                    os.unlink(CLOCK)
-                    hcmp = b""
+            if not CLOCK_in_progress:
+                if os.path.isfile(CLOCK):
+                    print(f"{CLOCK} : server is reply in progress ...")
+                    CLOCK_in_progress = True
+
+            if os.path.isfile(CINPUT):
+                print(f"{CINPUT} : incoming")
+                with open(CINPUT, "rb") as file:
+                    cdata = file.read()
+                os.unlink(CINPUT)
+                CLOCK_in_progress = False
             return cdata
 
-        if 1:
-            try:
-                self.__clientSocket.setblocking(0)
-            except:
-                print(self.__clientSocket, "setblocking failed")
-
+        try:
+            self.__clientSocket.setblocking(0)
+        except:
+            print(self.__clientSocket, "setblocking failed")
 
         clientData = b""
         targetHostData = b""
@@ -134,7 +137,7 @@ class Client:
             for out in outputsReady:
                 if out == self.__clientSocket and (len(clientData) > 0):
                     bytesWritten = self.__clientSocket.send(clientData)
-                    #dbg(">", clientData[:bytesWritten])
+
                     if bytesWritten > 0:
                         clientData = clientData[bytesWritten:]
                         hcmp = b""
@@ -143,20 +146,16 @@ class Client:
                     bytesWritten=len(targetHostData)
                     print("unixsocket -> pglite", bytesWritten, targetHostData )
                     if bytesWritten>0:
-                        with open(SINPUT, "wb") as file:
+                        with open(SLOCK, "wb") as file:
                             file.write(targetHostData[:bytesWritten])
-                        sunlock()
-                        while os.path.isfile(SINPUT):
-                            time.sleep(0.016)
-                        slock()
+
+                        # atomic
+                        os.rename(SLOCK, SINPUT)
+
                         targetHostData = targetHostData[bytesWritten:]
 
-        #targetHostSocket.close()
-        for f in [SINPUT,CINPUT,SLOCK,CLOCK]:
-            try:
-                os.remove(f)
-            except:
-                pass
+
+            time.sleep(0.016)
 
 # ===============================================================================
 
@@ -181,12 +180,6 @@ server.listen(1)
 while True:
     # accept connections
     print("Server is listening for incoming connections...")
-
-    # create the initial lock
-    slock()
-    if os.path.isfile(SINPUT):
-        print("cleaned up, (cli)socket->(srv)file", SINPUT)
-        os.unlink(SINPUT)
 
     connection, client_address = server.accept()
 

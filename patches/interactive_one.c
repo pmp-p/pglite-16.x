@@ -143,6 +143,7 @@ static void io_init(bool in_auth, bool out_auth) {
 
 }
 
+/*
 static void wait_unlock() {
     int busy = 0;
     while (access(PGS_OLOCK, F_OK) == 0) {
@@ -150,6 +151,7 @@ static void wait_unlock() {
             printf("# 150: FIXME: busy wait lock removed %d\n", busy);
     }
 }
+*/
 
 EMSCRIPTEN_KEEPALIVE int
 cma_wsize = 0;
@@ -190,7 +192,7 @@ interactive_one() {
 
     if (is_node && is_repl) {
 
-        wait_unlock();
+        //wait_unlock();
 
         if (!MyProcPort) {
             io_init(false, false);
@@ -203,7 +205,7 @@ interactive_one() {
 
 
         if (!SOCKET_FILE) {
-            SOCKET_FILE =  fopen(PGS_OUT,"w") ;
+            SOCKET_FILE =  fopen(PGS_OLOCK, "w") ;
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 
@@ -376,11 +378,11 @@ printf("# 352 : node+repl is wire : %c\n", firstchar);
         }
 
         if (!SOCKET_FILE) {
-            SOCKET_FILE =  fopen(PGS_OUT,"w") ;
+            SOCKET_FILE =  fopen(PGS_OLOCK, "w") ;
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 #if PGDEBUG
-        printf("# fd %s: %s fd=%d\n", PGS_OUT, IO, MyProcPort->sock);
+        printf("# fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
 #endif
         goto incoming;
 
@@ -415,11 +417,11 @@ printf("# 352 : node+repl is wire : %c\n", firstchar);
         }
 
         if (!SOCKET_FILE) {
-            SOCKET_FILE =  fopen(PGS_OUT,"w") ;
+            SOCKET_FILE =  fopen(PGS_OLOCK, "w") ;
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 #if PGDEBUG
-        printf("# fd %s: %s fd=%d\n", PGS_OUT, IO, MyProcPort->sock);
+        printf("# fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
 #endif
 
     }
@@ -445,7 +447,7 @@ printf("# 352 : node+repl is wire : %c\n", firstchar);
     IO[0] = 0;
 
 incoming:
-#if 0 //PGDEBUG
+#if 1 //PGDEBUG
     #warning "exception handler off"
 #else
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)
@@ -562,13 +564,9 @@ wire_flush:
                 if (cma_wsize)
                     PDEBUG("# 557: cma and sockfile ???");
                 if (sockfiles) {
-                    PDEBUG("# 559: setting sockfile lock, ready to read");
-                    PDEBUG(PGS_OLOCK);
-                    c_lock = fopen(PGS_OLOCK, "w");
-                    fclose(c_lock);
+                    PDEBUG("# 559: ready to read " PGS_OLOCK "->" PGS_OUT);
+                    rename(PGS_OLOCK, PGS_OUT);
                 }
-// CHECK ME 320 / 540 . only initially or after error
-                // send_ready_for_query = true;
             }
 
         } else {
@@ -579,7 +577,6 @@ wire_flush:
     // always free kernel buffer !!!
     cma_rsize = 0;
     IO[0] = 0;
-
 
     #undef IO
 }
