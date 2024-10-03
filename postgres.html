@@ -184,12 +184,17 @@
             var data = null
             switch (test_step) {
                 case 0:
-                    data = "SHOW client_encoding;CREATE EXTENSION IF NOT EXISTS postgis;";
+                    data = "SHOW client_encoding;CREATE EXTENSION IF NOT EXISTS plpgsql;"
                     break
 
                 case 1:
-                    data = "SELECT now(), current_database(), session_user, current_user;"
+                    data = "SELECT now(), current_database(), session_user, current_user;CREATE EXTENSION IF NOT EXISTS vector;"
                     break
+
+                case 2:
+                    data = "SELECT now(), current_database(), session_user, current_user;CREATE EXTENSION IF NOT EXISTS postgis;"
+                    break
+
 /*
                 case 2:
                     data = "CREATE USER test_user WITH PASSWORD 'md5abdbecd56d5fbd2cdaee3d0fa9e4f434';"
@@ -302,8 +307,8 @@
             }
             */
             console.error("TODO: load ext from pg_extensions")
-            //await Module.load_package("vector", "vector.tar.gz")
-            await Module.load_package("postgis", "postgis-3.tar.gz")
+            await Module.load_package("vector", "vector.tar.gz")
+            //await Module.load_package("postgis", "postgis-3.tar.gz")
             //await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
 
             vm._setenv(vm.stringToUTF8OnStack("REPL"),vm.stringToUTF8OnStack("Y"),1)
