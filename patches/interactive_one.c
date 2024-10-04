@@ -138,7 +138,7 @@ static void io_init(bool in_auth, bool out_auth) {
 
         SOCKET_FILE = NULL;
         SOCKET_DATA = 0;
-        PDEBUG("# 141: io_init  --------- CLIENT (ready) ---------");
+        PDEBUG("\n\n\n\n# 141: io_init  --------- Ready for CLIENT ---------");
 
 
 }
@@ -350,7 +350,7 @@ PDEBUG("# 324 : TODO: set a pg_main started flag");
 
                     /* else it is wire msg */
 #if PGDEBUG
-printf("# 352 : node+repl is wire : %c\n", firstchar);
+printf("# 353 : node+repl is_wire/is_socket -> true : %c\n", firstchar);
                     force_echo = true;
 #endif
                     is_socket = true;
@@ -382,7 +382,7 @@ printf("# 352 : node+repl is wire : %c\n", firstchar);
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 #if PGDEBUG
-        printf("# fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
+        printf("# 385: fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
 #endif
         goto incoming;
 
@@ -421,7 +421,7 @@ printf("# 352 : node+repl is wire : %c\n", firstchar);
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 #if PGDEBUG
-        printf("# fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
+        printf("# 424: fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
 #endif
 
     }
@@ -447,8 +447,8 @@ printf("# 352 : node+repl is wire : %c\n", firstchar);
     IO[0] = 0;
 
 incoming:
-#if 1 //PGDEBUG
-    #warning "exception handler off"
+#if defined(__wasi__) //PGDEBUG
+    PDEBUG("# 451: sjlj exception handler off");
 #else
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)
 	{
@@ -509,7 +509,7 @@ incoming:
 #endif
 
     if (force_echo) {
-        printf("# 501: wire=%d socket=%d repl=%c: %s", is_wire, is_socket, firstchar, inBuf->data);
+        printf("# 512: wire=%d socket=%d 1stchar=%c Q: %s", is_wire, is_socket, firstchar, inBuf->data);
     }
 
 
@@ -540,13 +540,13 @@ incoming:
     if (is_wire) {
 wire_flush:
         if (!ClientAuthInProgress) {
-            PDEBUG("# 537: end packet - sending rfq");
+            PDEBUG("# 543: end packet - sending rfq");
             if (send_ready_for_query) {
                 ReadyForQuery(DestRemote);
                 send_ready_for_query = false;
             }
         } else {
-            PDEBUG("# 542: end packet (ClientAuthInProgress - no rfq) ");
+            PDEBUG("# 549: end packet (ClientAuthInProgress - no rfq) ");
         }
 
         if (SOCKET_DATA>0) {
@@ -558,13 +558,16 @@ wire_flush:
                 cma_wsize = SOCKET_DATA;
             }
             if (SOCKET_FILE) {
+                int outb = SOCKET_DATA;
                 fclose(SOCKET_FILE);
                 SOCKET_FILE = NULL;
                 SOCKET_DATA = 0;
                 if (cma_wsize)
-                    PDEBUG("# 557: cma and sockfile ???");
+                    PDEBUG("# 566: cma and sockfile ???");
                 if (sockfiles) {
-                    PDEBUG("# 559: ready to read " PGS_OLOCK "->" PGS_OUT);
+#if PGDEBUG
+                    printf("# 569: client:ready -> read(%d) " PGS_OLOCK "->" PGS_OUT"\n", outb);
+#endif
                     rename(PGS_OLOCK, PGS_OUT);
                 }
             }

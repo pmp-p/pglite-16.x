@@ -1,6 +1,6 @@
 --- postgresql/src/include/port/wasi.h
 +++ postgresql-wasm/src/include/port/wasi.h
-@@ -0,0 +1,247 @@
+@@ -0,0 +1,250 @@
 +#ifndef I_WASI
 +#define I_WASI
 +
@@ -244,6 +244,9 @@
 +__SIG_IGN(int param) {
 +}
 +#endif
++
++
++extern void sock_flush();
 +
 +
 +#endif // I_WASI

@@ -243,6 +243,12 @@ USER="${PGPASS:-postgres}"
 PASS="${PGUSER:-postgres}"
 md5pass =  "md5" + __import__('hashlib').md5(USER.encode() + PASS.encode()).hexdigest()
 print(f"localhost:5432:postgres:{USER}:{md5pass}")
+
+USER="postgres"
+PASS="postgres"
+md5pass =  "md5" + __import__('hashlib').md5(USER.encode() + PASS.encode()).hexdigest()
+print(f"localhost:5432:postgres:{USER}:{md5pass}")
+
 USER="login"
 PASS="password"
 md5pass =  "md5" + __import__('hashlib').md5(USER.encode() + PASS.encode()).hexdigest()

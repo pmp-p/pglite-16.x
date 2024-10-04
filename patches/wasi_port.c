@@ -351,30 +351,51 @@ FILE *tmpfile(void) {
 }
 
 
-
-volatile int fd_sock=0;
+volatile int fd_queue = 0;
+volatile int fd_out=2;
 volatile FILE *fd_FILE = NULL;
 
-int connect(int socket, void *address, socklen_t address_len) {
-    puts("# 38: connect STUB");
-}
-
+// default fd is stderr
 int socket(int domain, int type, int protocol) {
-    printf("# 359 : domain =%d type=%d proto=%d\n", domain , type, protocol);
-    // default to stderr
-    int fd=2;
+    printf("# 360 : domain =%d type=%d proto=%d\n", domain , type, protocol);
     if (domain|AF_UNIX) {
         fd_FILE = fopen(PGS_ILOCK, "w+");
-        fd_sock = fileno(fd_FILE);
-        printf("# 361 AF_UNIX sock=%d, fd=%d\n",fd, fd_sock);
+        fd_out = fileno(fd_FILE);
+        printf("# 361 AF_UNIX sock=%d (fd_sock) FILE=%s\n", fd_out, PGS_ILOCK);
     }
-    return fd;
+    return fd_out;
+}
+
+int connect(int socket, void *address, socklen_t address_len) {
+#if 1
+    puts("# 370: connect STUB");
+    return 0;
+#else
+    puts("# 370: connect EINPROGRESS");
+    errno = EINPROGRESS;
+    return -1;
+#endif
+}
+
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, void *dest_addr, socklen_t addrlen) {
+    int sent = write( fd_out, buf, len);
+    printf("# 375: sendto(%d/%d sock=%d fno=%d fd_out=%d)\n", ftell(fd_FILE), len, sockfd, fileno(fd_FILE), fd_out);
+    fd_queue+=sent;
+    return sent;
 }
 
 
-ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, void *dest_addr, socklen_t addrlen) {
-    printf("# 367: sendto(%d)\n", len);
-    return 0;
+void sock_flush() {
+    if (fd_queue) {
+        printf("#       385: SENT=%d/%d fd_out=%d fno=%d\n", ftell(fd_FILE), fd_queue, fd_out, fileno(fd_FILE));
+        fclose(fd_FILE);
+        fd_queue = 0;
+
+        rename(PGS_ILOCK, PGS_IN);
+        //freopen(PGS_ILOCK, "w", fd_FILE);
+        fd_FILE = fopen(PGS_ILOCK, "w+");
+        printf("#       390: fd_out=%d fno=%d\n", fd_out, fileno(fd_FILE));
+    }
 }
 
 ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
@@ -382,19 +403,27 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 }
 
 
-
 ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
-    printf("# 386 implicit (sendto) tell=%d\n", ftell(fd_FILE));
-    fclose(fd_FILE);
-    rename(PGS_ILOCK, PGS_IN);
-    fd_FILE = fopen(PGS_ILOCK, "w+");
-    fd_sock = fileno(fd_FILE);
-    printf("# 392: fd=%d\n", fd_sock);
+    sock_flush();
+    int busy = 0;
+    //PDEBUG("# 400: FIXME BUSY WAITING for server:write -> client:ready");
+    while (access(PGS_OUT, F_OK) != 0) {
+        if (!(busy++ % 555111))
+            printf("# 403: FIXME: busy wait (%s) for input stream %s\n", busy, PGS_OUT);
+        if (busy>1665334) {
+            errno = EINTR;
+            return -1;
+        }
+    }
 
-    puts("# 394: recvfrom STUB");
+    FILE *sock_in = fopen(PGS_OUT,"r");
     char *buf = buffer;
-    buf[0] = '0';
-    return 0;
+    buf[0] = 0;
+    int rcv = fread(buf, 1, length, sock_in);
+    printf("# 408: recvfrom(%s max=%d) read=%d\n", PGS_OUT, length, rcv);
+    fclose(sock_in);
+    unlink(PGS_OUT);
+    return rcv;
 }
 
 ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
