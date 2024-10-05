@@ -75,3 +75,19 @@
  	shmem_exit_inprogress = false;
  }
  
+@@ -364,6 +405,7 @@
+ void
+ on_shmem_exit(pg_on_exit_callback function, Datum arg)
+ {
++#if !defined(__wasi__)
+ 	if (on_shmem_exit_index >= MAX_ON_EXITS)
+ 		ereport(FATAL,
+ 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
+@@ -379,6 +421,7 @@
+ 		atexit(atexit_callback);
+ 		atexit_callback_setup = true;
+ 	}
++#endif
+ }
+ 
+ /* ----------------------------------------------------------------

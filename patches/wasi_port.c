@@ -244,6 +244,7 @@ sigprocmask (int operation, const sigset_t *set, sigset_t *old_set) {
   return 0;
 }
 
+
 // STUBS
 int sigismember(const sigset_t *set, int signum) {
     return -1;
@@ -267,10 +268,43 @@ unsigned int alarm(unsigned int seconds) {
 }
 
 
+// WIP : shm
+// ========================================================================================
+volatile int shm_index = 0;
+
+#include <sys/mman.h>
+void get_shm_path(char *tmpnam, const char *name) {
+    const char *shm = getenv("SHM");
+    if (shm) {
+        printf("# 281 SHM=%s.%d", shm, shm_index);
+        snprintf(tmpnam, 128, "%s.%d", shm, shm_index++);
+    } else {
+        snprintf(tmpnam, 128, "/tmp%s", name);
+    }
+}
+
+int shm_open(const char *name, int oflag, mode_t mode) {
+    char tmpnam[128];
+    int fd;
+    get_shm_path(&tmpnam, name);
+    fd=fileno(fopen(tmpnam, "w+"));
+    fprintf(stderr, "# 287: shm_open(%s) => %d\n", tmpnam, fd);
+    return fd;
+}
+
+int shm_unlink(const char *name) {
+    char tmpnam[128];
+    if (getenv("SHM")) {
+        fprintf(stderr, "# 294: shm_unlink(%s) STUB\n", name);
+        return 0;
+    }
+    get_shm_path(&tmpnam, name);
+    return remove(tmpnam);
+}
 
 
-
-
+// popen
+// ========================================================================================
 
 
 #include <stdio.h> // FILE+fprintf
@@ -318,6 +352,8 @@ system_wasi(const char *command) {
 }
 
 // pthread.h
+// ========================================================================================
+
 
 
 int pthread_create(pthread_t *restrict thread,
@@ -349,6 +385,14 @@ void wait();
 FILE *tmpfile(void) {
     return fopen(mktemp("/tmp/tmpfile"),"w");
 }
+
+
+
+
+
+// unix socket via file emulation
+// =================================================================================================
+
 
 
 volatile int fd_queue = 0;
@@ -406,7 +450,7 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
     sock_flush();
     int busy = 0;
-    //PDEBUG("# 400: FIXME BUSY WAITING for server:write -> client:ready");
+
     while (access(PGS_OUT, F_OK) != 0) {
         if (!(busy++ % 555111))
             printf("# 403: FIXME: busy wait (%s) for input stream %s\n", busy, PGS_OUT);
