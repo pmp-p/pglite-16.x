@@ -57,7 +57,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /tmp/tmpn2ozc84g.js
+// include: /tmp/tmpq4cgp6zv.js
 
   if (!Module['expectedDataFileDownloads']) {
     Module['expectedDataFileDownloads'] = 0;
@@ -284,7 +284,7 @@ Module['FS_createPath']("/tmp/pglite/share/postgresql", "tsearch_data", true, tr
 
   })();
 
-// end include: /tmp/tmpn2ozc84g.js
+// end include: /tmp/tmpq4cgp6zv.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -939,15 +939,15 @@ function createWasm() {
 // === Body ===
 
 var ASM_CONSTS = {
-  69132800: ($0) => { Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope; Module.FD_BUFFER_MAX = $0; Module.emscripten_copy_to = console.warn; },  
- 69132973: () => { console.warn("prerun(C-node) worker=", Module.is_worker); Module['postMessage'] = function custom_postMessage(event) { console.log("# 1252: onCustomMessage:",__FILE__, event); }; },  
- 69133156: () => { console.warn("prerun(C-web) worker=", Module.is_worker); },  
- 69133217: () => { if (Module.is_worker) { console.log("Main: running in a worker, setting onCustomMessage"); function onCustomMessage(event) { console.log("onCustomMessage:", event); }; Module['onCustomMessage'] = onCustomMessage; } else { console.log("Running in main thread, faking onCustomMessage"); Module['postMessage'] = function custom_postMessage(event) { switch (event.type) { case "raw" : { stringToUTF8( event.data, shm_rawinput, Module.FD_BUFFER_MAX); break; } case "stdin" : { stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX); break; } case "rcon" : { stringToUTF8( event.data, shm_rcon, Module.FD_BUFFER_MAX); break; } default : console.warn("custom_postMessage?", event); } }; }; }
+  69132848: ($0) => { Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope; Module.FD_BUFFER_MAX = $0; Module.emscripten_copy_to = console.warn; },  
+ 69133021: () => { console.warn("prerun(C-node) worker=", Module.is_worker); Module['postMessage'] = function custom_postMessage(event) { console.log("# 1252: onCustomMessage:",__FILE__, event); }; },  
+ 69133204: () => { console.warn("prerun(C-web) worker=", Module.is_worker); },  
+ 69133265: () => { if (Module.is_worker) { console.log("Main: running in a worker, setting onCustomMessage"); function onCustomMessage(event) { console.log("onCustomMessage:", event); }; Module['onCustomMessage'] = onCustomMessage; } else { console.log("Running in main thread, faking onCustomMessage"); Module['postMessage'] = function custom_postMessage(event) { switch (event.type) { case "raw" : { stringToUTF8( event.data, shm_rawinput, Module.FD_BUFFER_MAX); break; } case "stdin" : { stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX); break; } case "rcon" : { stringToUTF8( event.data, shm_rcon, Module.FD_BUFFER_MAX); break; } default : console.warn("custom_postMessage?", event); } }; }; }
 };
-function peek_fd(fd) { return test_data.length; }
-function fnc_getfd(fd) { return fnc_stdin() }
 function is_web_env() { try { if (window) return 1; } catch(x) {return 0} }
 is_web_env.sig = 'i';
+function peek_fd(fd) { return test_data.length; }
+function fnc_getfd(fd) { return fnc_stdin() }
 
 // end include: preamble.js
 
@@ -8894,731 +8894,601 @@ var ___errno_location = Module['___errno_location'] = () => (___errno_location =
 var _fflush = Module['_fflush'] = (a0) => (_fflush = Module['_fflush'] = wasmExports['fflush'])(a0);
 var _pg_vsnprintf = Module['_pg_vsnprintf'] = (a0, a1, a2, a3) => (_pg_vsnprintf = Module['_pg_vsnprintf'] = wasmExports['pg_vsnprintf'])(a0, a1, a2, a3);
 var _pg_malloc_extended = Module['_pg_malloc_extended'] = (a0, a1) => (_pg_malloc_extended = Module['_pg_malloc_extended'] = wasmExports['pg_malloc_extended'])(a0, a1);
+var _find_base_rel = Module['_find_base_rel'] = (a0, a1) => (_find_base_rel = Module['_find_base_rel'] = wasmExports['find_base_rel'])(a0, a1);
 var _errstart_cold = Module['_errstart_cold'] = (a0, a1) => (_errstart_cold = Module['_errstart_cold'] = wasmExports['errstart_cold'])(a0, a1);
 var _errmsg_internal = Module['_errmsg_internal'] = (a0, a1) => (_errmsg_internal = Module['_errmsg_internal'] = wasmExports['errmsg_internal'])(a0, a1);
 var _errfinish = Module['_errfinish'] = (a0, a1, a2) => (_errfinish = Module['_errfinish'] = wasmExports['errfinish'])(a0, a1, a2);
 var _puts = Module['_puts'] = (a0) => (_puts = Module['_puts'] = wasmExports['puts'])(a0);
-var _psprintf = Module['_psprintf'] = (a0, a1) => (_psprintf = Module['_psprintf'] = wasmExports['psprintf'])(a0, a1);
-var _pfree = Module['_pfree'] = (a0) => (_pfree = Module['_pfree'] = wasmExports['pfree'])(a0);
-var _initStringInfo = Module['_initStringInfo'] = (a0) => (_initStringInfo = Module['_initStringInfo'] = wasmExports['initStringInfo'])(a0);
-var _appendStringInfoChar = Module['_appendStringInfoChar'] = (a0, a1) => (_appendStringInfoChar = Module['_appendStringInfoChar'] = wasmExports['appendStringInfoChar'])(a0, a1);
-var _appendStringInfoString = Module['_appendStringInfoString'] = (a0, a1) => (_appendStringInfoString = Module['_appendStringInfoString'] = wasmExports['appendStringInfoString'])(a0, a1);
-var _escape_json = Module['_escape_json'] = (a0, a1) => (_escape_json = Module['_escape_json'] = wasmExports['escape_json'])(a0, a1);
-var _enlargeStringInfo = Module['_enlargeStringInfo'] = (a0, a1) => (_enlargeStringInfo = Module['_enlargeStringInfo'] = wasmExports['enlargeStringInfo'])(a0, a1);
-var _appendStringInfo = Module['_appendStringInfo'] = (a0, a1, a2) => (_appendStringInfo = Module['_appendStringInfo'] = wasmExports['appendStringInfo'])(a0, a1, a2);
-var _errmsg = Module['_errmsg'] = (a0, a1) => (_errmsg = Module['_errmsg'] = wasmExports['errmsg'])(a0, a1);
-var _errcode_for_file_access = Module['_errcode_for_file_access'] = () => (_errcode_for_file_access = Module['_errcode_for_file_access'] = wasmExports['errcode_for_file_access'])();
-var _palloc0 = Module['_palloc0'] = (a0) => (_palloc0 = Module['_palloc0'] = wasmExports['palloc0'])(a0);
-var _palloc = Module['_palloc'] = (a0) => (_palloc = Module['_palloc'] = wasmExports['palloc'])(a0);
-var _errcode = Module['_errcode'] = (a0) => (_errcode = Module['_errcode'] = wasmExports['errcode'])(a0);
-var _bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = (a0) => (_bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = wasmExports['bbsink_forward_end_archive'])(a0);
-var _memcpy = Module['_memcpy'] = (a0, a1, a2) => (_memcpy = Module['_memcpy'] = wasmExports['memcpy'])(a0, a1, a2);
-var _bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = (a0) => (_bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = wasmExports['bbsink_forward_begin_manifest'])(a0);
-var _bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = (a0) => (_bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = wasmExports['bbsink_forward_end_manifest'])(a0);
-var _bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = (a0, a1, a2) => (_bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = wasmExports['bbsink_forward_end_backup'])(a0, a1, a2);
-var _bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = (a0) => (_bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = wasmExports['bbsink_forward_cleanup'])(a0);
-var _StartTransactionCommand = Module['_StartTransactionCommand'] = () => (_StartTransactionCommand = Module['_StartTransactionCommand'] = wasmExports['StartTransactionCommand'])();
-var _GetUserId = Module['_GetUserId'] = () => (_GetUserId = Module['_GetUserId'] = wasmExports['GetUserId'])();
-var _has_privs_of_role = Module['_has_privs_of_role'] = (a0, a1) => (_has_privs_of_role = Module['_has_privs_of_role'] = wasmExports['has_privs_of_role'])(a0, a1);
-var _errdetail = Module['_errdetail'] = (a0, a1) => (_errdetail = Module['_errdetail'] = wasmExports['errdetail'])(a0, a1);
-var _CommitTransactionCommand = Module['_CommitTransactionCommand'] = () => (_CommitTransactionCommand = Module['_CommitTransactionCommand'] = wasmExports['CommitTransactionCommand'])();
-var _bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = (a0, a1) => (_bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = wasmExports['bbsink_forward_begin_archive'])(a0, a1);
-var _errhint = Module['_errhint'] = (a0, a1) => (_errhint = Module['_errhint'] = wasmExports['errhint'])(a0, a1);
-var _bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = (a0, a1) => (_bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = wasmExports['bbsink_forward_archive_contents'])(a0, a1);
-var _bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = (a0, a1) => (_bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = wasmExports['bbsink_forward_manifest_contents'])(a0, a1);
-var _fd_durable_rename = Module['_fd_durable_rename'] = (a0, a1, a2) => (_fd_durable_rename = Module['_fd_durable_rename'] = wasmExports['fd_durable_rename'])(a0, a1, a2);
-var _bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = (a0) => (_bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = wasmExports['bbsink_forward_begin_backup'])(a0);
-var _BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = (a0, a1, a2) => (_BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = wasmExports['BaseBackupAddTarget'])(a0, a1, a2);
 var _lappend = Module['_lappend'] = (a0, a1) => (_lappend = Module['_lappend'] = wasmExports['lappend'])(a0, a1);
-var _pstrdup = Module['_pstrdup'] = (a0) => (_pstrdup = Module['_pstrdup'] = wasmExports['pstrdup'])(a0);
-var _GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = () => (_GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = wasmExports['GetCurrentTimestamp'])();
-var _CreateDestReceiver = Module['_CreateDestReceiver'] = (a0) => (_CreateDestReceiver = Module['_CreateDestReceiver'] = wasmExports['CreateDestReceiver'])(a0);
-var _CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = (a0) => (_CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = wasmExports['CreateTemplateTupleDesc'])(a0);
-var _strtoul = Module['_strtoul'] = (a0, a1, a2) => (_strtoul = Module['_strtoul'] = wasmExports['strtoul'])(a0, a1, a2);
-var _cstring_to_text = Module['_cstring_to_text'] = (a0) => (_cstring_to_text = Module['_cstring_to_text'] = wasmExports['cstring_to_text'])(a0);
-var _Int64GetDatum = Module['_Int64GetDatum'] = (a0) => (_Int64GetDatum = Module['_Int64GetDatum'] = wasmExports['Int64GetDatum'])(a0);
-var _TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = (a0, a1) => (_TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = wasmExports['TimestampDifferenceMilliseconds'])(a0, a1);
-var ___wasm_setjmp_test = Module['___wasm_setjmp_test'] = (a0, a1) => (___wasm_setjmp_test = Module['___wasm_setjmp_test'] = wasmExports['__wasm_setjmp_test'])(a0, a1);
-var _defGetString = Module['_defGetString'] = (a0) => (_defGetString = Module['_defGetString'] = wasmExports['defGetString'])(a0);
-var _defGetBoolean = Module['_defGetBoolean'] = (a0) => (_defGetBoolean = Module['_defGetBoolean'] = wasmExports['defGetBoolean'])(a0);
-var _parse_bool = Module['_parse_bool'] = (a0, a1) => (_parse_bool = Module['_parse_bool'] = wasmExports['parse_bool'])(a0, a1);
-var ___wasm_setjmp = Module['___wasm_setjmp'] = (a0, a1, a2) => (___wasm_setjmp = Module['___wasm_setjmp'] = wasmExports['__wasm_setjmp'])(a0, a1, a2);
-var _pg_re_throw = Module['_pg_re_throw'] = () => (_pg_re_throw = Module['_pg_re_throw'] = wasmExports['pg_re_throw'])();
-var _emscripten_longjmp = Module['_emscripten_longjmp'] = (a0, a1) => (_emscripten_longjmp = Module['_emscripten_longjmp'] = wasmExports['emscripten_longjmp'])(a0, a1);
-var _ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = (a0, a1) => (_ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = wasmExports['ResourceOwnerCreate'])(a0, a1);
-var _RecoveryInProgress = Module['_RecoveryInProgress'] = () => (_RecoveryInProgress = Module['_RecoveryInProgress'] = wasmExports['RecoveryInProgress'])();
-var _makeStringInfo = Module['_makeStringInfo'] = () => (_makeStringInfo = Module['_makeStringInfo'] = wasmExports['makeStringInfo'])();
-var _before_shmem_exit = Module['_before_shmem_exit'] = (a0, a1) => (_before_shmem_exit = Module['_before_shmem_exit'] = wasmExports['before_shmem_exit'])(a0, a1);
-var _cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = (a0, a1) => (_cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = wasmExports['cancel_before_shmem_exit'])(a0, a1);
-var _AllocateDir = Module['_AllocateDir'] = (a0) => (_AllocateDir = Module['_AllocateDir'] = wasmExports['AllocateDir'])(a0);
-var _ReadDir = Module['_ReadDir'] = (a0, a1) => (_ReadDir = Module['_ReadDir'] = wasmExports['ReadDir'])(a0, a1);
-var _FreeDir = Module['_FreeDir'] = (a0) => (_FreeDir = Module['_FreeDir'] = wasmExports['FreeDir'])(a0);
-var _list_sort = Module['_list_sort'] = (a0, a1) => (_list_sort = Module['_list_sort'] = wasmExports['list_sort'])(a0, a1);
-var _sscanf = Module['_sscanf'] = (a0, a1, a2) => (_sscanf = Module['_sscanf'] = wasmExports['sscanf'])(a0, a1, a2);
-var _OpenTransientFile = Module['_OpenTransientFile'] = (a0, a1) => (_OpenTransientFile = Module['_OpenTransientFile'] = wasmExports['OpenTransientFile'])(a0, a1);
-var _fstat = Module['_fstat'] = (a0, a1) => (_fstat = Module['_fstat'] = wasmExports['fstat'])(a0, a1);
-var _CloseTransientFile = Module['_CloseTransientFile'] = (a0) => (_CloseTransientFile = Module['_CloseTransientFile'] = wasmExports['CloseTransientFile'])(a0);
-var _errstart = Module['_errstart'] = (a0, a1) => (_errstart = Module['_errstart'] = wasmExports['errstart'])(a0, a1);
-var _errmsg_plural = Module['_errmsg_plural'] = (a0, a1, a2, a3) => (_errmsg_plural = Module['_errmsg_plural'] = wasmExports['errmsg_plural'])(a0, a1, a2, a3);
-var _strncmp = Module['_strncmp'] = (a0, a1, a2) => (_strncmp = Module['_strncmp'] = wasmExports['strncmp'])(a0, a1, a2);
-var _ProcessInterrupts = Module['_ProcessInterrupts'] = () => (_ProcessInterrupts = Module['_ProcessInterrupts'] = wasmExports['ProcessInterrupts'])();
-var _memcmp = Module['_memcmp'] = (a0, a1, a2) => (_memcmp = Module['_memcmp'] = wasmExports['memcmp'])(a0, a1, a2);
-var _geteuid = Module['_geteuid'] = () => (_geteuid = Module['_geteuid'] = wasmExports['geteuid'])();
-var _time = Module['_time'] = (a0) => (_time = Module['_time'] = wasmExports['time'])(a0);
-var _atoi = Module['_atoi'] = (a0) => (_atoi = Module['_atoi'] = wasmExports['atoi'])(a0);
-var _pg_checksum_page = Module['_pg_checksum_page'] = (a0, a1) => (_pg_checksum_page = Module['_pg_checksum_page'] = wasmExports['pg_checksum_page'])(a0, a1);
-var _pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = (a0, a1) => (_pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = wasmExports['pgstat_progress_update_param'])(a0, a1);
-var _ResetLatch = Module['_ResetLatch'] = (a0) => (_ResetLatch = Module['_ResetLatch'] = wasmExports['ResetLatch'])(a0);
-var _WaitLatch = Module['_WaitLatch'] = (a0, a1, a2, a3) => (_WaitLatch = Module['_WaitLatch'] = wasmExports['WaitLatch'])(a0, a1, a2, a3);
-var _gettimeofday = Module['_gettimeofday'] = (a0, a1) => (_gettimeofday = Module['_gettimeofday'] = wasmExports['gettimeofday'])(a0, a1);
-var _raw_parser = Module['_raw_parser'] = (a0, a1) => (_raw_parser = Module['_raw_parser'] = wasmExports['raw_parser'])(a0, a1);
-var _errdetail_internal = Module['_errdetail_internal'] = (a0, a1) => (_errdetail_internal = Module['_errdetail_internal'] = wasmExports['errdetail_internal'])(a0, a1);
+var _list_concat = Module['_list_concat'] = (a0, a1) => (_list_concat = Module['_list_concat'] = wasmExports['list_concat'])(a0, a1);
+var _bms_equal = Module['_bms_equal'] = (a0, a1) => (_bms_equal = Module['_bms_equal'] = wasmExports['bms_equal'])(a0, a1);
+var _add_path = Module['_add_path'] = (a0, a1) => (_add_path = Module['_add_path'] = wasmExports['add_path'])(a0, a1);
+var _pathkeys_contained_in = Module['_pathkeys_contained_in'] = (a0, a1) => (_pathkeys_contained_in = Module['_pathkeys_contained_in'] = wasmExports['pathkeys_contained_in'])(a0, a1);
+var _bms_is_subset = Module['_bms_is_subset'] = (a0, a1) => (_bms_is_subset = Module['_bms_is_subset'] = wasmExports['bms_is_subset'])(a0, a1);
 var _list_make1_impl = Module['_list_make1_impl'] = (a0, a1) => (_list_make1_impl = Module['_list_make1_impl'] = wasmExports['list_make1_impl'])(a0, a1);
-var _MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = (a0, a1) => (_MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = wasmExports['MemoryContextAllocZeroAligned'])(a0, a1);
-var _pg_prng_double = Module['_pg_prng_double'] = (a0) => (_pg_prng_double = Module['_pg_prng_double'] = wasmExports['pg_prng_double'])(a0);
-var _sigaddset = Module['_sigaddset'] = (a0, a1) => (_sigaddset = Module['_sigaddset'] = wasmExports['sigaddset'])(a0, a1);
-var _die = Module['_die'] = (a0) => (_die = Module['_die'] = wasmExports['die'])(a0);
+var _create_sort_path = Module['_create_sort_path'] = (a0, a1, a2, a3, a4) => (_create_sort_path = Module['_create_sort_path'] = wasmExports['create_sort_path'])(a0, a1, a2, a3, a4);
+var _palloc0 = Module['_palloc0'] = (a0) => (_palloc0 = Module['_palloc0'] = wasmExports['palloc0'])(a0);
 var _check_stack_depth = Module['_check_stack_depth'] = () => (_check_stack_depth = Module['_check_stack_depth'] = wasmExports['check_stack_depth'])();
-var _pre_format_elog_string = Module['_pre_format_elog_string'] = (a0, a1) => (_pre_format_elog_string = Module['_pre_format_elog_string'] = wasmExports['pre_format_elog_string'])(a0, a1);
-var _format_elog_string = Module['_format_elog_string'] = (a0, a1) => (_format_elog_string = Module['_format_elog_string'] = wasmExports['format_elog_string'])(a0, a1);
-var _SplitIdentifierString = Module['_SplitIdentifierString'] = (a0, a1, a2) => (_SplitIdentifierString = Module['_SplitIdentifierString'] = wasmExports['SplitIdentifierString'])(a0, a1, a2);
 var _list_free = Module['_list_free'] = (a0) => (_list_free = Module['_list_free'] = wasmExports['list_free'])(a0);
-var _guc_malloc = Module['_guc_malloc'] = (a0, a1) => (_guc_malloc = Module['_guc_malloc'] = wasmExports['guc_malloc'])(a0, a1);
-var _SetConfigOption = Module['_SetConfigOption'] = (a0, a1, a2, a3) => (_SetConfigOption = Module['_SetConfigOption'] = wasmExports['SetConfigOption'])(a0, a1, a2, a3);
-var _pg_sprintf = Module['_pg_sprintf'] = (a0, a1, a2) => (_pg_sprintf = Module['_pg_sprintf'] = wasmExports['pg_sprintf'])(a0, a1, a2);
-var _strlcpy = Module['_strlcpy'] = (a0, a1, a2) => (_strlcpy = Module['_strlcpy'] = wasmExports['strlcpy'])(a0, a1, a2);
-var _fsync_pgdata = Module['_fsync_pgdata'] = (a0, a1) => (_fsync_pgdata = Module['_fsync_pgdata'] = wasmExports['fsync_pgdata'])(a0, a1);
-var _get_restricted_token = Module['_get_restricted_token'] = () => (_get_restricted_token = Module['_get_restricted_token'] = wasmExports['get_restricted_token'])();
-var _pg_malloc = Module['_pg_malloc'] = (a0) => (_pg_malloc = Module['_pg_malloc'] = wasmExports['pg_malloc'])(a0);
-var _pg_realloc = Module['_pg_realloc'] = (a0, a1) => (_pg_realloc = Module['_pg_realloc'] = wasmExports['pg_realloc'])(a0, a1);
-var _realloc = Module['_realloc'] = (a0, a1) => (_realloc = Module['_realloc'] = wasmExports['realloc'])(a0, a1);
-var _pg_strdup = Module['_pg_strdup'] = (a0) => (_pg_strdup = Module['_pg_strdup'] = wasmExports['pg_strdup'])(a0);
-var _simple_prompt = Module['_simple_prompt'] = (a0, a1) => (_simple_prompt = Module['_simple_prompt'] = wasmExports['simple_prompt'])(a0, a1);
-var _MemoryContextDelete = Module['_MemoryContextDelete'] = (a0) => (_MemoryContextDelete = Module['_MemoryContextDelete'] = wasmExports['MemoryContextDelete'])(a0);
-var _pg_printf = Module['_pg_printf'] = (a0, a1) => (_pg_printf = Module['_pg_printf'] = wasmExports['pg_printf'])(a0, a1);
-var _AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = (a0, a1, a2, a3, a4) => (_AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = wasmExports['AllocSetContextCreateInternal'])(a0, a1, a2, a3, a4);
-var _fopen = Module['_fopen'] = (a0, a1) => (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1);
-var _EmitErrorReport = Module['_EmitErrorReport'] = () => (_EmitErrorReport = Module['_EmitErrorReport'] = wasmExports['EmitErrorReport'])();
-var _FlushErrorState = Module['_FlushErrorState'] = () => (_FlushErrorState = Module['_FlushErrorState'] = wasmExports['FlushErrorState'])();
-var _interactive_file = Module['_interactive_file'] = () => (_interactive_file = Module['_interactive_file'] = wasmExports['interactive_file'])();
-var _fclose = Module['_fclose'] = (a0) => (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0);
-var _interactive_one = Module['_interactive_one'] = () => (_interactive_one = Module['_interactive_one'] = wasmExports['interactive_one'])();
-var _MemoryContextReset = Module['_MemoryContextReset'] = (a0) => (_MemoryContextReset = Module['_MemoryContextReset'] = wasmExports['MemoryContextReset'])(a0);
-var _resetStringInfo = Module['_resetStringInfo'] = (a0) => (_resetStringInfo = Module['_resetStringInfo'] = wasmExports['resetStringInfo'])(a0);
-var _getc = Module['_getc'] = (a0) => (_getc = Module['_getc'] = wasmExports['getc'])(a0);
-var _pq_getmsgint = Module['_pq_getmsgint'] = (a0, a1) => (_pq_getmsgint = Module['_pq_getmsgint'] = wasmExports['pq_getmsgint'])(a0, a1);
-var _pgstat_report_activity = Module['_pgstat_report_activity'] = (a0, a1) => (_pgstat_report_activity = Module['_pgstat_report_activity'] = wasmExports['pgstat_report_activity'])(a0, a1);
-var _access = Module['_access'] = (a0, a1) => (_access = Module['_access'] = wasmExports['access'])(a0, a1);
-var _pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = (a0, a1) => (_pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = wasmExports['pq_recvbuf_fill'])(a0, a1);
-var _unlink = Module['_unlink'] = (a0) => (_unlink = Module['_unlink'] = wasmExports['unlink'])(a0);
-var _calloc = Module['_calloc'] = (a0, a1) => (_calloc = Module['_calloc'] = wasmExports['calloc'])(a0, a1);
-var _rename = Module['_rename'] = (a0, a1) => (_rename = Module['_rename'] = wasmExports['rename'])(a0, a1);
-var _pg_repl_raf = Module['_pg_repl_raf'] = () => (_pg_repl_raf = Module['_pg_repl_raf'] = wasmExports['pg_repl_raf'])();
-var _pg_shutdown = Module['_pg_shutdown'] = () => (_pg_shutdown = Module['_pg_shutdown'] = wasmExports['pg_shutdown'])();
-var _errhidestmt = Module['_errhidestmt'] = (a0) => (_errhidestmt = Module['_errhidestmt'] = wasmExports['errhidestmt'])(a0);
-var _GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = () => (_GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = wasmExports['GetTransactionSnapshot'])();
-var _PushActiveSnapshot = Module['_PushActiveSnapshot'] = (a0) => (_PushActiveSnapshot = Module['_PushActiveSnapshot'] = wasmExports['PushActiveSnapshot'])(a0);
-var _PopActiveSnapshot = Module['_PopActiveSnapshot'] = () => (_PopActiveSnapshot = Module['_PopActiveSnapshot'] = wasmExports['PopActiveSnapshot'])();
-var _CommandCounterIncrement = Module['_CommandCounterIncrement'] = () => (_CommandCounterIncrement = Module['_CommandCounterIncrement'] = wasmExports['CommandCounterIncrement'])();
-var _MemoryContextSetParent = Module['_MemoryContextSetParent'] = (a0, a1) => (_MemoryContextSetParent = Module['_MemoryContextSetParent'] = wasmExports['MemoryContextSetParent'])(a0, a1);
-var _makeParamList = Module['_makeParamList'] = (a0) => (_makeParamList = Module['_makeParamList'] = wasmExports['makeParamList'])(a0);
+var _bms_overlap = Module['_bms_overlap'] = (a0, a1) => (_bms_overlap = Module['_bms_overlap'] = wasmExports['bms_overlap'])(a0, a1);
+var _exprType = Module['_exprType'] = (a0) => (_exprType = Module['_exprType'] = wasmExports['exprType'])(a0);
+var _exprTypmod = Module['_exprTypmod'] = (a0) => (_exprTypmod = Module['_exprTypmod'] = wasmExports['exprTypmod'])(a0);
+var _set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = (a0, a1) => (_set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = wasmExports['set_baserel_size_estimates'])(a0, a1);
+var _copyObjectImpl = Module['_copyObjectImpl'] = (a0) => (_copyObjectImpl = Module['_copyObjectImpl'] = wasmExports['copyObjectImpl'])(a0);
+var _pull_var_clause = Module['_pull_var_clause'] = (a0, a1) => (_pull_var_clause = Module['_pull_var_clause'] = wasmExports['pull_var_clause'])(a0, a1);
+var _pfree = Module['_pfree'] = (a0) => (_pfree = Module['_pfree'] = wasmExports['pfree'])(a0);
+var _pull_varattnos = Module['_pull_varattnos'] = (a0, a1, a2) => (_pull_varattnos = Module['_pull_varattnos'] = wasmExports['pull_varattnos'])(a0, a1, a2);
+var _bms_is_member = Module['_bms_is_member'] = (a0, a1) => (_bms_is_member = Module['_bms_is_member'] = wasmExports['bms_is_member'])(a0, a1);
+var _clamp_row_est = Module['_clamp_row_est'] = (a0) => (_clamp_row_est = Module['_clamp_row_est'] = wasmExports['clamp_row_est'])(a0);
+var _get_opfamily_member = Module['_get_opfamily_member'] = (a0, a1, a2, a3) => (_get_opfamily_member = Module['_get_opfamily_member'] = wasmExports['get_opfamily_member'])(a0, a1, a2, a3);
+var _bms_add_member = Module['_bms_add_member'] = (a0, a1) => (_bms_add_member = Module['_bms_add_member'] = wasmExports['bms_add_member'])(a0, a1);
+var _bms_membership = Module['_bms_membership'] = (a0) => (_bms_membership = Module['_bms_membership'] = wasmExports['bms_membership'])(a0);
+var _join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = (a0, a1) => (_join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = wasmExports['join_clause_is_movable_to'])(a0, a1);
+var _generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = (a0, a1, a2, a3, a4) => (_generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = wasmExports['generate_implied_equalities_for_column'])(a0, a1, a2, a3, a4);
+var _palloc = Module['_palloc'] = (a0) => (_palloc = Module['_palloc'] = wasmExports['palloc'])(a0);
+var _pg_qsort = Module['_pg_qsort'] = (a0, a1, a2, a3) => (_pg_qsort = Module['_pg_qsort'] = wasmExports['pg_qsort'])(a0, a1, a2, a3);
+var _equal = Module['_equal'] = (a0, a1) => (_equal = Module['_equal'] = wasmExports['equal'])(a0, a1);
+var _bms_add_members = Module['_bms_add_members'] = (a0, a1) => (_bms_add_members = Module['_bms_add_members'] = wasmExports['bms_add_members'])(a0, a1);
+var _bms_next_member = Module['_bms_next_member'] = (a0, a1) => (_bms_next_member = Module['_bms_next_member'] = wasmExports['bms_next_member'])(a0, a1);
+var _estimate_num_groups = Module['_estimate_num_groups'] = (a0, a1, a2, a3, a4) => (_estimate_num_groups = Module['_estimate_num_groups'] = wasmExports['estimate_num_groups'])(a0, a1, a2, a3, a4);
+var _list_copy = Module['_list_copy'] = (a0) => (_list_copy = Module['_list_copy'] = wasmExports['list_copy'])(a0);
+var _bms_union = Module['_bms_union'] = (a0, a1) => (_bms_union = Module['_bms_union'] = wasmExports['bms_union'])(a0, a1);
+var _get_plan_rowmark = Module['_get_plan_rowmark'] = (a0, a1) => (_get_plan_rowmark = Module['_get_plan_rowmark'] = wasmExports['get_plan_rowmark'])(a0, a1);
+var _contain_mutable_functions = Module['_contain_mutable_functions'] = (a0) => (_contain_mutable_functions = Module['_contain_mutable_functions'] = wasmExports['contain_mutable_functions'])(a0);
+var _list_member_oid = Module['_list_member_oid'] = (a0, a1) => (_list_member_oid = Module['_list_member_oid'] = wasmExports['list_member_oid'])(a0, a1);
+var _MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = (a0, a1) => (_MemoryContextAllocZeroAligned = Module['_MemoryContextAllocZeroAligned'] = wasmExports['MemoryContextAllocZeroAligned'])(a0, a1);
+var _make_restrictinfo = Module['_make_restrictinfo'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_make_restrictinfo = Module['_make_restrictinfo'] = wasmExports['make_restrictinfo'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _list_member = Module['_list_member'] = (a0, a1) => (_list_member = Module['_list_member'] = wasmExports['list_member'])(a0, a1);
+var _bms_del_member = Module['_bms_del_member'] = (a0, a1) => (_bms_del_member = Module['_bms_del_member'] = wasmExports['bms_del_member'])(a0, a1);
+var _list_make2_impl = Module['_list_make2_impl'] = (a0, a1, a2) => (_list_make2_impl = Module['_list_make2_impl'] = wasmExports['list_make2_impl'])(a0, a1, a2);
+var _lappend_int = Module['_lappend_int'] = (a0, a1) => (_lappend_int = Module['_lappend_int'] = wasmExports['lappend_int'])(a0, a1);
+var _bms_free = Module['_bms_free'] = (a0) => (_bms_free = Module['_bms_free'] = wasmExports['bms_free'])(a0);
+var _lappend_oid = Module['_lappend_oid'] = (a0, a1) => (_lappend_oid = Module['_lappend_oid'] = wasmExports['lappend_oid'])(a0, a1);
+var _update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = (a0, a1) => (_update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = wasmExports['update_mergeclause_eclasses'])(a0, a1);
+var _bms_nonempty_difference = Module['_bms_nonempty_difference'] = (a0, a1) => (_bms_nonempty_difference = Module['_bms_nonempty_difference'] = wasmExports['bms_nonempty_difference'])(a0, a1);
+var _bms_num_members = Module['_bms_num_members'] = (a0) => (_bms_num_members = Module['_bms_num_members'] = wasmExports['bms_num_members'])(a0);
+var _lookup_type_cache = Module['_lookup_type_cache'] = (a0, a1) => (_lookup_type_cache = Module['_lookup_type_cache'] = wasmExports['lookup_type_cache'])(a0, a1);
+var _errcode = Module['_errcode'] = (a0) => (_errcode = Module['_errcode'] = wasmExports['errcode'])(a0);
+var _errmsg = Module['_errmsg'] = (a0, a1) => (_errmsg = Module['_errmsg'] = wasmExports['errmsg'])(a0, a1);
+var _find_join_rel = Module['_find_join_rel'] = (a0, a1) => (_find_join_rel = Module['_find_join_rel'] = wasmExports['find_join_rel'])(a0, a1);
+var _clauselist_selectivity = Module['_clauselist_selectivity'] = (a0, a1, a2, a3, a4) => (_clauselist_selectivity = Module['_clauselist_selectivity'] = wasmExports['clauselist_selectivity'])(a0, a1, a2, a3, a4);
+var _estimate_expression_value = Module['_estimate_expression_value'] = (a0, a1) => (_estimate_expression_value = Module['_estimate_expression_value'] = wasmExports['estimate_expression_value'])(a0, a1);
+var _get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = (a0, a1, a2) => (_get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = wasmExports['get_tablespace_page_costs'])(a0, a1, a2);
+var _log = Module['_log'] = (a0) => (_log = Module['_log'] = wasmExports['log'])(a0);
+var _cost_qual_eval = Module['_cost_qual_eval'] = (a0, a1, a2) => (_cost_qual_eval = Module['_cost_qual_eval'] = wasmExports['cost_qual_eval'])(a0, a1, a2);
+var _cost_sort = Module['_cost_sort'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_cost_sort = Module['_cost_sort'] = wasmExports['cost_sort'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
 var _getTypeInputInfo = Module['_getTypeInputInfo'] = (a0, a1, a2) => (_getTypeInputInfo = Module['_getTypeInputInfo'] = wasmExports['getTypeInputInfo'])(a0, a1, a2);
-var _pnstrdup = Module['_pnstrdup'] = (a0, a1) => (_pnstrdup = Module['_pnstrdup'] = wasmExports['pnstrdup'])(a0, a1);
-var _interactive_write = Module['_interactive_write'] = (a0) => (_interactive_write = Module['_interactive_write'] = wasmExports['interactive_write'])(a0);
-var _interactive_read = Module['_interactive_read'] = () => (_interactive_read = Module['_interactive_read'] = wasmExports['interactive_read'])();
-var _appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = (a0, a1, a2) => (_appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = wasmExports['appendStringInfoStringQuoted'])(a0, a1, a2);
+var _getTypeOutputInfo = Module['_getTypeOutputInfo'] = (a0, a1, a2) => (_getTypeOutputInfo = Module['_getTypeOutputInfo'] = wasmExports['getTypeOutputInfo'])(a0, a1, a2);
+var _list_member_ptr = Module['_list_member_ptr'] = (a0, a1) => (_list_member_ptr = Module['_list_member_ptr'] = wasmExports['list_member_ptr'])(a0, a1);
+var _list_delete_cell = Module['_list_delete_cell'] = (a0, a1) => (_list_delete_cell = Module['_list_delete_cell'] = wasmExports['list_delete_cell'])(a0, a1);
+var _bms_make_singleton = Module['_bms_make_singleton'] = (a0) => (_bms_make_singleton = Module['_bms_make_singleton'] = wasmExports['bms_make_singleton'])(a0);
+var _eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = (a0, a1, a2) => (_eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = wasmExports['eclass_useful_for_merging'])(a0, a1, a2);
+var _make_canonical_pathkey = Module['_make_canonical_pathkey'] = (a0, a1, a2, a3, a4) => (_make_canonical_pathkey = Module['_make_canonical_pathkey'] = wasmExports['make_canonical_pathkey'])(a0, a1, a2, a3, a4);
+var _get_sortgroupref_tle = Module['_get_sortgroupref_tle'] = (a0, a1) => (_get_sortgroupref_tle = Module['_get_sortgroupref_tle'] = wasmExports['get_sortgroupref_tle'])(a0, a1);
+var _errdetail = Module['_errdetail'] = (a0, a1) => (_errdetail = Module['_errdetail'] = wasmExports['errdetail'])(a0, a1);
+var _create_projection_path = Module['_create_projection_path'] = (a0, a1, a2, a3) => (_create_projection_path = Module['_create_projection_path'] = wasmExports['create_projection_path'])(a0, a1, a2, a3);
+var _pstrdup = Module['_pstrdup'] = (a0) => (_pstrdup = Module['_pstrdup'] = wasmExports['pstrdup'])(a0);
+var _makeTargetEntry = Module['_makeTargetEntry'] = (a0, a1, a2, a3) => (_makeTargetEntry = Module['_makeTargetEntry'] = wasmExports['makeTargetEntry'])(a0, a1, a2, a3);
+var _makeVar = Module['_makeVar'] = (a0, a1, a2, a3, a4, a5) => (_makeVar = Module['_makeVar'] = wasmExports['makeVar'])(a0, a1, a2, a3, a4, a5);
+var _grouping_is_sortable = Module['_grouping_is_sortable'] = (a0) => (_grouping_is_sortable = Module['_grouping_is_sortable'] = wasmExports['grouping_is_sortable'])(a0);
+var _ProcessInterrupts = Module['_ProcessInterrupts'] = () => (_ProcessInterrupts = Module['_ProcessInterrupts'] = wasmExports['ProcessInterrupts'])();
+var _table_open = Module['_table_open'] = (a0, a1) => (_table_open = Module['_table_open'] = wasmExports['table_open'])(a0, a1);
+var _tlist_member = Module['_tlist_member'] = (a0, a1) => (_tlist_member = Module['_tlist_member'] = wasmExports['tlist_member'])(a0, a1);
+var _table_close = Module['_table_close'] = (a0, a1) => (_table_close = Module['_table_close'] = wasmExports['table_close'])(a0, a1);
+var _SearchSysCache1 = Module['_SearchSysCache1'] = (a0, a1) => (_SearchSysCache1 = Module['_SearchSysCache1'] = wasmExports['SearchSysCache1'])(a0, a1);
+var _get_typlenbyval = Module['_get_typlenbyval'] = (a0, a1, a2) => (_get_typlenbyval = Module['_get_typlenbyval'] = wasmExports['get_typlenbyval'])(a0, a1, a2);
+var _SysCacheGetAttr = Module['_SysCacheGetAttr'] = (a0, a1, a2, a3) => (_SysCacheGetAttr = Module['_SysCacheGetAttr'] = wasmExports['SysCacheGetAttr'])(a0, a1, a2, a3);
+var _text_to_cstring = Module['_text_to_cstring'] = (a0) => (_text_to_cstring = Module['_text_to_cstring'] = wasmExports['text_to_cstring'])(a0);
+var _ReleaseSysCache = Module['_ReleaseSysCache'] = (a0) => (_ReleaseSysCache = Module['_ReleaseSysCache'] = wasmExports['ReleaseSysCache'])(a0);
+var _datumIsEqual = Module['_datumIsEqual'] = (a0, a1, a2, a3) => (_datumIsEqual = Module['_datumIsEqual'] = wasmExports['datumIsEqual'])(a0, a1, a2, a3);
+var _get_agg_clause_costs = Module['_get_agg_clause_costs'] = (a0, a1, a2) => (_get_agg_clause_costs = Module['_get_agg_clause_costs'] = wasmExports['get_agg_clause_costs'])(a0, a1, a2);
+var _make_orclause = Module['_make_orclause'] = (a0) => (_make_orclause = Module['_make_orclause'] = wasmExports['make_orclause'])(a0);
+var _SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = (a0, a1) => (_SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = wasmExports['SearchSysCacheAttName'])(a0, a1);
+var _get_rel_name = Module['_get_rel_name'] = (a0) => (_get_rel_name = Module['_get_rel_name'] = wasmExports['get_rel_name'])(a0);
+var _memcpy = Module['_memcpy'] = (a0, a1, a2) => (_memcpy = Module['_memcpy'] = wasmExports['memcpy'])(a0, a1, a2);
+var _get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = (a0, a1, a2, a3) => (_get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = wasmExports['get_translated_update_targetlist'])(a0, a1, a2, a3);
+var _add_row_identity_var = Module['_add_row_identity_var'] = (a0, a1, a2, a3) => (_add_row_identity_var = Module['_add_row_identity_var'] = wasmExports['add_row_identity_var'])(a0, a1, a2, a3);
+var _get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = (a0, a1, a2) => (_get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = wasmExports['get_baserel_parampathinfo'])(a0, a1, a2);
+var _list_sort = Module['_list_sort'] = (a0, a1) => (_list_sort = Module['_list_sort'] = wasmExports['list_sort'])(a0, a1);
+var _create_foreignscan_path = Module['_create_foreignscan_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreignscan_path = Module['_create_foreignscan_path'] = wasmExports['create_foreignscan_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _create_foreign_join_path = Module['_create_foreign_join_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreign_join_path = Module['_create_foreign_join_path'] = wasmExports['create_foreign_join_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
+var _create_foreign_upper_path = Module['_create_foreign_upper_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_create_foreign_upper_path = Module['_create_foreign_upper_path'] = wasmExports['create_foreign_upper_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = (a0, a1, a2, a3, a4) => (_adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = wasmExports['adjust_limit_rows_costs'])(a0, a1, a2, a3, a4);
+var _copy_pathtarget = Module['_copy_pathtarget'] = (a0) => (_copy_pathtarget = Module['_copy_pathtarget'] = wasmExports['copy_pathtarget'])(a0);
+var _makeString = Module['_makeString'] = (a0) => (_makeString = Module['_makeString'] = wasmExports['makeString'])(a0);
+var _get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = (a0, a1) => (_get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = wasmExports['get_rel_all_updated_cols'])(a0, a1);
+var _pg_detoast_datum = Module['_pg_detoast_datum'] = (a0) => (_pg_detoast_datum = Module['_pg_detoast_datum'] = wasmExports['pg_detoast_datum'])(a0);
+var _ArrayGetNItems = Module['_ArrayGetNItems'] = (a0, a1) => (_ArrayGetNItems = Module['_ArrayGetNItems'] = wasmExports['ArrayGetNItems'])(a0, a1);
+var _get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = (a0, a1, a2, a3) => (_get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = wasmExports['get_typlenbyvalalign'])(a0, a1, a2, a3);
+var _deconstruct_array = Module['_deconstruct_array'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_deconstruct_array = Module['_deconstruct_array'] = wasmExports['deconstruct_array'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _CreateExecutorState = Module['_CreateExecutorState'] = () => (_CreateExecutorState = Module['_CreateExecutorState'] = wasmExports['CreateExecutorState'])();
+var _ExecInitExpr = Module['_ExecInitExpr'] = (a0, a1) => (_ExecInitExpr = Module['_ExecInitExpr'] = wasmExports['ExecInitExpr'])(a0, a1);
+var _MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = (a0) => (_MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = wasmExports['MakePerTupleExprContext'])(a0);
+var _FreeExecutorState = Module['_FreeExecutorState'] = (a0) => (_FreeExecutorState = Module['_FreeExecutorState'] = wasmExports['FreeExecutorState'])(a0);
+var _errstart = Module['_errstart'] = (a0, a1) => (_errstart = Module['_errstart'] = wasmExports['errstart'])(a0, a1);
+var _hash_create = Module['_hash_create'] = (a0, a1, a2, a3) => (_hash_create = Module['_hash_create'] = wasmExports['hash_create'])(a0, a1, a2, a3);
+var _CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = (a0, a1, a2) => (_CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = wasmExports['CacheRegisterSyscacheCallback'])(a0, a1, a2);
+var _hash_search = Module['_hash_search'] = (a0, a1, a2, a3) => (_hash_search = Module['_hash_search'] = wasmExports['hash_search'])(a0, a1, a2, a3);
+var _list_free_deep = Module['_list_free_deep'] = (a0) => (_list_free_deep = Module['_list_free_deep'] = wasmExports['list_free_deep'])(a0);
+var _hash_seq_init = Module['_hash_seq_init'] = (a0, a1) => (_hash_seq_init = Module['_hash_seq_init'] = wasmExports['hash_seq_init'])(a0, a1);
+var _hash_seq_search = Module['_hash_seq_search'] = (a0) => (_hash_seq_search = Module['_hash_seq_search'] = wasmExports['hash_seq_search'])(a0);
+var _add_to_flat_tlist = Module['_add_to_flat_tlist'] = (a0, a1) => (_add_to_flat_tlist = Module['_add_to_flat_tlist'] = wasmExports['add_to_flat_tlist'])(a0, a1);
+var _get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = (a0, a1) => (_get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = wasmExports['get_sortgrouplist_exprs'])(a0, a1);
+var _get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = (a0, a1) => (_get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = wasmExports['get_sortgroupref_clause_noerr'])(a0, a1);
+var _repalloc = Module['_repalloc'] = (a0, a1) => (_repalloc = Module['_repalloc'] = wasmExports['repalloc'])(a0, a1);
+var _add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = (a0, a1) => (_add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = wasmExports['add_new_columns_to_pathtarget'])(a0, a1);
+var _GetUserId = Module['_GetUserId'] = () => (_GetUserId = Module['_GetUserId'] = wasmExports['GetUserId'])();
+var _list_append_unique_ptr = Module['_list_append_unique_ptr'] = (a0, a1) => (_list_append_unique_ptr = Module['_list_append_unique_ptr'] = wasmExports['list_append_unique_ptr'])(a0, a1);
+var _extract_actual_clauses = Module['_extract_actual_clauses'] = (a0, a1) => (_extract_actual_clauses = Module['_extract_actual_clauses'] = wasmExports['extract_actual_clauses'])(a0, a1);
+var _errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = (a0) => (_errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = wasmExports['errdetail_relkind_not_supported'])(a0);
+var _RecoveryInProgress = Module['_RecoveryInProgress'] = () => (_RecoveryInProgress = Module['_RecoveryInProgress'] = wasmExports['RecoveryInProgress'])();
+var _RelationGetIndexList = Module['_RelationGetIndexList'] = (a0) => (_RelationGetIndexList = Module['_RelationGetIndexList'] = wasmExports['RelationGetIndexList'])(a0);
+var _index_open = Module['_index_open'] = (a0, a1) => (_index_open = Module['_index_open'] = wasmExports['index_open'])(a0, a1);
+var _index_close = Module['_index_close'] = (a0, a1) => (_index_close = Module['_index_close'] = wasmExports['index_close'])(a0, a1);
+var _TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = (a0, a1) => (_TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = wasmExports['TransactionIdPrecedes'])(a0, a1);
+var _RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = (a0, a1) => (_RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = wasmExports['RelationGetNumberOfBlocksInFork'])(a0, a1);
+var _stringToNode = Module['_stringToNode'] = (a0) => (_stringToNode = Module['_stringToNode'] = wasmExports['stringToNode'])(a0);
+var _memcmp = Module['_memcmp'] = (a0, a1, a2) => (_memcmp = Module['_memcmp'] = wasmExports['memcmp'])(a0, a1, a2);
+var _fmgr_info_copy = Module['_fmgr_info_copy'] = (a0, a1, a2) => (_fmgr_info_copy = Module['_fmgr_info_copy'] = wasmExports['fmgr_info_copy'])(a0, a1, a2);
+var _SearchSysCache2 = Module['_SearchSysCache2'] = (a0, a1, a2) => (_SearchSysCache2 = Module['_SearchSysCache2'] = wasmExports['SearchSysCache2'])(a0, a1, a2);
+var _list_member_int = Module['_list_member_int'] = (a0, a1) => (_list_member_int = Module['_list_member_int'] = wasmExports['list_member_int'])(a0, a1);
+var _datumCopy = Module['_datumCopy'] = (a0, a1, a2) => (_datumCopy = Module['_datumCopy'] = wasmExports['datumCopy'])(a0, a1, a2);
+var _list_make3_impl = Module['_list_make3_impl'] = (a0, a1, a2, a3) => (_list_make3_impl = Module['_list_make3_impl'] = wasmExports['list_make3_impl'])(a0, a1, a2, a3);
+var _SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = (a0, a1, a2) => (_SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = wasmExports['SysCacheGetAttrNotNull'])(a0, a1, a2);
+var _pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = (a0) => (_pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = wasmExports['pg_detoast_datum_copy'])(a0);
+var _object_aclcheck = Module['_object_aclcheck'] = (a0, a1, a2, a3) => (_object_aclcheck = Module['_object_aclcheck'] = wasmExports['object_aclcheck'])(a0, a1, a2, a3);
+var _AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = (a0, a1, a2, a3, a4) => (_AllocSetContextCreateInternal = Module['_AllocSetContextCreateInternal'] = wasmExports['AllocSetContextCreateInternal'])(a0, a1, a2, a3, a4);
+var _MemoryContextDelete = Module['_MemoryContextDelete'] = (a0) => (_MemoryContextDelete = Module['_MemoryContextDelete'] = wasmExports['MemoryContextDelete'])(a0);
+var _geterrposition = Module['_geterrposition'] = () => (_geterrposition = Module['_geterrposition'] = wasmExports['geterrposition'])();
+var _errposition = Module['_errposition'] = (a0) => (_errposition = Module['_errposition'] = wasmExports['errposition'])(a0);
+var _internalerrposition = Module['_internalerrposition'] = (a0) => (_internalerrposition = Module['_internalerrposition'] = wasmExports['internalerrposition'])(a0);
+var _internalerrquery = Module['_internalerrquery'] = (a0) => (_internalerrquery = Module['_internalerrquery'] = wasmExports['internalerrquery'])(a0);
 var _set_errcontext_domain = Module['_set_errcontext_domain'] = (a0) => (_set_errcontext_domain = Module['_set_errcontext_domain'] = wasmExports['set_errcontext_domain'])(a0);
 var _errcontext_msg = Module['_errcontext_msg'] = (a0, a1) => (_errcontext_msg = Module['_errcontext_msg'] = wasmExports['errcontext_msg'])(a0, a1);
-var _SearchSysCache1 = Module['_SearchSysCache1'] = (a0, a1) => (_SearchSysCache1 = Module['_SearchSysCache1'] = wasmExports['SearchSysCache1'])(a0, a1);
-var _ReleaseSysCache = Module['_ReleaseSysCache'] = (a0) => (_ReleaseSysCache = Module['_ReleaseSysCache'] = wasmExports['ReleaseSysCache'])(a0);
-var _fmgr_info = Module['_fmgr_info'] = (a0, a1) => (_fmgr_info = Module['_fmgr_info'] = wasmExports['fmgr_info'])(a0, a1);
-var _object_aclcheck = Module['_object_aclcheck'] = (a0, a1, a2, a3) => (_object_aclcheck = Module['_object_aclcheck'] = wasmExports['object_aclcheck'])(a0, a1, a2, a3);
-var _get_namespace_name = Module['_get_namespace_name'] = (a0) => (_get_namespace_name = Module['_get_namespace_name'] = wasmExports['get_namespace_name'])(a0);
-var _aclcheck_error = Module['_aclcheck_error'] = (a0, a1, a2) => (_aclcheck_error = Module['_aclcheck_error'] = wasmExports['aclcheck_error'])(a0, a1, a2);
-var _appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = (a0, a1, a2) => (_appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = wasmExports['appendBinaryStringInfo'])(a0, a1, a2);
-var _getTypeOutputInfo = Module['_getTypeOutputInfo'] = (a0, a1, a2) => (_getTypeOutputInfo = Module['_getTypeOutputInfo'] = wasmExports['getTypeOutputInfo'])(a0, a1, a2);
-var _OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = (a0, a1) => (_OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = wasmExports['OidOutputFunctionCall'])(a0, a1);
+var _list_delete_last = Module['_list_delete_last'] = (a0) => (_list_delete_last = Module['_list_delete_last'] = wasmExports['list_delete_last'])(a0);
+var _lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = (a0, a1, a2) => (_lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = wasmExports['lookup_rowtype_tupdesc_domain'])(a0, a1, a2);
+var _DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = (a0) => (_DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = wasmExports['DecrTupleDescRefCount'])(a0);
+var _type_is_rowtype = Module['_type_is_rowtype'] = (a0) => (_type_is_rowtype = Module['_type_is_rowtype'] = wasmExports['type_is_rowtype'])(a0);
+var _Int64GetDatum = Module['_Int64GetDatum'] = (a0) => (_Int64GetDatum = Module['_Int64GetDatum'] = wasmExports['Int64GetDatum'])(a0);
+var _GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = (a0, a1, a2, a3, a4) => (_GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = wasmExports['GetSysCacheHashValue'])(a0, a1, a2, a3, a4);
+var _addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = (a0, a1) => (_addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = wasmExports['addRTEPermissionInfo'])(a0, a1);
+var _change_plan_targetlist = Module['_change_plan_targetlist'] = (a0, a1, a2) => (_change_plan_targetlist = Module['_change_plan_targetlist'] = wasmExports['change_plan_targetlist'])(a0, a1, a2);
+var _make_foreignscan = Module['_make_foreignscan'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_make_foreignscan = Module['_make_foreignscan'] = wasmExports['make_foreignscan'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _standard_planner = Module['_standard_planner'] = (a0, a1, a2, a3) => (_standard_planner = Module['_standard_planner'] = wasmExports['standard_planner'])(a0, a1, a2, a3);
+var _plan_create_index_workers = Module['_plan_create_index_workers'] = (a0, a1) => (_plan_create_index_workers = Module['_plan_create_index_workers'] = wasmExports['plan_create_index_workers'])(a0, a1);
+var _psprintf = Module['_psprintf'] = (a0, a1) => (_psprintf = Module['_psprintf'] = wasmExports['psprintf'])(a0, a1);
+var _format_type_be = Module['_format_type_be'] = (a0) => (_format_type_be = Module['_format_type_be'] = wasmExports['format_type_be'])(a0);
+var _pg_sprintf = Module['_pg_sprintf'] = (a0, a1, a2) => (_pg_sprintf = Module['_pg_sprintf'] = wasmExports['pg_sprintf'])(a0, a1, a2);
+var _pg_prng_double = Module['_pg_prng_double'] = (a0) => (_pg_prng_double = Module['_pg_prng_double'] = wasmExports['pg_prng_double'])(a0);
+var _pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = (a0, a1, a2) => (_pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = wasmExports['pg_prng_uint64_range'])(a0, a1, a2);
+var _qsort_arg = Module['_qsort_arg'] = (a0, a1, a2, a3, a4) => (_qsort_arg = Module['_qsort_arg'] = wasmExports['qsort_arg'])(a0, a1, a2, a3, a4);
+var _FunctionCall2Coll = Module['_FunctionCall2Coll'] = (a0, a1, a2, a3) => (_FunctionCall2Coll = Module['_FunctionCall2Coll'] = wasmExports['FunctionCall2Coll'])(a0, a1, a2, a3);
+var _parser_errposition = Module['_parser_errposition'] = (a0, a1) => (_parser_errposition = Module['_parser_errposition'] = wasmExports['parser_errposition'])(a0, a1);
+var _ExecPrepareExpr = Module['_ExecPrepareExpr'] = (a0, a1) => (_ExecPrepareExpr = Module['_ExecPrepareExpr'] = wasmExports['ExecPrepareExpr'])(a0, a1);
 var _RegisterSnapshot = Module['_RegisterSnapshot'] = (a0) => (_RegisterSnapshot = Module['_RegisterSnapshot'] = wasmExports['RegisterSnapshot'])(a0);
+var _MemoryContextReset = Module['_MemoryContextReset'] = (a0) => (_MemoryContextReset = Module['_MemoryContextReset'] = wasmExports['MemoryContextReset'])(a0);
 var _UnregisterSnapshot = Module['_UnregisterSnapshot'] = (a0) => (_UnregisterSnapshot = Module['_UnregisterSnapshot'] = wasmExports['UnregisterSnapshot'])(a0);
-var _GetActiveSnapshot = Module['_GetActiveSnapshot'] = () => (_GetActiveSnapshot = Module['_GetActiveSnapshot'] = wasmExports['GetActiveSnapshot'])();
-var _MemoryContextAlloc = Module['_MemoryContextAlloc'] = (a0, a1) => (_MemoryContextAlloc = Module['_MemoryContextAlloc'] = wasmExports['MemoryContextAlloc'])(a0, a1);
-var _SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = (a0, a1, a2, a3, a4, a5) => (_SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = wasmExports['SetTuplestoreDestReceiverParams'])(a0, a1, a2, a3, a4, a5);
-var _MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = (a0) => (_MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = wasmExports['MemoryContextDeleteChildren'])(a0);
-var _EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = () => (_EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = wasmExports['EnsurePortalSnapshotExists'])();
-var _MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = (a0, a1) => (_MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = wasmExports['MakeSingleTupleTableSlot'])(a0, a1);
 var _ExecDropSingleTupleTableSlot = Module['_ExecDropSingleTupleTableSlot'] = (a0) => (_ExecDropSingleTupleTableSlot = Module['_ExecDropSingleTupleTableSlot'] = wasmExports['ExecDropSingleTupleTableSlot'])(a0);
-var _GetCommandTagName = Module['_GetCommandTagName'] = (a0) => (_GetCommandTagName = Module['_GetCommandTagName'] = wasmExports['GetCommandTagName'])(a0);
-var _standard_ProcessUtility = Module['_standard_ProcessUtility'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_standard_ProcessUtility = Module['_standard_ProcessUtility'] = wasmExports['standard_ProcessUtility'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _copyObjectImpl = Module['_copyObjectImpl'] = (a0) => (_copyObjectImpl = Module['_copyObjectImpl'] = wasmExports['copyObjectImpl'])(a0);
-var _Async_Notify = Module['_Async_Notify'] = (a0, a1) => (_Async_Notify = Module['_Async_Notify'] = wasmExports['Async_Notify'])(a0, a1);
-var _superuser = Module['_superuser'] = () => (_superuser = Module['_superuser'] = wasmExports['superuser'])();
-var _list_concat = Module['_list_concat'] = (a0, a1) => (_list_concat = Module['_list_concat'] = wasmExports['list_concat'])(a0, a1);
-var _RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = (a0, a1, a2, a3, a4) => (_RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = wasmExports['RangeVarGetRelidExtended'])(a0, a1, a2, a3, a4);
-var _get_rel_relkind = Module['_get_rel_relkind'] = (a0) => (_get_rel_relkind = Module['_get_rel_relkind'] = wasmExports['get_rel_relkind'])(a0);
-var _CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = (a0) => (_CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = wasmExports['CreateTupleDescCopy'])(a0);
-var _bms_next_member = Module['_bms_next_member'] = (a0, a1) => (_bms_next_member = Module['_bms_next_member'] = wasmExports['bms_next_member'])(a0, a1);
-var _bms_add_member = Module['_bms_add_member'] = (a0, a1) => (_bms_add_member = Module['_bms_add_member'] = wasmExports['bms_add_member'])(a0, a1);
-var _bms_is_member = Module['_bms_is_member'] = (a0, a1) => (_bms_is_member = Module['_bms_is_member'] = wasmExports['bms_is_member'])(a0, a1);
-var _bms_del_member = Module['_bms_del_member'] = (a0, a1) => (_bms_del_member = Module['_bms_del_member'] = wasmExports['bms_del_member'])(a0, a1);
-var _bms_union = Module['_bms_union'] = (a0, a1) => (_bms_union = Module['_bms_union'] = wasmExports['bms_union'])(a0, a1);
-var _bms_overlap = Module['_bms_overlap'] = (a0, a1) => (_bms_overlap = Module['_bms_overlap'] = wasmExports['bms_overlap'])(a0, a1);
-var _table_open = Module['_table_open'] = (a0, a1) => (_table_open = Module['_table_open'] = wasmExports['table_open'])(a0, a1);
+var _relation_open = Module['_relation_open'] = (a0, a1) => (_relation_open = Module['_relation_open'] = wasmExports['relation_open'])(a0, a1);
+var _MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = (a0, a1) => (_MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = wasmExports['MemoryContextAllocZero'])(a0, a1);
+var _get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = (a0, a1) => (_get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = wasmExports['get_fn_expr_argtype'])(a0, a1);
+var _relation_close = Module['_relation_close'] = (a0, a1) => (_relation_close = Module['_relation_close'] = wasmExports['relation_close'])(a0, a1);
+var _get_element_type = Module['_get_element_type'] = (a0) => (_get_element_type = Module['_get_element_type'] = wasmExports['get_element_type'])(a0);
+var _GetActiveSnapshot = Module['_GetActiveSnapshot'] = () => (_GetActiveSnapshot = Module['_GetActiveSnapshot'] = wasmExports['GetActiveSnapshot'])();
 var _ScanKeyInit = Module['_ScanKeyInit'] = (a0, a1, a2, a3, a4) => (_ScanKeyInit = Module['_ScanKeyInit'] = wasmExports['ScanKeyInit'])(a0, a1, a2, a3, a4);
 var _systable_beginscan = Module['_systable_beginscan'] = (a0, a1, a2, a3, a4, a5) => (_systable_beginscan = Module['_systable_beginscan'] = wasmExports['systable_beginscan'])(a0, a1, a2, a3, a4, a5);
 var _systable_getnext = Module['_systable_getnext'] = (a0) => (_systable_getnext = Module['_systable_getnext'] = wasmExports['systable_getnext'])(a0);
-var _systable_endscan = Module['_systable_endscan'] = (a0) => (_systable_endscan = Module['_systable_endscan'] = wasmExports['systable_endscan'])(a0);
-var _table_close = Module['_table_close'] = (a0, a1) => (_table_close = Module['_table_close'] = wasmExports['table_close'])(a0, a1);
-var _errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = (a0) => (_errdetail_relkind_not_supported = Module['_errdetail_relkind_not_supported'] = wasmExports['errdetail_relkind_not_supported'])(a0);
-var _object_ownercheck = Module['_object_ownercheck'] = (a0, a1, a2) => (_object_ownercheck = Module['_object_ownercheck'] = wasmExports['object_ownercheck'])(a0, a1, a2);
-var _get_relkind_objtype = Module['_get_relkind_objtype'] = (a0) => (_get_relkind_objtype = Module['_get_relkind_objtype'] = wasmExports['get_relkind_objtype'])(a0);
-var _SearchSysCache2 = Module['_SearchSysCache2'] = (a0, a1, a2) => (_SearchSysCache2 = Module['_SearchSysCache2'] = wasmExports['SearchSysCache2'])(a0, a1, a2);
-var _get_rel_name = Module['_get_rel_name'] = (a0) => (_get_rel_name = Module['_get_rel_name'] = wasmExports['get_rel_name'])(a0);
-var _heap_form_tuple = Module['_heap_form_tuple'] = (a0, a1, a2) => (_heap_form_tuple = Module['_heap_form_tuple'] = wasmExports['heap_form_tuple'])(a0, a1, a2);
-var _heap_freetuple = Module['_heap_freetuple'] = (a0) => (_heap_freetuple = Module['_heap_freetuple'] = wasmExports['heap_freetuple'])(a0);
-var _exprType = Module['_exprType'] = (a0) => (_exprType = Module['_exprType'] = wasmExports['exprType'])(a0);
-var _format_type_be = Module['_format_type_be'] = (a0) => (_format_type_be = Module['_format_type_be'] = wasmExports['format_type_be'])(a0);
-var _exprTypmod = Module['_exprTypmod'] = (a0) => (_exprTypmod = Module['_exprTypmod'] = wasmExports['exprTypmod'])(a0);
-var _format_type_with_typemod = Module['_format_type_with_typemod'] = (a0, a1) => (_format_type_with_typemod = Module['_format_type_with_typemod'] = wasmExports['format_type_with_typemod'])(a0, a1);
-var _relation_open = Module['_relation_open'] = (a0, a1) => (_relation_open = Module['_relation_open'] = wasmExports['relation_open'])(a0, a1);
-var _relation_close = Module['_relation_close'] = (a0, a1) => (_relation_close = Module['_relation_close'] = wasmExports['relation_close'])(a0, a1);
-var _makeString = Module['_makeString'] = (a0) => (_makeString = Module['_makeString'] = wasmExports['makeString'])(a0);
-var _makeTargetEntry = Module['_makeTargetEntry'] = (a0, a1, a2, a3) => (_makeTargetEntry = Module['_makeTargetEntry'] = wasmExports['makeTargetEntry'])(a0, a1, a2, a3);
-var _makeVar = Module['_makeVar'] = (a0, a1, a2, a3, a4, a5) => (_makeVar = Module['_makeVar'] = wasmExports['makeVar'])(a0, a1, a2, a3, a4, a5);
-var _list_make2_impl = Module['_list_make2_impl'] = (a0, a1, a2) => (_list_make2_impl = Module['_list_make2_impl'] = wasmExports['list_make2_impl'])(a0, a1, a2);
-var _lappend_oid = Module['_lappend_oid'] = (a0, a1) => (_lappend_oid = Module['_lappend_oid'] = wasmExports['lappend_oid'])(a0, a1);
-var _lappend_int = Module['_lappend_int'] = (a0, a1) => (_lappend_int = Module['_lappend_int'] = wasmExports['lappend_int'])(a0, a1);
-var _SearchSysCacheExists = Module['_SearchSysCacheExists'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheExists = Module['_SearchSysCacheExists'] = wasmExports['SearchSysCacheExists'])(a0, a1, a2, a3, a4);
-var _strip_implicit_coercions = Module['_strip_implicit_coercions'] = (a0) => (_strip_implicit_coercions = Module['_strip_implicit_coercions'] = wasmExports['strip_implicit_coercions'])(a0);
-var _stringToNode = Module['_stringToNode'] = (a0) => (_stringToNode = Module['_stringToNode'] = wasmExports['stringToNode'])(a0);
-var _coerce_to_target_type = Module['_coerce_to_target_type'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_coerce_to_target_type = Module['_coerce_to_target_type'] = wasmExports['coerce_to_target_type'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _try_relation_open = Module['_try_relation_open'] = (a0, a1) => (_try_relation_open = Module['_try_relation_open'] = wasmExports['try_relation_open'])(a0, a1);
-var _list_member_oid = Module['_list_member_oid'] = (a0, a1) => (_list_member_oid = Module['_list_member_oid'] = wasmExports['list_member_oid'])(a0, a1);
-var _list_delete_last = Module['_list_delete_last'] = (a0) => (_list_delete_last = Module['_list_delete_last'] = wasmExports['list_delete_last'])(a0);
-var _list_delete_cell = Module['_list_delete_cell'] = (a0, a1) => (_list_delete_cell = Module['_list_delete_cell'] = wasmExports['list_delete_cell'])(a0, a1);
-var _addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = (a0, a1) => (_addRTEPermissionInfo = Module['_addRTEPermissionInfo'] = wasmExports['addRTEPermissionInfo'])(a0, a1);
-var _equal = Module['_equal'] = (a0, a1) => (_equal = Module['_equal'] = wasmExports['equal'])(a0, a1);
-var _repalloc = Module['_repalloc'] = (a0, a1) => (_repalloc = Module['_repalloc'] = wasmExports['repalloc'])(a0, a1);
-var _memmove = Module['_memmove'] = (a0, a1, a2) => (_memmove = Module['_memmove'] = wasmExports['memmove'])(a0, a1, a2);
-var _palloc_extended = Module['_palloc_extended'] = (a0, a1) => (_palloc_extended = Module['_palloc_extended'] = wasmExports['palloc_extended'])(a0, a1);
-var _pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = (a0) => (_pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = wasmExports['pg_reg_getinitialstate'])(a0);
-var _pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = (a0) => (_pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = wasmExports['pg_reg_getfinalstate'])(a0);
-var _pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = (a0, a1) => (_pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = wasmExports['pg_reg_getnumoutarcs'])(a0, a1);
-var _pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = (a0, a1, a2, a3) => (_pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = wasmExports['pg_reg_getoutarcs'])(a0, a1, a2, a3);
-var _pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = (a0) => (_pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = wasmExports['pg_reg_getnumcolors'])(a0);
-var _pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = (a0, a1) => (_pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = wasmExports['pg_reg_colorisbegin'])(a0, a1);
-var _pg_reg_colorisend = Module['_pg_reg_colorisend'] = (a0, a1) => (_pg_reg_colorisend = Module['_pg_reg_colorisend'] = wasmExports['pg_reg_colorisend'])(a0, a1);
-var _pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = (a0, a1) => (_pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = wasmExports['pg_reg_getnumcharacters'])(a0, a1);
-var _pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = (a0, a1, a2, a3) => (_pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = wasmExports['pg_reg_getcharacters'])(a0, a1, a2, a3);
-var _pg_regerror = Module['_pg_regerror'] = (a0, a1, a2, a3) => (_pg_regerror = Module['_pg_regerror'] = wasmExports['pg_regerror'])(a0, a1, a2, a3);
-var _strcpy = Module['_strcpy'] = (a0, a1) => (_strcpy = Module['_strcpy'] = wasmExports['strcpy'])(a0, a1);
-var _pg_regcomp = Module['_pg_regcomp'] = (a0, a1, a2, a3, a4) => (_pg_regcomp = Module['_pg_regcomp'] = wasmExports['pg_regcomp'])(a0, a1, a2, a3, a4);
-var _GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = () => (_GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = wasmExports['GetDatabaseEncoding'])();
-var _pg_qsort = Module['_pg_qsort'] = (a0, a1, a2, a3) => (_pg_qsort = Module['_pg_qsort'] = wasmExports['pg_qsort'])(a0, a1, a2, a3);
-var _isalnum = Module['_isalnum'] = (a0) => (_isalnum = Module['_isalnum'] = wasmExports['isalnum'])(a0);
-var _tolower = Module['_tolower'] = (a0) => (_tolower = Module['_tolower'] = wasmExports['tolower'])(a0);
-var _toupper = Module['_toupper'] = (a0) => (_toupper = Module['_toupper'] = wasmExports['toupper'])(a0);
-var _makeRangeVar = Module['_makeRangeVar'] = (a0, a1, a2) => (_makeRangeVar = Module['_makeRangeVar'] = wasmExports['makeRangeVar'])(a0, a1, a2);
-var _ferror = Module['_ferror'] = (a0) => (_ferror = Module['_ferror'] = wasmExports['ferror'])(a0);
-var _fread = Module['_fread'] = (a0, a1, a2, a3) => (_fread = Module['_fread'] = wasmExports['fread'])(a0, a1, a2, a3);
-var _clearerr = Module['_clearerr'] = (a0) => (_clearerr = Module['_clearerr'] = wasmExports['clearerr'])(a0);
-var _pqsignal = Module['_pqsignal'] = (a0, a1) => (_pqsignal = Module['_pqsignal'] = wasmExports['pqsignal'])(a0, a1);
-var _table_openrv = Module['_table_openrv'] = (a0, a1) => (_table_openrv = Module['_table_openrv'] = wasmExports['table_openrv'])(a0, a1);
-var _MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = (a0, a1) => (_MemoryContextAllocZero = Module['_MemoryContextAllocZero'] = wasmExports['MemoryContextAllocZero'])(a0, a1);
-var _heap_getnext = Module['_heap_getnext'] = (a0, a1) => (_heap_getnext = Module['_heap_getnext'] = wasmExports['heap_getnext'])(a0, a1);
-var _list_free_deep = Module['_list_free_deep'] = (a0) => (_list_free_deep = Module['_list_free_deep'] = wasmExports['list_free_deep'])(a0);
-var _index_open = Module['_index_open'] = (a0, a1) => (_index_open = Module['_index_open'] = wasmExports['index_open'])(a0, a1);
-var _index_close = Module['_index_close'] = (a0, a1) => (_index_close = Module['_index_close'] = wasmExports['index_close'])(a0, a1);
-var _ExecReScan = Module['_ExecReScan'] = (a0) => (_ExecReScan = Module['_ExecReScan'] = wasmExports['ExecReScan'])(a0);
-var _InstrEndLoop = Module['_InstrEndLoop'] = (a0) => (_InstrEndLoop = Module['_InstrEndLoop'] = wasmExports['InstrEndLoop'])(a0);
-var _bms_free = Module['_bms_free'] = (a0) => (_bms_free = Module['_bms_free'] = wasmExports['bms_free'])(a0);
-var _text_to_cstring = Module['_text_to_cstring'] = (a0) => (_text_to_cstring = Module['_text_to_cstring'] = wasmExports['text_to_cstring'])(a0);
-var _slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = (a0, a1) => (_slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = wasmExports['slot_getsomeattrs_int'])(a0, a1);
-var _CreateExecutorState = Module['_CreateExecutorState'] = () => (_CreateExecutorState = Module['_CreateExecutorState'] = wasmExports['CreateExecutorState'])();
-var _FreeExecutorState = Module['_FreeExecutorState'] = (a0) => (_FreeExecutorState = Module['_FreeExecutorState'] = wasmExports['FreeExecutorState'])(a0);
-var _FreeExprContext = Module['_FreeExprContext'] = (a0, a1) => (_FreeExprContext = Module['_FreeExprContext'] = wasmExports['FreeExprContext'])(a0, a1);
-var _CreateExprContext = Module['_CreateExprContext'] = (a0) => (_CreateExprContext = Module['_CreateExprContext'] = wasmExports['CreateExprContext'])(a0);
-var _MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = (a0) => (_MakePerTupleExprContext = Module['_MakePerTupleExprContext'] = wasmExports['MakePerTupleExprContext'])(a0);
-var _list_member_int = Module['_list_member_int'] = (a0, a1) => (_list_member_int = Module['_list_member_int'] = wasmExports['list_member_int'])(a0, a1);
-var _ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = (a0, a1, a2) => (_ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = wasmExports['ExecOpenScanRelation'])(a0, a1, a2);
-var _ExecInitRangeTable = Module['_ExecInitRangeTable'] = (a0, a1, a2) => (_ExecInitRangeTable = Module['_ExecInitRangeTable'] = wasmExports['ExecInitRangeTable'])(a0, a1, a2);
-var _pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = (a0, a1) => (_pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = wasmExports['pg_mbstrlen_with_len'])(a0, a1);
-var _errposition = Module['_errposition'] = (a0) => (_errposition = Module['_errposition'] = wasmExports['errposition'])(a0);
-var _lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = (a0, a1) => (_lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = wasmExports['lookup_rowtype_tupdesc'])(a0, a1);
-var _DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = (a0) => (_DecrTupleDescRefCount = Module['_DecrTupleDescRefCount'] = wasmExports['DecrTupleDescRefCount'])(a0);
 var _getmissingattr = Module['_getmissingattr'] = (a0, a1, a2) => (_getmissingattr = Module['_getmissingattr'] = wasmExports['getmissingattr'])(a0, a1, a2);
 var _nocachegetattr = Module['_nocachegetattr'] = (a0, a1, a2) => (_nocachegetattr = Module['_nocachegetattr'] = wasmExports['nocachegetattr'])(a0, a1, a2);
-var _ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = (a0, a1) => (_ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = wasmExports['ExecGetReturningSlot'])(a0, a1);
-var _build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = (a0, a1, a2) => (_build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = wasmExports['build_attrmap_by_name_if_req'])(a0, a1, a2);
-var _ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = (a0, a1) => (_ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = wasmExports['ExecGetResultRelCheckAsUser'])(a0, a1);
-var _add_size = Module['_add_size'] = (a0, a1) => (_add_size = Module['_add_size'] = wasmExports['add_size'])(a0, a1);
-var _shm_toc_allocate = Module['_shm_toc_allocate'] = (a0, a1) => (_shm_toc_allocate = Module['_shm_toc_allocate'] = wasmExports['shm_toc_allocate'])(a0, a1);
-var _shm_toc_insert = Module['_shm_toc_insert'] = (a0, a1, a2) => (_shm_toc_insert = Module['_shm_toc_insert'] = wasmExports['shm_toc_insert'])(a0, a1, a2);
-var _shm_toc_lookup = Module['_shm_toc_lookup'] = (a0, a1, a2) => (_shm_toc_lookup = Module['_shm_toc_lookup'] = wasmExports['shm_toc_lookup'])(a0, a1, a2);
-var _ExecInitExpr = Module['_ExecInitExpr'] = (a0, a1) => (_ExecInitExpr = Module['_ExecInitExpr'] = wasmExports['ExecInitExpr'])(a0, a1);
-var _ItemPointerCompare = Module['_ItemPointerCompare'] = (a0, a1) => (_ItemPointerCompare = Module['_ItemPointerCompare'] = wasmExports['ItemPointerCompare'])(a0, a1);
-var _bms_add_members = Module['_bms_add_members'] = (a0, a1) => (_bms_add_members = Module['_bms_add_members'] = wasmExports['bms_add_members'])(a0, a1);
-var _bms_num_members = Module['_bms_num_members'] = (a0) => (_bms_num_members = Module['_bms_num_members'] = wasmExports['bms_num_members'])(a0);
-var _tuplesort_end = Module['_tuplesort_end'] = (a0) => (_tuplesort_end = Module['_tuplesort_end'] = wasmExports['tuplesort_end'])(a0);
-var _ExecInitExprList = Module['_ExecInitExprList'] = (a0, a1) => (_ExecInitExprList = Module['_ExecInitExprList'] = wasmExports['ExecInitExprList'])(a0, a1);
-var _get_typlenbyval = Module['_get_typlenbyval'] = (a0, a1, a2) => (_get_typlenbyval = Module['_get_typlenbyval'] = wasmExports['get_typlenbyval'])(a0, a1, a2);
-var _SysCacheGetAttr = Module['_SysCacheGetAttr'] = (a0, a1, a2, a3) => (_SysCacheGetAttr = Module['_SysCacheGetAttr'] = wasmExports['SysCacheGetAttr'])(a0, a1, a2, a3);
-var _ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = (a0, a1, a2) => (_ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = wasmExports['ExecForceStoreHeapTuple'])(a0, a1, a2);
-var _tuplesort_performsort = Module['_tuplesort_performsort'] = (a0) => (_tuplesort_performsort = Module['_tuplesort_performsort'] = wasmExports['tuplesort_performsort'])(a0);
-var _tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = wasmExports['tuplesort_begin_heap'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = (a0) => (_ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = wasmExports['ExecStoreVirtualTuple'])(a0);
-var _MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = (a0, a1) => (_MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = wasmExports['MemoryContextMemAllocated'])(a0, a1);
-var _tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = (a0, a1, a2, a3, a4) => (_tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = wasmExports['tuplesort_gettupleslot'])(a0, a1, a2, a3, a4);
-var _tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = (a0, a1) => (_tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = wasmExports['tuplesort_puttupleslot'])(a0, a1);
-var _datumCopy = Module['_datumCopy'] = (a0, a1, a2) => (_datumCopy = Module['_datumCopy'] = wasmExports['datumCopy'])(a0, a1, a2);
-var _ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = (a0) => (_ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = wasmExports['ExecStoreAllNullTuple'])(a0);
-var _FunctionCall2Coll = Module['_FunctionCall2Coll'] = (a0, a1, a2, a3) => (_FunctionCall2Coll = Module['_FunctionCall2Coll'] = wasmExports['FunctionCall2Coll'])(a0, a1, a2, a3);
-var _MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = (a0) => (_MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = wasmExports['MakeExpandedObjectReadOnlyInternal'])(a0);
-var _ReleaseBuffer = Module['_ReleaseBuffer'] = (a0) => (_ReleaseBuffer = Module['_ReleaseBuffer'] = wasmExports['ReleaseBuffer'])(a0);
-var _s_init_lock_sema = Module['_s_init_lock_sema'] = (a0, a1) => (_s_init_lock_sema = Module['_s_init_lock_sema'] = wasmExports['s_init_lock_sema'])(a0, a1);
-var _ConditionVariableInit = Module['_ConditionVariableInit'] = (a0) => (_ConditionVariableInit = Module['_ConditionVariableInit'] = wasmExports['ConditionVariableInit'])(a0);
-var _tas_sema = Module['_tas_sema'] = (a0) => (_tas_sema = Module['_tas_sema'] = wasmExports['tas_sema'])(a0);
-var _s_lock = Module['_s_lock'] = (a0, a1, a2, a3) => (_s_lock = Module['_s_lock'] = wasmExports['s_lock'])(a0, a1, a2, a3);
-var _s_unlock_sema = Module['_s_unlock_sema'] = (a0) => (_s_unlock_sema = Module['_s_unlock_sema'] = wasmExports['s_unlock_sema'])(a0);
-var _ConditionVariableSleep = Module['_ConditionVariableSleep'] = (a0, a1) => (_ConditionVariableSleep = Module['_ConditionVariableSleep'] = wasmExports['ConditionVariableSleep'])(a0, a1);
-var _ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = () => (_ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = wasmExports['ConditionVariableCancelSleep'])();
-var _visibilitymap_get_status = Module['_visibilitymap_get_status'] = (a0, a1, a2) => (_visibilitymap_get_status = Module['_visibilitymap_get_status'] = wasmExports['visibilitymap_get_status'])(a0, a1, a2);
-var _PrefetchBuffer = Module['_PrefetchBuffer'] = (a0, a1, a2, a3) => (_PrefetchBuffer = Module['_PrefetchBuffer'] = wasmExports['PrefetchBuffer'])(a0, a1, a2, a3);
-var _ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = (a0, a1) => (_ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = wasmExports['ExecFindJunkAttributeInTlist'])(a0, a1);
-var _get_call_expr_argtype = Module['_get_call_expr_argtype'] = (a0, a1) => (_get_call_expr_argtype = Module['_get_call_expr_argtype'] = wasmExports['get_call_expr_argtype'])(a0, a1);
-var _get_typcollation = Module['_get_typcollation'] = (a0) => (_get_typcollation = Module['_get_typcollation'] = wasmExports['get_typcollation'])(a0);
+var _systable_endscan = Module['_systable_endscan'] = (a0) => (_systable_endscan = Module['_systable_endscan'] = wasmExports['systable_endscan'])(a0);
+var _get_rel_relkind = Module['_get_rel_relkind'] = (a0) => (_get_rel_relkind = Module['_get_rel_relkind'] = wasmExports['get_rel_relkind'])(a0);
+var _MemoryContextStrdup = Module['_MemoryContextStrdup'] = (a0, a1) => (_MemoryContextStrdup = Module['_MemoryContextStrdup'] = wasmExports['MemoryContextStrdup'])(a0, a1);
 var _MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = (a0, a1) => (_MemoryContextSetIdentifier = Module['_MemoryContextSetIdentifier'] = wasmExports['MemoryContextSetIdentifier'])(a0, a1);
-var _get_call_result_type = Module['_get_call_result_type'] = (a0, a1, a2) => (_get_call_result_type = Module['_get_call_result_type'] = wasmExports['get_call_result_type'])(a0, a1, a2);
-var _SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = (a0, a1, a2) => (_SysCacheGetAttrNotNull = Module['_SysCacheGetAttrNotNull'] = wasmExports['SysCacheGetAttrNotNull'])(a0, a1, a2);
-var _BlessTupleDesc = Module['_BlessTupleDesc'] = (a0) => (_BlessTupleDesc = Module['_BlessTupleDesc'] = wasmExports['BlessTupleDesc'])(a0);
-var _type_is_rowtype = Module['_type_is_rowtype'] = (a0) => (_type_is_rowtype = Module['_type_is_rowtype'] = wasmExports['type_is_rowtype'])(a0);
-var _GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = () => (_GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = wasmExports['GetCurrentSubTransactionId'])();
-var _tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = (a0, a1, a2) => (_tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = wasmExports['tuplestore_begin_heap'])(a0, a1, a2);
-var _geterrposition = Module['_geterrposition'] = () => (_geterrposition = Module['_geterrposition'] = wasmExports['geterrposition'])();
-var _internalerrposition = Module['_internalerrposition'] = (a0) => (_internalerrposition = Module['_internalerrposition'] = wasmExports['internalerrposition'])(a0);
-var _internalerrquery = Module['_internalerrquery'] = (a0) => (_internalerrquery = Module['_internalerrquery'] = wasmExports['internalerrquery'])(a0);
-var _tuplestore_end = Module['_tuplestore_end'] = (a0) => (_tuplestore_end = Module['_tuplestore_end'] = wasmExports['tuplestore_end'])(a0);
-var _get_typtype = Module['_get_typtype'] = (a0) => (_get_typtype = Module['_get_typtype'] = wasmExports['get_typtype'])(a0);
-var _InstrAlloc = Module['_InstrAlloc'] = (a0, a1, a2) => (_InstrAlloc = Module['_InstrAlloc'] = wasmExports['InstrAlloc'])(a0, a1, a2);
-var _table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = (a0, a1) => (_table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = wasmExports['table_parallelscan_estimate'])(a0, a1);
-var _table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = (a0, a1, a2) => (_table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = wasmExports['table_parallelscan_initialize'])(a0, a1, a2);
-var _table_beginscan_parallel = Module['_table_beginscan_parallel'] = (a0, a1) => (_table_beginscan_parallel = Module['_table_beginscan_parallel'] = wasmExports['table_beginscan_parallel'])(a0, a1);
-var _tuplestore_putvalues = Module['_tuplestore_putvalues'] = (a0, a1, a2, a3) => (_tuplestore_putvalues = Module['_tuplestore_putvalues'] = wasmExports['tuplestore_putvalues'])(a0, a1, a2, a3);
-var _pull_varattnos = Module['_pull_varattnos'] = (a0, a1, a2) => (_pull_varattnos = Module['_pull_varattnos'] = wasmExports['pull_varattnos'])(a0, a1, a2);
-var _ExecPrepareExpr = Module['_ExecPrepareExpr'] = (a0, a1) => (_ExecPrepareExpr = Module['_ExecPrepareExpr'] = wasmExports['ExecPrepareExpr'])(a0, a1);
-var _hash_search = Module['_hash_search'] = (a0, a1, a2, a3) => (_hash_search = Module['_hash_search'] = wasmExports['hash_search'])(a0, a1, a2, a3);
-var _hash_create = Module['_hash_create'] = (a0, a1, a2, a3) => (_hash_create = Module['_hash_create'] = wasmExports['hash_create'])(a0, a1, a2, a3);
-var _pg_detoast_datum = Module['_pg_detoast_datum'] = (a0) => (_pg_detoast_datum = Module['_pg_detoast_datum'] = wasmExports['pg_detoast_datum'])(a0);
-var _TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = (a0) => (_TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = wasmExports['TransactionIdIsCurrentTransactionId'])(a0);
-var _execute_attr_map_slot = Module['_execute_attr_map_slot'] = (a0, a1, a2) => (_execute_attr_map_slot = Module['_execute_attr_map_slot'] = wasmExports['execute_attr_map_slot'])(a0, a1, a2);
-var _MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = (a0, a1, a2) => (_MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = wasmExports['MemoryContextAllocExtended'])(a0, a1, a2);
-var _bms_nonempty_difference = Module['_bms_nonempty_difference'] = (a0, a1) => (_bms_nonempty_difference = Module['_bms_nonempty_difference'] = wasmExports['bms_nonempty_difference'])(a0, a1);
-var _FunctionCall1Coll = Module['_FunctionCall1Coll'] = (a0, a1, a2) => (_FunctionCall1Coll = Module['_FunctionCall1Coll'] = wasmExports['FunctionCall1Coll'])(a0, a1, a2);
+var _MemoryContextSetParent = Module['_MemoryContextSetParent'] = (a0, a1) => (_MemoryContextSetParent = Module['_MemoryContextSetParent'] = wasmExports['MemoryContextSetParent'])(a0, a1);
 var _fmgr_info_cxt = Module['_fmgr_info_cxt'] = (a0, a1, a2) => (_fmgr_info_cxt = Module['_fmgr_info_cxt'] = wasmExports['fmgr_info_cxt'])(a0, a1, a2);
-var _tuplesort_reset = Module['_tuplesort_reset'] = (a0) => (_tuplesort_reset = Module['_tuplesort_reset'] = wasmExports['tuplesort_reset'])(a0);
-var _deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = (a0, a1, a2, a3, a4) => (_deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = wasmExports['deconstruct_array_builtin'])(a0, a1, a2, a3, a4);
-var _pairingheap_remove_first = Module['_pairingheap_remove_first'] = (a0) => (_pairingheap_remove_first = Module['_pairingheap_remove_first'] = wasmExports['pairingheap_remove_first'])(a0);
-var _get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = (a0, a1, a2, a3) => (_get_typlenbyvalalign = Module['_get_typlenbyvalalign'] = wasmExports['get_typlenbyvalalign'])(a0, a1, a2, a3);
-var _deconstruct_array = Module['_deconstruct_array'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_deconstruct_array = Module['_deconstruct_array'] = wasmExports['deconstruct_array'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _pairingheap_allocate = Module['_pairingheap_allocate'] = (a0, a1) => (_pairingheap_allocate = Module['_pairingheap_allocate'] = wasmExports['pairingheap_allocate'])(a0, a1);
-var _pairingheap_first = Module['_pairingheap_first'] = (a0) => (_pairingheap_first = Module['_pairingheap_first'] = wasmExports['pairingheap_first'])(a0);
-var _pairingheap_add = Module['_pairingheap_add'] = (a0, a1) => (_pairingheap_add = Module['_pairingheap_add'] = wasmExports['pairingheap_add'])(a0, a1);
-var _convert_tuples_by_position = Module['_convert_tuples_by_position'] = (a0, a1, a2) => (_convert_tuples_by_position = Module['_convert_tuples_by_position'] = wasmExports['convert_tuples_by_position'])(a0, a1, a2);
-var _detoast_external_attr = Module['_detoast_external_attr'] = (a0) => (_detoast_external_attr = Module['_detoast_external_attr'] = wasmExports['detoast_external_attr'])(a0);
-var _LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = (a0) => (_LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = wasmExports['LaunchParallelWorkers'])(a0);
-var _TupleDescInitEntry = Module['_TupleDescInitEntry'] = (a0, a1, a2, a3, a4, a5) => (_TupleDescInitEntry = Module['_TupleDescInitEntry'] = wasmExports['TupleDescInitEntry'])(a0, a1, a2, a3, a4, a5);
-var _TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = (a0, a1, a2) => (_TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = wasmExports['TupleDescInitEntryCollation'])(a0, a1, a2);
-var _pg_prng_uint32 = Module['_pg_prng_uint32'] = (a0) => (_pg_prng_uint32 = Module['_pg_prng_uint32'] = wasmExports['pg_prng_uint32'])(a0);
-var _DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = (a0, a1, a2) => (_DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = wasmExports['DirectFunctionCall1Coll'])(a0, a1, a2);
-var _get_attstatsslot = Module['_get_attstatsslot'] = (a0, a1, a2, a3, a4) => (_get_attstatsslot = Module['_get_attstatsslot'] = wasmExports['get_attstatsslot'])(a0, a1, a2, a3, a4);
-var _free_attstatsslot = Module['_free_attstatsslot'] = (a0) => (_free_attstatsslot = Module['_free_attstatsslot'] = wasmExports['free_attstatsslot'])(a0);
+var _stat = Module['_stat'] = (a0, a1) => (_stat = Module['_stat'] = wasmExports['stat'])(a0, a1);
+var _errcode_for_file_access = Module['_errcode_for_file_access'] = () => (_errcode_for_file_access = Module['_errcode_for_file_access'] = wasmExports['errcode_for_file_access'])();
+var _on_shmem_exit = Module['_on_shmem_exit'] = (a0, a1) => (_on_shmem_exit = Module['_on_shmem_exit'] = wasmExports['on_shmem_exit'])(a0, a1);
+var _errhint = Module['_errhint'] = (a0, a1) => (_errhint = Module['_errhint'] = wasmExports['errhint'])(a0, a1);
+var _getpid = Module['_getpid'] = () => (_getpid = Module['_getpid'] = wasmExports['getpid'])();
 var _LWLockAcquire = Module['_LWLockAcquire'] = (a0, a1) => (_LWLockAcquire = Module['_LWLockAcquire'] = wasmExports['LWLockAcquire'])(a0, a1);
 var _LWLockRelease = Module['_LWLockRelease'] = (a0) => (_LWLockRelease = Module['_LWLockRelease'] = wasmExports['LWLockRelease'])(a0);
-var _LWLockInitialize = Module['_LWLockInitialize'] = (a0, a1) => (_LWLockInitialize = Module['_LWLockInitialize'] = wasmExports['LWLockInitialize'])(a0, a1);
-var _SPI_connect = Module['_SPI_connect'] = () => (_SPI_connect = Module['_SPI_connect'] = wasmExports['SPI_connect'])();
-var _SPI_connect_ext = Module['_SPI_connect_ext'] = (a0) => (_SPI_connect_ext = Module['_SPI_connect_ext'] = wasmExports['SPI_connect_ext'])(a0);
-var _SPI_finish = Module['_SPI_finish'] = () => (_SPI_finish = Module['_SPI_finish'] = wasmExports['SPI_finish'])();
-var _SPI_commit = Module['_SPI_commit'] = () => (_SPI_commit = Module['_SPI_commit'] = wasmExports['SPI_commit'])();
-var _CopyErrorData = Module['_CopyErrorData'] = () => (_CopyErrorData = Module['_CopyErrorData'] = wasmExports['CopyErrorData'])();
-var _ReThrowError = Module['_ReThrowError'] = (a0) => (_ReThrowError = Module['_ReThrowError'] = wasmExports['ReThrowError'])(a0);
-var _SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = () => (_SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = wasmExports['SPI_commit_and_chain'])();
-var _SPI_rollback = Module['_SPI_rollback'] = () => (_SPI_rollback = Module['_SPI_rollback'] = wasmExports['SPI_rollback'])();
-var _SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = () => (_SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = wasmExports['SPI_rollback_and_chain'])();
-var _SPI_execute = Module['_SPI_execute'] = (a0, a1, a2) => (_SPI_execute = Module['_SPI_execute'] = wasmExports['SPI_execute'])(a0, a1, a2);
-var _SPI_freetuptable = Module['_SPI_freetuptable'] = (a0) => (_SPI_freetuptable = Module['_SPI_freetuptable'] = wasmExports['SPI_freetuptable'])(a0);
-var _ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = (a0, a1) => (_ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = wasmExports['ReleaseCachedPlan'])(a0, a1);
-var _SPI_exec = Module['_SPI_exec'] = (a0, a1) => (_SPI_exec = Module['_SPI_exec'] = wasmExports['SPI_exec'])(a0, a1);
-var _SPI_execute_extended = Module['_SPI_execute_extended'] = (a0, a1) => (_SPI_execute_extended = Module['_SPI_execute_extended'] = wasmExports['SPI_execute_extended'])(a0, a1);
-var _SPI_execp = Module['_SPI_execp'] = (a0, a1, a2, a3) => (_SPI_execp = Module['_SPI_execp'] = wasmExports['SPI_execp'])(a0, a1, a2, a3);
-var _SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = (a0, a1) => (_SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = wasmExports['SPI_execute_plan_extended'])(a0, a1);
-var _SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = wasmExports['SPI_execute_plan_with_paramlist'])(a0, a1, a2, a3);
-var _SPI_prepare = Module['_SPI_prepare'] = (a0, a1, a2) => (_SPI_prepare = Module['_SPI_prepare'] = wasmExports['SPI_prepare'])(a0, a1, a2);
-var _SPI_prepare_extended = Module['_SPI_prepare_extended'] = (a0, a1) => (_SPI_prepare_extended = Module['_SPI_prepare_extended'] = wasmExports['SPI_prepare_extended'])(a0, a1);
-var _SPI_keepplan = Module['_SPI_keepplan'] = (a0) => (_SPI_keepplan = Module['_SPI_keepplan'] = wasmExports['SPI_keepplan'])(a0);
-var _SPI_freeplan = Module['_SPI_freeplan'] = (a0) => (_SPI_freeplan = Module['_SPI_freeplan'] = wasmExports['SPI_freeplan'])(a0);
-var _SPI_copytuple = Module['_SPI_copytuple'] = (a0) => (_SPI_copytuple = Module['_SPI_copytuple'] = wasmExports['SPI_copytuple'])(a0);
-var _SPI_returntuple = Module['_SPI_returntuple'] = (a0, a1) => (_SPI_returntuple = Module['_SPI_returntuple'] = wasmExports['SPI_returntuple'])(a0, a1);
-var _heap_deform_tuple = Module['_heap_deform_tuple'] = (a0, a1, a2, a3) => (_heap_deform_tuple = Module['_heap_deform_tuple'] = wasmExports['heap_deform_tuple'])(a0, a1, a2, a3);
-var _SPI_fnumber = Module['_SPI_fnumber'] = (a0, a1) => (_SPI_fnumber = Module['_SPI_fnumber'] = wasmExports['SPI_fnumber'])(a0, a1);
-var _SPI_fname = Module['_SPI_fname'] = (a0, a1) => (_SPI_fname = Module['_SPI_fname'] = wasmExports['SPI_fname'])(a0, a1);
-var _SPI_getvalue = Module['_SPI_getvalue'] = (a0, a1, a2) => (_SPI_getvalue = Module['_SPI_getvalue'] = wasmExports['SPI_getvalue'])(a0, a1, a2);
-var _SPI_getbinval = Module['_SPI_getbinval'] = (a0, a1, a2, a3) => (_SPI_getbinval = Module['_SPI_getbinval'] = wasmExports['SPI_getbinval'])(a0, a1, a2, a3);
-var _SPI_gettype = Module['_SPI_gettype'] = (a0, a1) => (_SPI_gettype = Module['_SPI_gettype'] = wasmExports['SPI_gettype'])(a0, a1);
-var _SPI_gettypeid = Module['_SPI_gettypeid'] = (a0, a1) => (_SPI_gettypeid = Module['_SPI_gettypeid'] = wasmExports['SPI_gettypeid'])(a0, a1);
-var _SPI_getrelname = Module['_SPI_getrelname'] = (a0) => (_SPI_getrelname = Module['_SPI_getrelname'] = wasmExports['SPI_getrelname'])(a0);
-var _SPI_palloc = Module['_SPI_palloc'] = (a0) => (_SPI_palloc = Module['_SPI_palloc'] = wasmExports['SPI_palloc'])(a0);
-var _SPI_datumTransfer = Module['_SPI_datumTransfer'] = (a0, a1, a2) => (_SPI_datumTransfer = Module['_SPI_datumTransfer'] = wasmExports['SPI_datumTransfer'])(a0, a1, a2);
-var _datumTransfer = Module['_datumTransfer'] = (a0, a1, a2) => (_datumTransfer = Module['_datumTransfer'] = wasmExports['datumTransfer'])(a0, a1, a2);
-var _MemoryContextStrdup = Module['_MemoryContextStrdup'] = (a0, a1) => (_MemoryContextStrdup = Module['_MemoryContextStrdup'] = wasmExports['MemoryContextStrdup'])(a0, a1);
-var _SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = wasmExports['SPI_cursor_open_with_paramlist'])(a0, a1, a2, a3);
-var _SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = (a0, a1, a2) => (_SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = wasmExports['SPI_cursor_parse_open'])(a0, a1, a2);
-var _SPI_cursor_find = Module['_SPI_cursor_find'] = (a0) => (_SPI_cursor_find = Module['_SPI_cursor_find'] = wasmExports['SPI_cursor_find'])(a0);
-var _SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = (a0, a1, a2) => (_SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = wasmExports['SPI_cursor_fetch'])(a0, a1, a2);
-var _SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = (a0, a1, a2) => (_SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = wasmExports['SPI_scroll_cursor_fetch'])(a0, a1, a2);
-var _SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = (a0, a1, a2) => (_SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = wasmExports['SPI_scroll_cursor_move'])(a0, a1, a2);
-var _SPI_cursor_close = Module['_SPI_cursor_close'] = (a0) => (_SPI_cursor_close = Module['_SPI_cursor_close'] = wasmExports['SPI_cursor_close'])(a0);
-var _SPI_result_code_string = Module['_SPI_result_code_string'] = (a0) => (_SPI_result_code_string = Module['_SPI_result_code_string'] = wasmExports['SPI_result_code_string'])(a0);
-var _SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = (a0) => (_SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = wasmExports['SPI_plan_get_plan_sources'])(a0);
-var _SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = (a0) => (_SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = wasmExports['SPI_plan_get_cached_plan'])(a0);
-var _SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = (a0) => (_SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = wasmExports['SPI_register_trigger_data'])(a0);
-var _tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = (a0) => (_tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = wasmExports['tuplestore_tuple_count'])(a0);
-var _exprLocation = Module['_exprLocation'] = (a0) => (_exprLocation = Module['_exprLocation'] = wasmExports['exprLocation'])(a0);
-var _tuplestore_puttuple = Module['_tuplestore_puttuple'] = (a0, a1) => (_tuplestore_puttuple = Module['_tuplestore_puttuple'] = wasmExports['tuplestore_puttuple'])(a0, a1);
-var _pg_class_aclcheck = Module['_pg_class_aclcheck'] = (a0, a1, a2) => (_pg_class_aclcheck = Module['_pg_class_aclcheck'] = wasmExports['pg_class_aclcheck'])(a0, a1, a2);
-var _RelationGetIndexList = Module['_RelationGetIndexList'] = (a0) => (_RelationGetIndexList = Module['_RelationGetIndexList'] = wasmExports['RelationGetIndexList'])(a0);
-var _get_partition_ancestors = Module['_get_partition_ancestors'] = (a0) => (_get_partition_ancestors = Module['_get_partition_ancestors'] = wasmExports['get_partition_ancestors'])(a0);
-var _ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = (a0, a1) => (_ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = wasmExports['ExecInitExprWithParams'])(a0, a1);
-var _AddWaitEventToSet = Module['_AddWaitEventToSet'] = (a0, a1, a2, a3, a4) => (_AddWaitEventToSet = Module['_AddWaitEventToSet'] = wasmExports['AddWaitEventToSet'])(a0, a1, a2, a3, a4);
-var _GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = (a0) => (_GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = wasmExports['GetNumRegisteredWaitEvents'])(a0);
-var _BuildIndexInfo = Module['_BuildIndexInfo'] = (a0) => (_BuildIndexInfo = Module['_BuildIndexInfo'] = wasmExports['BuildIndexInfo'])(a0);
-var _ItemPointerEquals = Module['_ItemPointerEquals'] = (a0, a1) => (_ItemPointerEquals = Module['_ItemPointerEquals'] = wasmExports['ItemPointerEquals'])(a0, a1);
-var _TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = (a0, a1) => (_TransactionIdPrecedes = Module['_TransactionIdPrecedes'] = wasmExports['TransactionIdPrecedes'])(a0, a1);
-var _bsearch = Module['_bsearch'] = (a0, a1, a2, a3, a4) => (_bsearch = Module['_bsearch'] = wasmExports['bsearch'])(a0, a1, a2, a3, a4);
-var _pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = (a0) => (_pg_detoast_datum_copy = Module['_pg_detoast_datum_copy'] = wasmExports['pg_detoast_datum_copy'])(a0);
-var _HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = (a0) => (_HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = wasmExports['HeapTupleHeaderGetDatum'])(a0);
-var _construct_md_array = Module['_construct_md_array'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_construct_md_array = Module['_construct_md_array'] = wasmExports['construct_md_array'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _ArrayGetNItems = Module['_ArrayGetNItems'] = (a0, a1) => (_ArrayGetNItems = Module['_ArrayGetNItems'] = wasmExports['ArrayGetNItems'])(a0, a1);
-var _construct_empty_array = Module['_construct_empty_array'] = (a0) => (_construct_empty_array = Module['_construct_empty_array'] = wasmExports['construct_empty_array'])(a0);
-var _DatumGetEOHP = Module['_DatumGetEOHP'] = (a0) => (_DatumGetEOHP = Module['_DatumGetEOHP'] = wasmExports['DatumGetEOHP'])(a0);
-var _expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = (a0) => (_expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = wasmExports['expanded_record_fetch_tupdesc'])(a0);
-var _expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = (a0, a1, a2) => (_expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = wasmExports['expanded_record_fetch_field'])(a0, a1, a2);
-var _lookup_type_cache = Module['_lookup_type_cache'] = (a0, a1) => (_lookup_type_cache = Module['_lookup_type_cache'] = wasmExports['lookup_type_cache'])(a0, a1);
-var _execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = (a0, a1) => (_execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = wasmExports['execute_attr_map_tuple'])(a0, a1);
-var _cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = (a0, a1) => (_cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = wasmExports['cstring_to_text_with_len'])(a0, a1);
-var _pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = (a0) => (_pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = wasmExports['pg_detoast_datum_packed'])(a0);
-var _lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = (a0, a1, a2) => (_lookup_rowtype_tupdesc_domain = Module['_lookup_rowtype_tupdesc_domain'] = wasmExports['lookup_rowtype_tupdesc_domain'])(a0, a1, a2);
-var _MemoryContextGetParent = Module['_MemoryContextGetParent'] = (a0) => (_MemoryContextGetParent = Module['_MemoryContextGetParent'] = wasmExports['MemoryContextGetParent'])(a0);
-var _DeleteExpandedObject = Module['_DeleteExpandedObject'] = (a0) => (_DeleteExpandedObject = Module['_DeleteExpandedObject'] = wasmExports['DeleteExpandedObject'])(a0);
-var _get_opfamily_member = Module['_get_opfamily_member'] = (a0, a1, a2, a3) => (_get_opfamily_member = Module['_get_opfamily_member'] = wasmExports['get_opfamily_member'])(a0, a1, a2, a3);
-var _GetCurrentCommandId = Module['_GetCurrentCommandId'] = (a0) => (_GetCurrentCommandId = Module['_GetCurrentCommandId'] = wasmExports['GetCurrentCommandId'])(a0);
-var _clock_gettime = Module['_clock_gettime'] = (a0, a1) => (_clock_gettime = Module['_clock_gettime'] = wasmExports['clock_gettime'])(a0, a1);
-var _BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = (a0, a1, a2) => (_BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = wasmExports['BufferUsageAccumDiff'])(a0, a1, a2);
-var _WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = (a0, a1, a2) => (_WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = wasmExports['WalUsageAccumDiff'])(a0, a1, a2);
-var _InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = (a0, a1) => (_InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = wasmExports['InstrUpdateTupleCount'])(a0, a1);
-var _ExprEvalPushStep = Module['_ExprEvalPushStep'] = (a0, a1) => (_ExprEvalPushStep = Module['_ExprEvalPushStep'] = wasmExports['ExprEvalPushStep'])(a0, a1);
-var _get_element_type = Module['_get_element_type'] = (a0) => (_get_element_type = Module['_get_element_type'] = wasmExports['get_element_type'])(a0);
-var _EOH_get_flat_size = Module['_EOH_get_flat_size'] = (a0) => (_EOH_get_flat_size = Module['_EOH_get_flat_size'] = wasmExports['EOH_get_flat_size'])(a0);
-var _EOH_flatten_into = Module['_EOH_flatten_into'] = (a0, a1, a2) => (_EOH_flatten_into = Module['_EOH_flatten_into'] = wasmExports['EOH_flatten_into'])(a0, a1, a2);
-var _ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = (a0, a1, a2) => (_ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = wasmExports['ExecStoreHeapTuple'])(a0, a1, a2);
-var _MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = (a0, a1) => (_MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = wasmExports['MakeTupleTableSlot'])(a0, a1);
-var _ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = (a0, a1, a2) => (_ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = wasmExports['ExecFetchSlotHeapTuple'])(a0, a1, a2);
-var _TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = (a0) => (_TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = wasmExports['TupleDescGetAttInMetadata'])(a0);
-var _BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = (a0, a1) => (_BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = wasmExports['BuildTupleFromCStrings'])(a0, a1);
-var _InputFunctionCall = Module['_InputFunctionCall'] = (a0, a1, a2, a3) => (_InputFunctionCall = Module['_InputFunctionCall'] = wasmExports['InputFunctionCall'])(a0, a1, a2, a3);
-var _standard_ExecutorStart = Module['_standard_ExecutorStart'] = (a0, a1) => (_standard_ExecutorStart = Module['_standard_ExecutorStart'] = wasmExports['standard_ExecutorStart'])(a0, a1);
-var _get_rel_namespace = Module['_get_rel_namespace'] = (a0) => (_get_rel_namespace = Module['_get_rel_namespace'] = wasmExports['get_rel_namespace'])(a0);
-var _standard_ExecutorRun = Module['_standard_ExecutorRun'] = (a0, a1, a2, a3) => (_standard_ExecutorRun = Module['_standard_ExecutorRun'] = wasmExports['standard_ExecutorRun'])(a0, a1, a2, a3);
-var _EnterParallelMode = Module['_EnterParallelMode'] = () => (_EnterParallelMode = Module['_EnterParallelMode'] = wasmExports['EnterParallelMode'])();
-var _ExitParallelMode = Module['_ExitParallelMode'] = () => (_ExitParallelMode = Module['_ExitParallelMode'] = wasmExports['ExitParallelMode'])();
-var _standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = (a0) => (_standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = wasmExports['standard_ExecutorFinish'])(a0);
-var _standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = (a0) => (_standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = wasmExports['standard_ExecutorEnd'])(a0);
-var _CreateParallelContext = Module['_CreateParallelContext'] = (a0, a1, a2) => (_CreateParallelContext = Module['_CreateParallelContext'] = wasmExports['CreateParallelContext'])(a0, a1, a2);
-var _InitializeParallelDSM = Module['_InitializeParallelDSM'] = (a0) => (_InitializeParallelDSM = Module['_InitializeParallelDSM'] = wasmExports['InitializeParallelDSM'])(a0);
-var _WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = (a0) => (_WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = wasmExports['WaitForParallelWorkersToFinish'])(a0);
-var _DestroyParallelContext = Module['_DestroyParallelContext'] = (a0) => (_DestroyParallelContext = Module['_DestroyParallelContext'] = wasmExports['DestroyParallelContext'])(a0);
-var _index_deform_tuple = Module['_index_deform_tuple'] = (a0, a1, a2, a3) => (_index_deform_tuple = Module['_index_deform_tuple'] = wasmExports['index_deform_tuple'])(a0, a1, a2, a3);
-var _ExecAsyncResponse = Module['_ExecAsyncResponse'] = (a0) => (_ExecAsyncResponse = Module['_ExecAsyncResponse'] = wasmExports['ExecAsyncResponse'])(a0);
-var _ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = (a0, a1) => (_ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = wasmExports['ExecAsyncRequestDone'])(a0, a1);
-var _ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = (a0) => (_ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = wasmExports['ExecAsyncRequestPending'])(a0);
-var _format_procedure = Module['_format_procedure'] = (a0) => (_format_procedure = Module['_format_procedure'] = wasmExports['format_procedure'])(a0);
-var _stat = Module['_stat'] = (a0, a1) => (_stat = Module['_stat'] = wasmExports['stat'])(a0, a1);
-var _bloom_create = Module['_bloom_create'] = (a0, a1, a2) => (_bloom_create = Module['_bloom_create'] = wasmExports['bloom_create'])(a0, a1, a2);
-var _bloom_free = Module['_bloom_free'] = (a0) => (_bloom_free = Module['_bloom_free'] = wasmExports['bloom_free'])(a0);
-var _bloom_add_element = Module['_bloom_add_element'] = (a0, a1, a2) => (_bloom_add_element = Module['_bloom_add_element'] = wasmExports['bloom_add_element'])(a0, a1, a2);
-var _hash_bytes_extended = Module['_hash_bytes_extended'] = (a0, a1, a2) => (_hash_bytes_extended = Module['_hash_bytes_extended'] = wasmExports['hash_bytes_extended'])(a0, a1, a2);
-var _bloom_lacks_element = Module['_bloom_lacks_element'] = (a0, a1, a2) => (_bloom_lacks_element = Module['_bloom_lacks_element'] = wasmExports['bloom_lacks_element'])(a0, a1, a2);
-var _bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = (a0) => (_bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = wasmExports['bloom_prop_bits_set'])(a0);
-var _pg_popcount = Module['_pg_popcount'] = (a0, a1) => (_pg_popcount = Module['_pg_popcount'] = wasmExports['pg_popcount'])(a0, a1);
-var _log = Module['_log'] = (a0) => (_log = Module['_log'] = wasmExports['log'])(a0);
-var _bms_make_singleton = Module['_bms_make_singleton'] = (a0) => (_bms_make_singleton = Module['_bms_make_singleton'] = wasmExports['bms_make_singleton'])(a0);
-var _pairingheap_free = Module['_pairingheap_free'] = (a0) => (_pairingheap_free = Module['_pairingheap_free'] = wasmExports['pairingheap_free'])(a0);
-var _estimate_expression_value = Module['_estimate_expression_value'] = (a0, a1) => (_estimate_expression_value = Module['_estimate_expression_value'] = wasmExports['estimate_expression_value'])(a0, a1);
-var _clamp_row_est = Module['_clamp_row_est'] = (a0) => (_clamp_row_est = Module['_clamp_row_est'] = wasmExports['clamp_row_est'])(a0);
-var _hash_bytes = Module['_hash_bytes'] = (a0, a1) => (_hash_bytes = Module['_hash_bytes'] = wasmExports['hash_bytes'])(a0, a1);
-var _MarkBufferDirty = Module['_MarkBufferDirty'] = (a0) => (_MarkBufferDirty = Module['_MarkBufferDirty'] = wasmExports['MarkBufferDirty'])(a0);
-var _UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = (a0) => (_UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = wasmExports['UnlockReleaseBuffer'])(a0);
-var _PageAddItemExtended = Module['_PageAddItemExtended'] = (a0, a1, a2, a3, a4) => (_PageAddItemExtended = Module['_PageAddItemExtended'] = wasmExports['PageAddItemExtended'])(a0, a1, a2, a3, a4);
-var _BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = (a0) => (_BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = wasmExports['BufferGetBlockNumber'])(a0);
-var _PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = (a0, a1, a2) => (_PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = wasmExports['PageIndexMultiDelete'])(a0, a1, a2);
-var __hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = (a0, a1) => (__hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = wasmExports['_hash_ovflblkno_to_bitno'])(a0, a1);
-var _LockBuffer = Module['_LockBuffer'] = (a0, a1) => (_LockBuffer = Module['_LockBuffer'] = wasmExports['LockBuffer'])(a0, a1);
-var __hash_relbuf = Module['__hash_relbuf'] = (a0, a1) => (__hash_relbuf = Module['__hash_relbuf'] = wasmExports['_hash_relbuf'])(a0, a1);
-var __hash_getbuf = Module['__hash_getbuf'] = (a0, a1, a2, a3) => (__hash_getbuf = Module['__hash_getbuf'] = wasmExports['_hash_getbuf'])(a0, a1, a2, a3);
+var _unlink = Module['_unlink'] = (a0) => (_unlink = Module['_unlink'] = wasmExports['unlink'])(a0);
+var _strcpy = Module['_strcpy'] = (a0, a1) => (_strcpy = Module['_strcpy'] = wasmExports['strcpy'])(a0, a1);
+var _wait_result_to_str = Module['_wait_result_to_str'] = (a0) => (_wait_result_to_str = Module['_wait_result_to_str'] = wasmExports['wait_result_to_str'])(a0);
+var _replace_percent_placeholders = Module['_replace_percent_placeholders'] = (a0, a1, a2, a3) => (_replace_percent_placeholders = Module['_replace_percent_placeholders'] = wasmExports['replace_percent_placeholders'])(a0, a1, a2, a3);
+var _strlcpy = Module['_strlcpy'] = (a0, a1, a2) => (_strlcpy = Module['_strlcpy'] = wasmExports['strlcpy'])(a0, a1, a2);
+var _fd_durable_rename = Module['_fd_durable_rename'] = (a0, a1, a2) => (_fd_durable_rename = Module['_fd_durable_rename'] = wasmExports['fd_durable_rename'])(a0, a1, a2);
+var _AllocateFile = Module['_AllocateFile'] = (a0, a1) => (_AllocateFile = Module['_AllocateFile'] = wasmExports['AllocateFile'])(a0, a1);
+var _FreeFile = Module['_FreeFile'] = (a0) => (_FreeFile = Module['_FreeFile'] = wasmExports['FreeFile'])(a0);
+var _errmsg_plural = Module['_errmsg_plural'] = (a0, a1, a2, a3) => (_errmsg_plural = Module['_errmsg_plural'] = wasmExports['errmsg_plural'])(a0, a1, a2, a3);
 var _XLogBeginInsert = Module['_XLogBeginInsert'] = () => (_XLogBeginInsert = Module['_XLogBeginInsert'] = wasmExports['XLogBeginInsert'])();
 var _XLogRegisterData = Module['_XLogRegisterData'] = (a0, a1) => (_XLogRegisterData = Module['_XLogRegisterData'] = wasmExports['XLogRegisterData'])(a0, a1);
 var _XLogInsert = Module['_XLogInsert'] = (a0, a1) => (_XLogInsert = Module['_XLogInsert'] = wasmExports['XLogInsert'])(a0, a1);
-var __hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = (a0, a1, a2, a3, a4) => (__hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = wasmExports['_hash_getbuf_with_strategy'])(a0, a1, a2, a3, a4);
-var _SearchSysCacheList = Module['_SearchSysCacheList'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheList = Module['_SearchSysCacheList'] = wasmExports['SearchSysCacheList'])(a0, a1, a2, a3, a4);
-var _check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = (a0) => (_check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = wasmExports['check_amoptsproc_signature'])(a0);
-var _format_operator = Module['_format_operator'] = (a0) => (_format_operator = Module['_format_operator'] = wasmExports['format_operator'])(a0);
-var _check_amop_signature = Module['_check_amop_signature'] = (a0, a1, a2, a3) => (_check_amop_signature = Module['_check_amop_signature'] = wasmExports['check_amop_signature'])(a0, a1, a2, a3);
-var _identify_opfamily_groups = Module['_identify_opfamily_groups'] = (a0, a1) => (_identify_opfamily_groups = Module['_identify_opfamily_groups'] = wasmExports['identify_opfamily_groups'])(a0, a1);
-var _ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = (a0) => (_ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = wasmExports['ReleaseCatCacheList'])(a0);
-var __hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = (a0) => (__hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = wasmExports['_hash_get_indextuple_hashkey'])(a0);
-var _PageGetFreeSpace = Module['_PageGetFreeSpace'] = (a0) => (_PageGetFreeSpace = Module['_PageGetFreeSpace'] = wasmExports['PageGetFreeSpace'])(a0);
-var _ReadBuffer = Module['_ReadBuffer'] = (a0, a1) => (_ReadBuffer = Module['_ReadBuffer'] = wasmExports['ReadBuffer'])(a0, a1);
-var _ReadBufferExtended = Module['_ReadBufferExtended'] = (a0, a1, a2, a3, a4) => (_ReadBufferExtended = Module['_ReadBufferExtended'] = wasmExports['ReadBufferExtended'])(a0, a1, a2, a3, a4);
-var _PageInit = Module['_PageInit'] = (a0, a1, a2) => (_PageInit = Module['_PageInit'] = wasmExports['PageInit'])(a0, a1, a2);
-var _RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = (a0, a1) => (_RelationGetNumberOfBlocksInFork = Module['_RelationGetNumberOfBlocksInFork'] = wasmExports['RelationGetNumberOfBlocksInFork'])(a0, a1);
-var _ExtendBufferedRel = Module['_ExtendBufferedRel'] = (a0, a1, a2, a3) => (_ExtendBufferedRel = Module['_ExtendBufferedRel'] = wasmExports['ExtendBufferedRel'])(a0, a1, a2, a3);
-var _index_getprocid = Module['_index_getprocid'] = (a0, a1, a2) => (_index_getprocid = Module['_index_getprocid'] = wasmExports['index_getprocid'])(a0, a1, a2);
-var _smgropen = Module['_smgropen'] = (a0, a1) => (_smgropen = Module['_smgropen'] = wasmExports['smgropen'])(a0, a1);
-var _smgrsetowner = Module['_smgrsetowner'] = (a0, a1) => (_smgrsetowner = Module['_smgrsetowner'] = wasmExports['smgrsetowner'])(a0, a1);
-var _hash_destroy = Module['_hash_destroy'] = (a0) => (_hash_destroy = Module['_hash_destroy'] = wasmExports['hash_destroy'])(a0);
-var _index_form_tuple = Module['_index_form_tuple'] = (a0, a1, a2) => (_index_form_tuple = Module['_index_form_tuple'] = wasmExports['index_form_tuple'])(a0, a1, a2);
-var _LockBufferForCleanup = Module['_LockBufferForCleanup'] = (a0) => (_LockBufferForCleanup = Module['_LockBufferForCleanup'] = wasmExports['LockBufferForCleanup'])(a0);
-var _RelationGetIndexScan = Module['_RelationGetIndexScan'] = (a0, a1, a2) => (_RelationGetIndexScan = Module['_RelationGetIndexScan'] = wasmExports['RelationGetIndexScan'])(a0, a1, a2);
-var _tbm_add_tuples = Module['_tbm_add_tuples'] = (a0, a1, a2, a3) => (_tbm_add_tuples = Module['_tbm_add_tuples'] = wasmExports['tbm_add_tuples'])(a0, a1, a2, a3);
-var _vacuum_delay_point = Module['_vacuum_delay_point'] = () => (_vacuum_delay_point = Module['_vacuum_delay_point'] = wasmExports['vacuum_delay_point'])();
-var _index_getprocinfo = Module['_index_getprocinfo'] = (a0, a1, a2) => (_index_getprocinfo = Module['_index_getprocinfo'] = wasmExports['index_getprocinfo'])(a0, a1, a2);
-var _build_reloptions = Module['_build_reloptions'] = (a0, a1, a2, a3, a4, a5) => (_build_reloptions = Module['_build_reloptions'] = wasmExports['build_reloptions'])(a0, a1, a2, a3, a4, a5);
-var _TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = (a0, a1) => (_TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = wasmExports['TestForOldSnapshot_impl'])(a0, a1);
-var _pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = (a0) => (_pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = wasmExports['pgstat_assoc_relation'])(a0);
-var _visibilitymap_clear = Module['_visibilitymap_clear'] = (a0, a1, a2, a3) => (_visibilitymap_clear = Module['_visibilitymap_clear'] = wasmExports['visibilitymap_clear'])(a0, a1, a2, a3);
-var _visibilitymap_pin = Module['_visibilitymap_pin'] = (a0, a1, a2) => (_visibilitymap_pin = Module['_visibilitymap_pin'] = wasmExports['visibilitymap_pin'])(a0, a1, a2);
-var _smgrexists = Module['_smgrexists'] = (a0, a1) => (_smgrexists = Module['_smgrexists'] = wasmExports['smgrexists'])(a0, a1);
-var _visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = (a0, a1) => (_visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = wasmExports['visibilitymap_prepare_truncate'])(a0, a1);
-var _log_newpage_buffer = Module['_log_newpage_buffer'] = (a0, a1) => (_log_newpage_buffer = Module['_log_newpage_buffer'] = wasmExports['log_newpage_buffer'])(a0, a1);
-var _HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = (a0, a1, a2) => (_HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = wasmExports['HeapTupleSatisfiesVisibility'])(a0, a1, a2);
-var _HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = (a0) => (_HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = wasmExports['HeapTupleGetUpdateXid'])(a0);
-var _HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = (a0, a1, a2) => (_HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = wasmExports['HeapTupleSatisfiesVacuum'])(a0, a1, a2);
-var _GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = (a0) => (_GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = wasmExports['GetOldestNonRemovableTransactionId'])(a0);
-var _PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = (a0) => (_PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = wasmExports['PageGetHeapFreeSpace'])(a0);
-var _vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = (a0, a1, a2, a3) => (_vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = wasmExports['vac_estimate_reltuples'])(a0, a1, a2, a3);
-var _GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = (a0, a1) => (_GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = wasmExports['GetRecordedFreeSpace'])(a0, a1);
-var _heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = (a0) => (_heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = wasmExports['heap_tuple_needs_eventual_freeze'])(a0);
-var _hash_seq_init = Module['_hash_seq_init'] = (a0, a1) => (_hash_seq_init = Module['_hash_seq_init'] = wasmExports['hash_seq_init'])(a0, a1);
-var _hash_seq_search = Module['_hash_seq_search'] = (a0) => (_hash_seq_search = Module['_hash_seq_search'] = wasmExports['hash_seq_search'])(a0);
-var _ftruncate = Module['_ftruncate'] = (a0, a1) => (_ftruncate = Module['_ftruncate'] = wasmExports['ftruncate'])(a0, a1);
-var _pwrite = Module['_pwrite'] = (a0, a1, a2, a3) => (_pwrite = Module['_pwrite'] = wasmExports['pwrite'])(a0, a1, a2, a3);
-var _fd_fsync_fname = Module['_fd_fsync_fname'] = (a0, a1) => (_fd_fsync_fname = Module['_fd_fsync_fname'] = wasmExports['fd_fsync_fname'])(a0, a1);
 var _GetMultiXactIdMembers = Module['_GetMultiXactIdMembers'] = (a0, a1, a2, a3) => (_GetMultiXactIdMembers = Module['_GetMultiXactIdMembers'] = wasmExports['GetMultiXactIdMembers'])(a0, a1, a2, a3);
-var _GetAccessStrategy = Module['_GetAccessStrategy'] = (a0) => (_GetAccessStrategy = Module['_GetAccessStrategy'] = wasmExports['GetAccessStrategy'])(a0);
-var _FreeAccessStrategy = Module['_FreeAccessStrategy'] = (a0) => (_FreeAccessStrategy = Module['_FreeAccessStrategy'] = wasmExports['FreeAccessStrategy'])(a0);
-var _HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = (a0, a1, a2) => (_HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = wasmExports['HeapTupleSatisfiesUpdate'])(a0, a1, a2);
-var _TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = (a0) => (_TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = wasmExports['TransactionIdDidCommit'])(a0);
 var _TransactionIdIsInProgress = Module['_TransactionIdIsInProgress'] = (a0) => (_TransactionIdIsInProgress = Module['_TransactionIdIsInProgress'] = wasmExports['TransactionIdIsInProgress'])(a0);
-var _datumIsEqual = Module['_datumIsEqual'] = (a0, a1, a2, a3) => (_datumIsEqual = Module['_datumIsEqual'] = wasmExports['datumIsEqual'])(a0, a1, a2, a3);
-var _MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = (a0, a1) => (_MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = wasmExports['MultiXactIdPrecedes'])(a0, a1);
-var _XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = (a0, a1, a2, a3, a4, a5) => (_XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = wasmExports['XLogRecGetBlockTagExtended'])(a0, a1, a2, a3, a4, a5);
-var _ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = (a0) => (_ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = wasmExports['ConditionalLockBuffer'])(a0);
-var _toast_open_indexes = Module['_toast_open_indexes'] = (a0, a1, a2, a3) => (_toast_open_indexes = Module['_toast_open_indexes'] = wasmExports['toast_open_indexes'])(a0, a1, a2, a3);
-var _init_toast_snapshot = Module['_init_toast_snapshot'] = (a0) => (_init_toast_snapshot = Module['_init_toast_snapshot'] = wasmExports['init_toast_snapshot'])(a0);
-var _systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = (a0, a1, a2, a3, a4) => (_systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = wasmExports['systable_beginscan_ordered'])(a0, a1, a2, a3, a4);
-var _systable_getnext_ordered = Module['_systable_getnext_ordered'] = (a0, a1) => (_systable_getnext_ordered = Module['_systable_getnext_ordered'] = wasmExports['systable_getnext_ordered'])(a0, a1);
-var _systable_endscan_ordered = Module['_systable_endscan_ordered'] = (a0) => (_systable_endscan_ordered = Module['_systable_endscan_ordered'] = wasmExports['systable_endscan_ordered'])(a0);
-var _toast_close_indexes = Module['_toast_close_indexes'] = (a0, a1, a2) => (_toast_close_indexes = Module['_toast_close_indexes'] = wasmExports['toast_close_indexes'])(a0, a1, a2);
-var _GenerationContextCreate = Module['_GenerationContextCreate'] = (a0, a1, a2, a3, a4) => (_GenerationContextCreate = Module['_GenerationContextCreate'] = wasmExports['GenerationContextCreate'])(a0, a1, a2, a3, a4);
-var _LockRelationForExtension = Module['_LockRelationForExtension'] = (a0, a1) => (_LockRelationForExtension = Module['_LockRelationForExtension'] = wasmExports['LockRelationForExtension'])(a0, a1);
-var _UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = (a0, a1) => (_UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = wasmExports['UnlockRelationForExtension'])(a0, a1);
-var _RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = (a0, a1) => (_RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = wasmExports['RecordFreeIndexPage'])(a0, a1);
-var _IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = (a0) => (_IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = wasmExports['IndexFreeSpaceMapVacuum'])(a0);
-var _gistcheckpage = Module['_gistcheckpage'] = (a0, a1) => (_gistcheckpage = Module['_gistcheckpage'] = wasmExports['gistcheckpage'])(a0, a1);
-var _nocache_index_getattr = Module['_nocache_index_getattr'] = (a0, a1, a2) => (_nocache_index_getattr = Module['_nocache_index_getattr'] = wasmExports['nocache_index_getattr'])(a0, a1, a2);
-var _GetFreeIndexPage = Module['_GetFreeIndexPage'] = (a0) => (_GetFreeIndexPage = Module['_GetFreeIndexPage'] = wasmExports['GetFreeIndexPage'])(a0);
-var _check_amproc_signature = Module['_check_amproc_signature'] = (a0, a1, a2, a3, a4, a5) => (_check_amproc_signature = Module['_check_amproc_signature'] = wasmExports['check_amproc_signature'])(a0, a1, a2, a3, a4, a5);
-var _DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = (a0, a1, a2, a3) => (_DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = wasmExports['DirectFunctionCall2Coll'])(a0, a1, a2, a3);
-var _float_overflow_error = Module['_float_overflow_error'] = () => (_float_overflow_error = Module['_float_overflow_error'] = wasmExports['float_overflow_error'])();
-var _float_underflow_error = Module['_float_underflow_error'] = () => (_float_underflow_error = Module['_float_underflow_error'] = wasmExports['float_underflow_error'])();
-var _DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = (a0, a1, a2, a3, a4, a5, a6) => (_DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = wasmExports['DirectFunctionCall5Coll'])(a0, a1, a2, a3, a4, a5, a6);
-var _Float8GetDatum = Module['_Float8GetDatum'] = (a0) => (_Float8GetDatum = Module['_Float8GetDatum'] = wasmExports['Float8GetDatum'])(a0);
-var _fmgr_info_copy = Module['_fmgr_info_copy'] = (a0, a1, a2) => (_fmgr_info_copy = Module['_fmgr_info_copy'] = wasmExports['fmgr_info_copy'])(a0, a1, a2);
-var _PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = (a0, a1, a2, a3) => (_PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = wasmExports['PageIndexTupleOverwrite'])(a0, a1, a2, a3);
-var _log_newpage_range = Module['_log_newpage_range'] = (a0, a1, a2, a3, a4) => (_log_newpage_range = Module['_log_newpage_range'] = wasmExports['log_newpage_range'])(a0, a1, a2, a3, a4);
-var _pow = Module['_pow'] = (a0, a1) => (_pow = Module['_pow'] = wasmExports['pow'])(a0, a1);
-var _CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = (a0) => (_CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = wasmExports['CreateTupleDescCopyConstr'])(a0);
-var _PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = (a0) => (_PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = wasmExports['PageGetExactFreeSpace'])(a0);
-var _brin_build_desc = Module['_brin_build_desc'] = (a0) => (_brin_build_desc = Module['_brin_build_desc'] = wasmExports['brin_build_desc'])(a0);
-var _brin_deform_tuple = Module['_brin_deform_tuple'] = (a0, a1, a2) => (_brin_deform_tuple = Module['_brin_deform_tuple'] = wasmExports['brin_deform_tuple'])(a0, a1, a2);
-var _IndexGetRelation = Module['_IndexGetRelation'] = (a0, a1) => (_IndexGetRelation = Module['_IndexGetRelation'] = wasmExports['IndexGetRelation'])(a0, a1);
-var _FunctionCall4Coll = Module['_FunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_FunctionCall4Coll = Module['_FunctionCall4Coll'] = wasmExports['FunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
-var _brin_free_desc = Module['_brin_free_desc'] = (a0) => (_brin_free_desc = Module['_brin_free_desc'] = wasmExports['brin_free_desc'])(a0);
-var _GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = (a0, a1) => (_GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = wasmExports['GetUserIdAndSecContext'])(a0, a1);
-var _SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = (a0, a1) => (_SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = wasmExports['SetUserIdAndSecContext'])(a0, a1);
-var _NewGUCNestLevel = Module['_NewGUCNestLevel'] = () => (_NewGUCNestLevel = Module['_NewGUCNestLevel'] = wasmExports['NewGUCNestLevel'])();
-var _AtEOXact_GUC = Module['_AtEOXact_GUC'] = (a0, a1) => (_AtEOXact_GUC = Module['_AtEOXact_GUC'] = wasmExports['AtEOXact_GUC'])(a0, a1);
-var _get_fn_opclass_options = Module['_get_fn_opclass_options'] = (a0) => (_get_fn_opclass_options = Module['_get_fn_opclass_options'] = wasmExports['get_fn_opclass_options'])(a0);
-var _init_local_reloptions = Module['_init_local_reloptions'] = (a0, a1) => (_init_local_reloptions = Module['_init_local_reloptions'] = wasmExports['init_local_reloptions'])(a0, a1);
-var _numeric_sub = Module['_numeric_sub'] = (a0) => (_numeric_sub = Module['_numeric_sub'] = wasmExports['numeric_sub'])(a0);
-var _qsort_arg = Module['_qsort_arg'] = (a0, a1, a2, a3, a4) => (_qsort_arg = Module['_qsort_arg'] = wasmExports['qsort_arg'])(a0, a1, a2, a3, a4);
-var _add_local_int_reloption = Module['_add_local_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_local_int_reloption = Module['_add_local_int_reloption'] = wasmExports['add_local_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
-var _OutputFunctionCall = Module['_OutputFunctionCall'] = (a0, a1) => (_OutputFunctionCall = Module['_OutputFunctionCall'] = wasmExports['OutputFunctionCall'])(a0, a1);
-var _accumArrayResult = Module['_accumArrayResult'] = (a0, a1, a2, a3, a4) => (_accumArrayResult = Module['_accumArrayResult'] = wasmExports['accumArrayResult'])(a0, a1, a2, a3, a4);
-var _makeArrayResult = Module['_makeArrayResult'] = (a0, a1) => (_makeArrayResult = Module['_makeArrayResult'] = wasmExports['makeArrayResult'])(a0, a1);
-var _hash_get_num_entries = Module['_hash_get_num_entries'] = (a0) => (_hash_get_num_entries = Module['_hash_get_num_entries'] = wasmExports['hash_get_num_entries'])(a0);
-var _RestoreBlockImage = Module['_RestoreBlockImage'] = (a0, a1, a2) => (_RestoreBlockImage = Module['_RestoreBlockImage'] = wasmExports['RestoreBlockImage'])(a0, a1, a2);
-var _wal_segment_open = Module['_wal_segment_open'] = (a0, a1, a2) => (_wal_segment_open = Module['_wal_segment_open'] = wasmExports['wal_segment_open'])(a0, a1, a2);
-var _wal_segment_close = Module['_wal_segment_close'] = (a0) => (_wal_segment_close = Module['_wal_segment_close'] = wasmExports['wal_segment_close'])(a0);
-var _close = Module['_close'] = (a0) => (_close = Module['_close'] = wasmExports['close'])(a0);
-var _GetFlushRecPtr = Module['_GetFlushRecPtr'] = (a0) => (_GetFlushRecPtr = Module['_GetFlushRecPtr'] = wasmExports['GetFlushRecPtr'])(a0);
-var _GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = (a0) => (_GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = wasmExports['GetXLogReplayRecPtr'])(a0);
+var _TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = (a0) => (_TransactionIdDidCommit = Module['_TransactionIdDidCommit'] = wasmExports['TransactionIdDidCommit'])(a0);
 var _pg_usleep = Module['_pg_usleep'] = (a0) => (_pg_usleep = Module['_pg_usleep'] = wasmExports['pg_usleep'])(a0);
-var _read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = (a0, a1, a2, a3, a4) => (_read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = wasmExports['read_local_xlog_page_no_wait'])(a0, a1, a2, a3, a4);
-var _dsm_create = Module['_dsm_create'] = (a0, a1) => (_dsm_create = Module['_dsm_create'] = wasmExports['dsm_create'])(a0, a1);
-var _dsm_segment_address = Module['_dsm_segment_address'] = (a0) => (_dsm_segment_address = Module['_dsm_segment_address'] = wasmExports['dsm_segment_address'])(a0);
-var _WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = (a0) => (_WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = wasmExports['WaitForBackgroundWorkerShutdown'])(a0);
-var _dsm_segment_handle = Module['_dsm_segment_handle'] = (a0) => (_dsm_segment_handle = Module['_dsm_segment_handle'] = wasmExports['dsm_segment_handle'])(a0);
-var _RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = (a0, a1) => (_RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = wasmExports['RegisterDynamicBackgroundWorker'])(a0, a1);
-var _WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = (a0) => (_WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = wasmExports['WaitForParallelWorkersToAttach'])(a0);
-var _dsm_detach = Module['_dsm_detach'] = (a0) => (_dsm_detach = Module['_dsm_detach'] = wasmExports['dsm_detach'])(a0);
-var _BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = () => (_BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = wasmExports['BackgroundWorkerUnblockSignals'])();
-var _dsm_attach = Module['_dsm_attach'] = (a0) => (_dsm_attach = Module['_dsm_attach'] = wasmExports['dsm_attach'])(a0);
-var _BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = (a0, a1, a2) => (_BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = wasmExports['BackgroundWorkerInitializeConnectionByOid'])(a0, a1, a2);
-var _GenericXLogStart = Module['_GenericXLogStart'] = (a0) => (_GenericXLogStart = Module['_GenericXLogStart'] = wasmExports['GenericXLogStart'])(a0);
-var _GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = (a0, a1, a2) => (_GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = wasmExports['GenericXLogRegisterBuffer'])(a0, a1, a2);
-var _GenericXLogFinish = Module['_GenericXLogFinish'] = (a0) => (_GenericXLogFinish = Module['_GenericXLogFinish'] = wasmExports['GenericXLogFinish'])(a0);
-var _GenericXLogAbort = Module['_GenericXLogAbort'] = (a0) => (_GenericXLogAbort = Module['_GenericXLogAbort'] = wasmExports['GenericXLogAbort'])(a0);
+var _TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = (a0) => (_TransactionIdIsCurrentTransactionId = Module['_TransactionIdIsCurrentTransactionId'] = wasmExports['TransactionIdIsCurrentTransactionId'])(a0);
+var _ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = (a0, a1) => (_ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = wasmExports['ReadMultiXactIdRange'])(a0, a1);
+var _initStringInfo = Module['_initStringInfo'] = (a0) => (_initStringInfo = Module['_initStringInfo'] = wasmExports['initStringInfo'])(a0);
+var _appendStringInfo = Module['_appendStringInfo'] = (a0, a1, a2) => (_appendStringInfo = Module['_appendStringInfo'] = wasmExports['appendStringInfo'])(a0, a1, a2);
+var _appendStringInfoChar = Module['_appendStringInfoChar'] = (a0, a1) => (_appendStringInfoChar = Module['_appendStringInfoChar'] = wasmExports['appendStringInfoChar'])(a0, a1);
+var _MemoryContextAlloc = Module['_MemoryContextAlloc'] = (a0, a1) => (_MemoryContextAlloc = Module['_MemoryContextAlloc'] = wasmExports['MemoryContextAlloc'])(a0, a1);
+var _MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = (a0, a1) => (_MultiXactIdPrecedes = Module['_MultiXactIdPrecedes'] = wasmExports['MultiXactIdPrecedes'])(a0, a1);
+var _add_size = Module['_add_size'] = (a0, a1) => (_add_size = Module['_add_size'] = wasmExports['add_size'])(a0, a1);
 var _ShmemInitStruct = Module['_ShmemInitStruct'] = (a0, a1, a2) => (_ShmemInitStruct = Module['_ShmemInitStruct'] = wasmExports['ShmemInitStruct'])(a0, a1, a2);
+var _MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = (a0, a1) => (_MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = wasmExports['MultiXactIdPrecedesOrEquals'])(a0, a1);
 var _init_MultiFuncCall = Module['_init_MultiFuncCall'] = (a0) => (_init_MultiFuncCall = Module['_init_MultiFuncCall'] = wasmExports['init_MultiFuncCall'])(a0);
+var _get_call_result_type = Module['_get_call_result_type'] = (a0, a1, a2) => (_get_call_result_type = Module['_get_call_result_type'] = wasmExports['get_call_result_type'])(a0, a1, a2);
+var _TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = (a0) => (_TupleDescGetAttInMetadata = Module['_TupleDescGetAttInMetadata'] = wasmExports['TupleDescGetAttInMetadata'])(a0);
 var _per_MultiFuncCall = Module['_per_MultiFuncCall'] = (a0) => (_per_MultiFuncCall = Module['_per_MultiFuncCall'] = wasmExports['per_MultiFuncCall'])(a0);
+var _BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = (a0, a1) => (_BuildTupleFromCStrings = Module['_BuildTupleFromCStrings'] = wasmExports['BuildTupleFromCStrings'])(a0, a1);
+var _HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = (a0) => (_HeapTupleHeaderGetDatum = Module['_HeapTupleHeaderGetDatum'] = wasmExports['HeapTupleHeaderGetDatum'])(a0);
 var _end_MultiFuncCall = Module['_end_MultiFuncCall'] = (a0, a1) => (_end_MultiFuncCall = Module['_end_MultiFuncCall'] = wasmExports['end_MultiFuncCall'])(a0, a1);
+var _before_shmem_exit = Module['_before_shmem_exit'] = (a0, a1) => (_before_shmem_exit = Module['_before_shmem_exit'] = wasmExports['before_shmem_exit'])(a0, a1);
+var _CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = (a0) => (_CreateTemplateTupleDesc = Module['_CreateTemplateTupleDesc'] = wasmExports['CreateTemplateTupleDesc'])(a0);
+var _TupleDescInitEntry = Module['_TupleDescInitEntry'] = (a0, a1, a2, a3, a4, a5) => (_TupleDescInitEntry = Module['_TupleDescInitEntry'] = wasmExports['TupleDescInitEntry'])(a0, a1, a2, a3, a4, a5);
+var _BlessTupleDesc = Module['_BlessTupleDesc'] = (a0) => (_BlessTupleDesc = Module['_BlessTupleDesc'] = wasmExports['BlessTupleDesc'])(a0);
+var _cstring_to_text = Module['_cstring_to_text'] = (a0) => (_cstring_to_text = Module['_cstring_to_text'] = wasmExports['cstring_to_text'])(a0);
+var _heap_form_tuple = Module['_heap_form_tuple'] = (a0, a1, a2) => (_heap_form_tuple = Module['_heap_form_tuple'] = wasmExports['heap_form_tuple'])(a0, a1, a2);
+var _OpenTransientFile = Module['_OpenTransientFile'] = (a0, a1) => (_OpenTransientFile = Module['_OpenTransientFile'] = wasmExports['OpenTransientFile'])(a0, a1);
+var _fstat = Module['_fstat'] = (a0, a1) => (_fstat = Module['_fstat'] = wasmExports['fstat'])(a0, a1);
 var _read = Module['_read'] = (a0, a1, a2) => (_read = Module['_read'] = wasmExports['read'])(a0, a1, a2);
+var _CloseTransientFile = Module['_CloseTransientFile'] = (a0) => (_CloseTransientFile = Module['_CloseTransientFile'] = wasmExports['CloseTransientFile'])(a0);
 var _superuser_arg = Module['_superuser_arg'] = (a0) => (_superuser_arg = Module['_superuser_arg'] = wasmExports['superuser_arg'])(a0);
+var _GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = () => (_GetCurrentTimestamp = Module['_GetCurrentTimestamp'] = wasmExports['GetCurrentTimestamp'])();
+var _wal_segment_close = Module['_wal_segment_close'] = (a0) => (_wal_segment_close = Module['_wal_segment_close'] = wasmExports['wal_segment_close'])(a0);
+var _wal_segment_open = Module['_wal_segment_open'] = (a0, a1, a2) => (_wal_segment_open = Module['_wal_segment_open'] = wasmExports['wal_segment_open'])(a0, a1, a2);
 var _XLogReaderAllocate = Module['_XLogReaderAllocate'] = (a0, a1, a2, a3) => (_XLogReaderAllocate = Module['_XLogReaderAllocate'] = wasmExports['XLogReaderAllocate'])(a0, a1, a2, a3);
 var _XLogReadRecord = Module['_XLogReadRecord'] = (a0, a1) => (_XLogReadRecord = Module['_XLogReadRecord'] = wasmExports['XLogReadRecord'])(a0, a1);
 var _XLogReaderFree = Module['_XLogReaderFree'] = (a0) => (_XLogReaderFree = Module['_XLogReaderFree'] = wasmExports['XLogReaderFree'])(a0);
 var _write = Module['_write'] = (a0, a1, a2) => (_write = Module['_write'] = wasmExports['write'])(a0, a1, a2);
-var _ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = (a0, a1) => (_ReadMultiXactIdRange = Module['_ReadMultiXactIdRange'] = wasmExports['ReadMultiXactIdRange'])(a0, a1);
-var _MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = (a0, a1) => (_MultiXactIdPrecedesOrEquals = Module['_MultiXactIdPrecedesOrEquals'] = wasmExports['MultiXactIdPrecedesOrEquals'])(a0, a1);
-var _numeric_in = Module['_numeric_in'] = (a0) => (_numeric_in = Module['_numeric_in'] = wasmExports['numeric_in'])(a0);
-var _DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = (a0, a1, a2, a3, a4) => (_DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = wasmExports['DirectFunctionCall3Coll'])(a0, a1, a2, a3, a4);
-var _AllocateFile = Module['_AllocateFile'] = (a0, a1) => (_AllocateFile = Module['_AllocateFile'] = wasmExports['AllocateFile'])(a0, a1);
-var _FreeFile = Module['_FreeFile'] = (a0) => (_FreeFile = Module['_FreeFile'] = wasmExports['FreeFile'])(a0);
-var _InitMaterializedSRF = Module['_InitMaterializedSRF'] = (a0, a1) => (_InitMaterializedSRF = Module['_InitMaterializedSRF'] = wasmExports['InitMaterializedSRF'])(a0, a1);
-var _XLogRecStoreStats = Module['_XLogRecStoreStats'] = (a0, a1) => (_XLogRecStoreStats = Module['_XLogRecStoreStats'] = wasmExports['XLogRecStoreStats'])(a0, a1);
+var _fd_fsync_fname = Module['_fd_fsync_fname'] = (a0, a1) => (_fd_fsync_fname = Module['_fd_fsync_fname'] = wasmExports['fd_fsync_fname'])(a0, a1);
+var _AllocateDir = Module['_AllocateDir'] = (a0) => (_AllocateDir = Module['_AllocateDir'] = wasmExports['AllocateDir'])(a0);
+var _ReadDir = Module['_ReadDir'] = (a0, a1) => (_ReadDir = Module['_ReadDir'] = wasmExports['ReadDir'])(a0, a1);
+var _strtoul = Module['_strtoul'] = (a0, a1, a2) => (_strtoul = Module['_strtoul'] = wasmExports['strtoul'])(a0, a1, a2);
+var _FreeDir = Module['_FreeDir'] = (a0) => (_FreeDir = Module['_FreeDir'] = wasmExports['FreeDir'])(a0);
+var _access = Module['_access'] = (a0, a1) => (_access = Module['_access'] = wasmExports['access'])(a0, a1);
+var _palloc_extended = Module['_palloc_extended'] = (a0, a1) => (_palloc_extended = Module['_palloc_extended'] = wasmExports['palloc_extended'])(a0, a1);
 var _XLogFindNextRecord = Module['_XLogFindNextRecord'] = (a0, a1) => (_XLogFindNextRecord = Module['_XLogFindNextRecord'] = wasmExports['XLogFindNextRecord'])(a0, a1);
-var _fgets = Module['_fgets'] = (a0, a1, a2) => (_fgets = Module['_fgets'] = wasmExports['fgets'])(a0, a1, a2);
-var _getpid = Module['_getpid'] = () => (_getpid = Module['_getpid'] = wasmExports['getpid'])();
+var _XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = (a0, a1, a2, a3, a4, a5) => (_XLogRecGetBlockTagExtended = Module['_XLogRecGetBlockTagExtended'] = wasmExports['XLogRecGetBlockTagExtended'])(a0, a1, a2, a3, a4, a5);
+var _RestoreBlockImage = Module['_RestoreBlockImage'] = (a0, a1, a2) => (_RestoreBlockImage = Module['_RestoreBlockImage'] = wasmExports['RestoreBlockImage'])(a0, a1, a2);
+var _LWLockInitialize = Module['_LWLockInitialize'] = (a0, a1) => (_LWLockInitialize = Module['_LWLockInitialize'] = wasmExports['LWLockInitialize'])(a0, a1);
+var _pwrite = Module['_pwrite'] = (a0, a1, a2, a3) => (_pwrite = Module['_pwrite'] = wasmExports['pwrite'])(a0, a1, a2, a3);
 var _lseek = Module['_lseek'] = (a0, a1, a2) => (_lseek = Module['_lseek'] = wasmExports['lseek'])(a0, a1, a2);
 var _strtol = Module['_strtol'] = (a0, a1, a2) => (_strtol = Module['_strtol'] = wasmExports['strtol'])(a0, a1, a2);
-var _wait_result_to_str = Module['_wait_result_to_str'] = (a0) => (_wait_result_to_str = Module['_wait_result_to_str'] = wasmExports['wait_result_to_str'])(a0);
-var _replace_percent_placeholders = Module['_replace_percent_placeholders'] = (a0, a1, a2, a3) => (_replace_percent_placeholders = Module['_replace_percent_placeholders'] = wasmExports['replace_percent_placeholders'])(a0, a1, a2, a3);
+var _CreateParallelContext = Module['_CreateParallelContext'] = (a0, a1, a2) => (_CreateParallelContext = Module['_CreateParallelContext'] = wasmExports['CreateParallelContext'])(a0, a1, a2);
+var _GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = () => (_GetCurrentSubTransactionId = Module['_GetCurrentSubTransactionId'] = wasmExports['GetCurrentSubTransactionId'])();
+var _InitializeParallelDSM = Module['_InitializeParallelDSM'] = (a0) => (_InitializeParallelDSM = Module['_InitializeParallelDSM'] = wasmExports['InitializeParallelDSM'])(a0);
+var _GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = () => (_GetTransactionSnapshot = Module['_GetTransactionSnapshot'] = wasmExports['GetTransactionSnapshot'])();
+var _dsm_create = Module['_dsm_create'] = (a0, a1) => (_dsm_create = Module['_dsm_create'] = wasmExports['dsm_create'])(a0, a1);
+var _dsm_segment_address = Module['_dsm_segment_address'] = (a0) => (_dsm_segment_address = Module['_dsm_segment_address'] = wasmExports['dsm_segment_address'])(a0);
+var _shm_toc_allocate = Module['_shm_toc_allocate'] = (a0, a1) => (_shm_toc_allocate = Module['_shm_toc_allocate'] = wasmExports['shm_toc_allocate'])(a0, a1);
+var _GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = (a0, a1) => (_GetUserIdAndSecContext = Module['_GetUserIdAndSecContext'] = wasmExports['GetUserIdAndSecContext'])(a0, a1);
+var _s_init_lock_sema = Module['_s_init_lock_sema'] = (a0, a1) => (_s_init_lock_sema = Module['_s_init_lock_sema'] = wasmExports['s_init_lock_sema'])(a0, a1);
+var _shm_toc_insert = Module['_shm_toc_insert'] = (a0, a1, a2) => (_shm_toc_insert = Module['_shm_toc_insert'] = wasmExports['shm_toc_insert'])(a0, a1, a2);
+var _WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = (a0) => (_WaitForParallelWorkersToFinish = Module['_WaitForParallelWorkersToFinish'] = wasmExports['WaitForParallelWorkersToFinish'])(a0);
+var _shm_toc_lookup = Module['_shm_toc_lookup'] = (a0, a1, a2) => (_shm_toc_lookup = Module['_shm_toc_lookup'] = wasmExports['shm_toc_lookup'])(a0, a1, a2);
+var _WaitLatch = Module['_WaitLatch'] = (a0, a1, a2, a3) => (_WaitLatch = Module['_WaitLatch'] = wasmExports['WaitLatch'])(a0, a1, a2, a3);
+var _ResetLatch = Module['_ResetLatch'] = (a0) => (_ResetLatch = Module['_ResetLatch'] = wasmExports['ResetLatch'])(a0);
+var _WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = (a0) => (_WaitForBackgroundWorkerShutdown = Module['_WaitForBackgroundWorkerShutdown'] = wasmExports['WaitForBackgroundWorkerShutdown'])(a0);
+var _LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = (a0) => (_LaunchParallelWorkers = Module['_LaunchParallelWorkers'] = wasmExports['LaunchParallelWorkers'])(a0);
+var _dsm_segment_handle = Module['_dsm_segment_handle'] = (a0) => (_dsm_segment_handle = Module['_dsm_segment_handle'] = wasmExports['dsm_segment_handle'])(a0);
+var _RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = (a0, a1) => (_RegisterDynamicBackgroundWorker = Module['_RegisterDynamicBackgroundWorker'] = wasmExports['RegisterDynamicBackgroundWorker'])(a0, a1);
+var _WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = (a0) => (_WaitForParallelWorkersToAttach = Module['_WaitForParallelWorkersToAttach'] = wasmExports['WaitForParallelWorkersToAttach'])(a0);
+var _DestroyParallelContext = Module['_DestroyParallelContext'] = (a0) => (_DestroyParallelContext = Module['_DestroyParallelContext'] = wasmExports['DestroyParallelContext'])(a0);
+var _dsm_detach = Module['_dsm_detach'] = (a0) => (_dsm_detach = Module['_dsm_detach'] = wasmExports['dsm_detach'])(a0);
+var _appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = (a0, a1, a2) => (_appendBinaryStringInfo = Module['_appendBinaryStringInfo'] = wasmExports['appendBinaryStringInfo'])(a0, a1, a2);
+var _pq_getmsgint = Module['_pq_getmsgint'] = (a0, a1) => (_pq_getmsgint = Module['_pq_getmsgint'] = wasmExports['pq_getmsgint'])(a0, a1);
+var _die = Module['_die'] = (a0) => (_die = Module['_die'] = wasmExports['die'])(a0);
+var _pqsignal = Module['_pqsignal'] = (a0, a1) => (_pqsignal = Module['_pqsignal'] = wasmExports['pqsignal'])(a0, a1);
+var _BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = () => (_BackgroundWorkerUnblockSignals = Module['_BackgroundWorkerUnblockSignals'] = wasmExports['BackgroundWorkerUnblockSignals'])();
+var _dsm_attach = Module['_dsm_attach'] = (a0) => (_dsm_attach = Module['_dsm_attach'] = wasmExports['dsm_attach'])(a0);
+var _enlargeStringInfo = Module['_enlargeStringInfo'] = (a0, a1) => (_enlargeStringInfo = Module['_enlargeStringInfo'] = wasmExports['enlargeStringInfo'])(a0, a1);
+var _BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = (a0, a1, a2) => (_BackgroundWorkerInitializeConnectionByOid = Module['_BackgroundWorkerInitializeConnectionByOid'] = wasmExports['BackgroundWorkerInitializeConnectionByOid'])(a0, a1, a2);
+var _GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = () => (_GetDatabaseEncoding = Module['_GetDatabaseEncoding'] = wasmExports['GetDatabaseEncoding'])();
+var _StartTransactionCommand = Module['_StartTransactionCommand'] = () => (_StartTransactionCommand = Module['_StartTransactionCommand'] = wasmExports['StartTransactionCommand'])();
+var _CommitTransactionCommand = Module['_CommitTransactionCommand'] = () => (_CommitTransactionCommand = Module['_CommitTransactionCommand'] = wasmExports['CommitTransactionCommand'])();
+var _PushActiveSnapshot = Module['_PushActiveSnapshot'] = (a0) => (_PushActiveSnapshot = Module['_PushActiveSnapshot'] = wasmExports['PushActiveSnapshot'])(a0);
+var _SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = (a0, a1) => (_SetUserIdAndSecContext = Module['_SetUserIdAndSecContext'] = wasmExports['SetUserIdAndSecContext'])(a0, a1);
+var _EnterParallelMode = Module['_EnterParallelMode'] = () => (_EnterParallelMode = Module['_EnterParallelMode'] = wasmExports['EnterParallelMode'])();
+var _ExitParallelMode = Module['_ExitParallelMode'] = () => (_ExitParallelMode = Module['_ExitParallelMode'] = wasmExports['ExitParallelMode'])();
+var _PopActiveSnapshot = Module['_PopActiveSnapshot'] = () => (_PopActiveSnapshot = Module['_PopActiveSnapshot'] = wasmExports['PopActiveSnapshot'])();
+var _tas_sema = Module['_tas_sema'] = (a0) => (_tas_sema = Module['_tas_sema'] = wasmExports['tas_sema'])(a0);
+var _s_lock = Module['_s_lock'] = (a0, a1, a2, a3) => (_s_lock = Module['_s_lock'] = wasmExports['s_lock'])(a0, a1, a2, a3);
+var _s_unlock_sema = Module['_s_unlock_sema'] = (a0) => (_s_unlock_sema = Module['_s_unlock_sema'] = wasmExports['s_unlock_sema'])(a0);
+var _XLogRecStoreStats = Module['_XLogRecStoreStats'] = (a0, a1) => (_XLogRecStoreStats = Module['_XLogRecStoreStats'] = wasmExports['XLogRecStoreStats'])(a0, a1);
+var _clock_gettime = Module['_clock_gettime'] = (a0, a1) => (_clock_gettime = Module['_clock_gettime'] = wasmExports['clock_gettime'])(a0, a1);
+var _time = Module['_time'] = (a0) => (_time = Module['_time'] = wasmExports['time'])(a0);
+var _close = Module['_close'] = (a0) => (_close = Module['_close'] = wasmExports['close'])(a0);
+var _ReleaseExternalFD = Module['_ReleaseExternalFD'] = () => (_ReleaseExternalFD = Module['_ReleaseExternalFD'] = wasmExports['ReleaseExternalFD'])();
+var _strncmp = Module['_strncmp'] = (a0, a1, a2) => (_strncmp = Module['_strncmp'] = wasmExports['strncmp'])(a0, a1, a2);
+var _SplitIdentifierString = Module['_SplitIdentifierString'] = (a0, a1, a2) => (_SplitIdentifierString = Module['_SplitIdentifierString'] = wasmExports['SplitIdentifierString'])(a0, a1, a2);
+var _pre_format_elog_string = Module['_pre_format_elog_string'] = (a0, a1) => (_pre_format_elog_string = Module['_pre_format_elog_string'] = wasmExports['pre_format_elog_string'])(a0, a1);
+var _format_elog_string = Module['_format_elog_string'] = (a0, a1) => (_format_elog_string = Module['_format_elog_string'] = wasmExports['format_elog_string'])(a0, a1);
+var _guc_malloc = Module['_guc_malloc'] = (a0, a1) => (_guc_malloc = Module['_guc_malloc'] = wasmExports['guc_malloc'])(a0, a1);
+var _SetConfigOption = Module['_SetConfigOption'] = (a0, a1, a2, a3) => (_SetConfigOption = Module['_SetConfigOption'] = wasmExports['SetConfigOption'])(a0, a1, a2, a3);
+var _gettimeofday = Module['_gettimeofday'] = (a0, a1) => (_gettimeofday = Module['_gettimeofday'] = wasmExports['gettimeofday'])(a0, a1);
+var _pg_strong_random = Module['_pg_strong_random'] = (a0, a1) => (_pg_strong_random = Module['_pg_strong_random'] = wasmExports['pg_strong_random'])(a0, a1);
+var _GetFlushRecPtr = Module['_GetFlushRecPtr'] = (a0) => (_GetFlushRecPtr = Module['_GetFlushRecPtr'] = wasmExports['GetFlushRecPtr'])(a0);
+var _GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = (a0) => (_GetXLogReplayRecPtr = Module['_GetXLogReplayRecPtr'] = wasmExports['GetXLogReplayRecPtr'])(a0);
+var _timestamptz_to_str = Module['_timestamptz_to_str'] = (a0) => (_timestamptz_to_str = Module['_timestamptz_to_str'] = wasmExports['timestamptz_to_str'])(a0);
+var _sscanf = Module['_sscanf'] = (a0, a1, a2) => (_sscanf = Module['_sscanf'] = wasmExports['sscanf'])(a0, a1, a2);
+var _TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = (a0, a1) => (_TimestampDifferenceMilliseconds = Module['_TimestampDifferenceMilliseconds'] = wasmExports['TimestampDifferenceMilliseconds'])(a0, a1);
+var _UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = (a0) => (_UnlockReleaseBuffer = Module['_UnlockReleaseBuffer'] = wasmExports['UnlockReleaseBuffer'])(a0);
+var ___wasm_setjmp_test = Module['___wasm_setjmp_test'] = (a0, a1) => (___wasm_setjmp_test = Module['___wasm_setjmp_test'] = wasmExports['__wasm_setjmp_test'])(a0, a1);
+var ___wasm_setjmp = Module['___wasm_setjmp'] = (a0, a1, a2) => (___wasm_setjmp = Module['___wasm_setjmp'] = wasmExports['__wasm_setjmp'])(a0, a1, a2);
+var _cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = (a0, a1) => (_cancel_before_shmem_exit = Module['_cancel_before_shmem_exit'] = wasmExports['cancel_before_shmem_exit'])(a0, a1);
+var _pg_re_throw = Module['_pg_re_throw'] = () => (_pg_re_throw = Module['_pg_re_throw'] = wasmExports['pg_re_throw'])();
+var _emscripten_longjmp = Module['_emscripten_longjmp'] = (a0, a1) => (_emscripten_longjmp = Module['_emscripten_longjmp'] = wasmExports['emscripten_longjmp'])(a0, a1);
+var _ferror = Module['_ferror'] = (a0) => (_ferror = Module['_ferror'] = wasmExports['ferror'])(a0);
 var _RmgrNotFound = Module['_RmgrNotFound'] = (a0) => (_RmgrNotFound = Module['_RmgrNotFound'] = wasmExports['RmgrNotFound'])(a0);
+var _InitMaterializedSRF = Module['_InitMaterializedSRF'] = (a0, a1) => (_InitMaterializedSRF = Module['_InitMaterializedSRF'] = wasmExports['InitMaterializedSRF'])(a0, a1);
+var _tuplestore_putvalues = Module['_tuplestore_putvalues'] = (a0, a1, a2, a3) => (_tuplestore_putvalues = Module['_tuplestore_putvalues'] = wasmExports['tuplestore_putvalues'])(a0, a1, a2, a3);
+var _hash_destroy = Module['_hash_destroy'] = (a0) => (_hash_destroy = Module['_hash_destroy'] = wasmExports['hash_destroy'])(a0);
+var _smgropen = Module['_smgropen'] = (a0, a1) => (_smgropen = Module['_smgropen'] = wasmExports['smgropen'])(a0, a1);
+var _smgrexists = Module['_smgrexists'] = (a0, a1) => (_smgrexists = Module['_smgrexists'] = wasmExports['smgrexists'])(a0, a1);
+var _pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = (a0) => (_pg_detoast_datum_packed = Module['_pg_detoast_datum_packed'] = wasmExports['pg_detoast_datum_packed'])(a0);
+var _makeStringInfo = Module['_makeStringInfo'] = () => (_makeStringInfo = Module['_makeStringInfo'] = wasmExports['makeStringInfo'])();
+var _numeric_in = Module['_numeric_in'] = (a0) => (_numeric_in = Module['_numeric_in'] = wasmExports['numeric_in'])(a0);
+var _DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = (a0, a1, a2, a3, a4) => (_DirectFunctionCall3Coll = Module['_DirectFunctionCall3Coll'] = wasmExports['DirectFunctionCall3Coll'])(a0, a1, a2, a3, a4);
+var _DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = (a0, a1, a2, a3) => (_DirectFunctionCall2Coll = Module['_DirectFunctionCall2Coll'] = wasmExports['DirectFunctionCall2Coll'])(a0, a1, a2, a3);
+var _GetCurrentCommandId = Module['_GetCurrentCommandId'] = (a0) => (_GetCurrentCommandId = Module['_GetCurrentCommandId'] = wasmExports['GetCurrentCommandId'])(a0);
 var _GetCurrentTransactionNestLevel = Module['_GetCurrentTransactionNestLevel'] = () => (_GetCurrentTransactionNestLevel = Module['_GetCurrentTransactionNestLevel'] = wasmExports['GetCurrentTransactionNestLevel'])();
+var _CommandCounterIncrement = Module['_CommandCounterIncrement'] = () => (_CommandCounterIncrement = Module['_CommandCounterIncrement'] = wasmExports['CommandCounterIncrement'])();
+var _ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = (a0, a1) => (_ResourceOwnerCreate = Module['_ResourceOwnerCreate'] = wasmExports['ResourceOwnerCreate'])(a0, a1);
+var _AtEOXact_GUC = Module['_AtEOXact_GUC'] = (a0, a1) => (_AtEOXact_GUC = Module['_AtEOXact_GUC'] = wasmExports['AtEOXact_GUC'])(a0, a1);
 var _ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = (a0) => (_ResourceOwnerDelete = Module['_ResourceOwnerDelete'] = wasmExports['ResourceOwnerDelete'])(a0);
+var _ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = () => (_ConditionVariableCancelSleep = Module['_ConditionVariableCancelSleep'] = wasmExports['ConditionVariableCancelSleep'])();
 var _AtEOSubXact_Files = Module['_AtEOSubXact_Files'] = (a0, a1, a2) => (_AtEOSubXact_Files = Module['_AtEOSubXact_Files'] = wasmExports['AtEOSubXact_Files'])(a0, a1, a2);
 var _RegisterXactCallback = Module['_RegisterXactCallback'] = (a0, a1) => (_RegisterXactCallback = Module['_RegisterXactCallback'] = wasmExports['RegisterXactCallback'])(a0, a1);
 var _RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = (a0, a1) => (_RegisterSubXactCallback = Module['_RegisterSubXactCallback'] = wasmExports['RegisterSubXactCallback'])(a0, a1);
+var _NewGUCNestLevel = Module['_NewGUCNestLevel'] = () => (_NewGUCNestLevel = Module['_NewGUCNestLevel'] = wasmExports['NewGUCNestLevel'])();
 var _BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = (a0) => (_BeginInternalSubTransaction = Module['_BeginInternalSubTransaction'] = wasmExports['BeginInternalSubTransaction'])(a0);
 var _ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = () => (_ReleaseCurrentSubTransaction = Module['_ReleaseCurrentSubTransaction'] = wasmExports['ReleaseCurrentSubTransaction'])();
 var _RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = () => (_RollbackAndReleaseCurrentSubTransaction = Module['_RollbackAndReleaseCurrentSubTransaction'] = wasmExports['RollbackAndReleaseCurrentSubTransaction'])();
+var _errdetail_internal = Module['_errdetail_internal'] = (a0, a1) => (_errdetail_internal = Module['_errdetail_internal'] = wasmExports['errdetail_internal'])(a0, a1);
+var _log_newpage_buffer = Module['_log_newpage_buffer'] = (a0, a1) => (_log_newpage_buffer = Module['_log_newpage_buffer'] = wasmExports['log_newpage_buffer'])(a0, a1);
+var _log_newpage_range = Module['_log_newpage_range'] = (a0, a1, a2, a3, a4) => (_log_newpage_range = Module['_log_newpage_range'] = wasmExports['log_newpage_range'])(a0, a1, a2, a3, a4);
+var _ReadBufferExtended = Module['_ReadBufferExtended'] = (a0, a1, a2, a3, a4) => (_ReadBufferExtended = Module['_ReadBufferExtended'] = wasmExports['ReadBufferExtended'])(a0, a1, a2, a3, a4);
+var _LockBuffer = Module['_LockBuffer'] = (a0, a1) => (_LockBuffer = Module['_LockBuffer'] = wasmExports['LockBuffer'])(a0, a1);
+var _MarkBufferDirty = Module['_MarkBufferDirty'] = (a0) => (_MarkBufferDirty = Module['_MarkBufferDirty'] = wasmExports['MarkBufferDirty'])(a0);
+var _ConditionVariableInit = Module['_ConditionVariableInit'] = (a0) => (_ConditionVariableInit = Module['_ConditionVariableInit'] = wasmExports['ConditionVariableInit'])(a0);
 var _timestamptz_in = Module['_timestamptz_in'] = (a0) => (_timestamptz_in = Module['_timestamptz_in'] = wasmExports['timestamptz_in'])(a0);
-var _timestamptz_to_str = Module['_timestamptz_to_str'] = (a0) => (_timestamptz_to_str = Module['_timestamptz_to_str'] = wasmExports['timestamptz_to_str'])(a0);
 var _fscanf = Module['_fscanf'] = (a0, a1, a2) => (_fscanf = Module['_fscanf'] = wasmExports['fscanf'])(a0, a1, a2);
+var _appendStringInfoString = Module['_appendStringInfoString'] = (a0, a1) => (_appendStringInfoString = Module['_appendStringInfoString'] = wasmExports['appendStringInfoString'])(a0, a1);
 var _ParseDateTime = Module['_ParseDateTime'] = (a0, a1, a2, a3, a4, a5, a6) => (_ParseDateTime = Module['_ParseDateTime'] = wasmExports['ParseDateTime'])(a0, a1, a2, a3, a4, a5, a6);
 var _DecodeDateTime = Module['_DecodeDateTime'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_DecodeDateTime = Module['_DecodeDateTime'] = wasmExports['DecodeDateTime'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _ReleaseExternalFD = Module['_ReleaseExternalFD'] = () => (_ReleaseExternalFD = Module['_ReleaseExternalFD'] = wasmExports['ReleaseExternalFD'])();
-var _pg_strong_random = Module['_pg_strong_random'] = (a0, a1) => (_pg_strong_random = Module['_pg_strong_random'] = wasmExports['pg_strong_random'])(a0, a1);
-var _XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = (a0, a1, a2, a3, a4) => (_XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = wasmExports['XLogRecGetBlockRefInfo'])(a0, a1, a2, a3, a4);
-var _strncpy = Module['_strncpy'] = (a0, a1, a2) => (_strncpy = Module['_strncpy'] = wasmExports['strncpy'])(a0, a1, a2);
-var _heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = (a0, a1, a2, a3, a4, a5) => (_heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = wasmExports['heap_modify_tuple_by_cols'])(a0, a1, a2, a3, a4, a5);
+var _GenericXLogStart = Module['_GenericXLogStart'] = (a0) => (_GenericXLogStart = Module['_GenericXLogStart'] = wasmExports['GenericXLogStart'])(a0);
+var _GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = (a0, a1, a2) => (_GenericXLogRegisterBuffer = Module['_GenericXLogRegisterBuffer'] = wasmExports['GenericXLogRegisterBuffer'])(a0, a1, a2);
+var _GenericXLogFinish = Module['_GenericXLogFinish'] = (a0) => (_GenericXLogFinish = Module['_GenericXLogFinish'] = wasmExports['GenericXLogFinish'])(a0);
+var _GenericXLogAbort = Module['_GenericXLogAbort'] = (a0) => (_GenericXLogAbort = Module['_GenericXLogAbort'] = wasmExports['GenericXLogAbort'])(a0);
+var _hash_get_num_entries = Module['_hash_get_num_entries'] = (a0) => (_hash_get_num_entries = Module['_hash_get_num_entries'] = wasmExports['hash_get_num_entries'])(a0);
+var _LockBufferForCleanup = Module['_LockBufferForCleanup'] = (a0) => (_LockBufferForCleanup = Module['_LockBufferForCleanup'] = wasmExports['LockBufferForCleanup'])(a0);
+var _ReleaseBuffer = Module['_ReleaseBuffer'] = (a0) => (_ReleaseBuffer = Module['_ReleaseBuffer'] = wasmExports['ReleaseBuffer'])(a0);
+var _read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = (a0, a1, a2, a3, a4) => (_read_local_xlog_page_no_wait = Module['_read_local_xlog_page_no_wait'] = wasmExports['read_local_xlog_page_no_wait'])(a0, a1, a2, a3, a4);
+var _fgets = Module['_fgets'] = (a0, a1, a2) => (_fgets = Module['_fgets'] = wasmExports['fgets'])(a0, a1, a2);
+var _SearchSysCacheExists = Module['_SearchSysCacheExists'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheExists = Module['_SearchSysCacheExists'] = wasmExports['SearchSysCacheExists'])(a0, a1, a2, a3, a4);
+var _convert_tuples_by_position = Module['_convert_tuples_by_position'] = (a0, a1, a2) => (_convert_tuples_by_position = Module['_convert_tuples_by_position'] = wasmExports['convert_tuples_by_position'])(a0, a1, a2);
+var _build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = (a0, a1, a2) => (_build_attrmap_by_name_if_req = Module['_build_attrmap_by_name_if_req'] = wasmExports['build_attrmap_by_name_if_req'])(a0, a1, a2);
+var _execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = (a0, a1) => (_execute_attr_map_tuple = Module['_execute_attr_map_tuple'] = wasmExports['execute_attr_map_tuple'])(a0, a1);
+var _heap_deform_tuple = Module['_heap_deform_tuple'] = (a0, a1, a2, a3) => (_heap_deform_tuple = Module['_heap_deform_tuple'] = wasmExports['heap_deform_tuple'])(a0, a1, a2, a3);
+var _execute_attr_map_slot = Module['_execute_attr_map_slot'] = (a0, a1, a2) => (_execute_attr_map_slot = Module['_execute_attr_map_slot'] = wasmExports['execute_attr_map_slot'])(a0, a1, a2);
+var _slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = (a0, a1) => (_slot_getsomeattrs_int = Module['_slot_getsomeattrs_int'] = wasmExports['slot_getsomeattrs_int'])(a0, a1);
+var _ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = (a0) => (_ExecStoreVirtualTuple = Module['_ExecStoreVirtualTuple'] = wasmExports['ExecStoreVirtualTuple'])(a0);
 var _free_attrmap = Module['_free_attrmap'] = (a0) => (_free_attrmap = Module['_free_attrmap'] = wasmExports['free_attrmap'])(a0);
+var _DatumGetEOHP = Module['_DatumGetEOHP'] = (a0) => (_DatumGetEOHP = Module['_DatumGetEOHP'] = wasmExports['DatumGetEOHP'])(a0);
+var _EOH_get_flat_size = Module['_EOH_get_flat_size'] = (a0) => (_EOH_get_flat_size = Module['_EOH_get_flat_size'] = wasmExports['EOH_get_flat_size'])(a0);
+var _EOH_flatten_into = Module['_EOH_flatten_into'] = (a0, a1, a2) => (_EOH_flatten_into = Module['_EOH_flatten_into'] = wasmExports['EOH_flatten_into'])(a0, a1, a2);
+var _heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = (a0, a1, a2, a3, a4, a5) => (_heap_modify_tuple_by_cols = Module['_heap_modify_tuple_by_cols'] = wasmExports['heap_modify_tuple_by_cols'])(a0, a1, a2, a3, a4, a5);
+var _heap_freetuple = Module['_heap_freetuple'] = (a0) => (_heap_freetuple = Module['_heap_freetuple'] = wasmExports['heap_freetuple'])(a0);
+var _hash_bytes = Module['_hash_bytes'] = (a0, a1) => (_hash_bytes = Module['_hash_bytes'] = wasmExports['hash_bytes'])(a0, a1);
+var _format_type_with_typemod = Module['_format_type_with_typemod'] = (a0, a1) => (_format_type_with_typemod = Module['_format_type_with_typemod'] = wasmExports['format_type_with_typemod'])(a0, a1);
+var _RelationIdGetRelation = Module['_RelationIdGetRelation'] = (a0) => (_RelationIdGetRelation = Module['_RelationIdGetRelation'] = wasmExports['RelationIdGetRelation'])(a0);
+var _try_relation_open = Module['_try_relation_open'] = (a0, a1) => (_try_relation_open = Module['_try_relation_open'] = wasmExports['try_relation_open'])(a0, a1);
+var _relation_openrv = Module['_relation_openrv'] = (a0, a1) => (_relation_openrv = Module['_relation_openrv'] = wasmExports['relation_openrv'])(a0, a1);
+var _RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = (a0, a1, a2, a3, a4) => (_RangeVarGetRelidExtended = Module['_RangeVarGetRelidExtended'] = wasmExports['RangeVarGetRelidExtended'])(a0, a1, a2, a3, a4);
+var _RelationClose = Module['_RelationClose'] = (a0) => (_RelationClose = Module['_RelationClose'] = wasmExports['RelationClose'])(a0);
+var _fmgr_info = Module['_fmgr_info'] = (a0, a1) => (_fmgr_info = Module['_fmgr_info'] = wasmExports['fmgr_info'])(a0, a1);
+var _OutputFunctionCall = Module['_OutputFunctionCall'] = (a0, a1) => (_OutputFunctionCall = Module['_OutputFunctionCall'] = wasmExports['OutputFunctionCall'])(a0, a1);
+var _pg_printf = Module['_pg_printf'] = (a0, a1) => (_pg_printf = Module['_pg_printf'] = wasmExports['pg_printf'])(a0, a1);
+var _OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = (a0, a1) => (_OidOutputFunctionCall = Module['_OidOutputFunctionCall'] = wasmExports['OidOutputFunctionCall'])(a0, a1);
+var _CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = (a0) => (_CreateTupleDescCopy = Module['_CreateTupleDescCopy'] = wasmExports['CreateTupleDescCopy'])(a0);
+var _CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = (a0) => (_CreateTupleDescCopyConstr = Module['_CreateTupleDescCopyConstr'] = wasmExports['CreateTupleDescCopyConstr'])(a0);
+var _TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = (a0, a1, a2) => (_TupleDescInitEntryCollation = Module['_TupleDescInitEntryCollation'] = wasmExports['TupleDescInitEntryCollation'])(a0, a1, a2);
+var _typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = (a0, a1, a2, a3) => (_typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = wasmExports['typenameTypeIdAndMod'])(a0, a1, a2, a3);
+var _detoast_external_attr = Module['_detoast_external_attr'] = (a0) => (_detoast_external_attr = Module['_detoast_external_attr'] = wasmExports['detoast_external_attr'])(a0);
+var _index_form_tuple = Module['_index_form_tuple'] = (a0, a1, a2) => (_index_form_tuple = Module['_index_form_tuple'] = wasmExports['index_form_tuple'])(a0, a1, a2);
+var _nocache_index_getattr = Module['_nocache_index_getattr'] = (a0, a1, a2) => (_nocache_index_getattr = Module['_nocache_index_getattr'] = wasmExports['nocache_index_getattr'])(a0, a1, a2);
+var _index_deform_tuple = Module['_index_deform_tuple'] = (a0, a1, a2, a3) => (_index_deform_tuple = Module['_index_deform_tuple'] = wasmExports['index_deform_tuple'])(a0, a1, a2, a3);
 var _add_reloption_kind = Module['_add_reloption_kind'] = () => (_add_reloption_kind = Module['_add_reloption_kind'] = wasmExports['add_reloption_kind'])();
+var _init_local_reloptions = Module['_init_local_reloptions'] = (a0, a1) => (_init_local_reloptions = Module['_init_local_reloptions'] = wasmExports['init_local_reloptions'])(a0, a1);
 var _register_reloptions_validator = Module['_register_reloptions_validator'] = (a0, a1) => (_register_reloptions_validator = Module['_register_reloptions_validator'] = wasmExports['register_reloptions_validator'])(a0, a1);
 var _add_int_reloption = Module['_add_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_int_reloption = Module['_add_int_reloption'] = wasmExports['add_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
+var _add_local_int_reloption = Module['_add_local_int_reloption'] = (a0, a1, a2, a3, a4, a5, a6) => (_add_local_int_reloption = Module['_add_local_int_reloption'] = wasmExports['add_local_int_reloption'])(a0, a1, a2, a3, a4, a5, a6);
+var _deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = (a0, a1, a2, a3, a4) => (_deconstruct_array_builtin = Module['_deconstruct_array_builtin'] = wasmExports['deconstruct_array_builtin'])(a0, a1, a2, a3, a4);
+var _accumArrayResult = Module['_accumArrayResult'] = (a0, a1, a2, a3, a4) => (_accumArrayResult = Module['_accumArrayResult'] = wasmExports['accumArrayResult'])(a0, a1, a2, a3, a4);
+var _defGetString = Module['_defGetString'] = (a0) => (_defGetString = Module['_defGetString'] = wasmExports['defGetString'])(a0);
+var _defGetBoolean = Module['_defGetBoolean'] = (a0) => (_defGetBoolean = Module['_defGetBoolean'] = wasmExports['defGetBoolean'])(a0);
+var _makeArrayResult = Module['_makeArrayResult'] = (a0, a1) => (_makeArrayResult = Module['_makeArrayResult'] = wasmExports['makeArrayResult'])(a0, a1);
 var _untransformRelOptions = Module['_untransformRelOptions'] = (a0) => (_untransformRelOptions = Module['_untransformRelOptions'] = wasmExports['untransformRelOptions'])(a0);
 var _makeDefElem = Module['_makeDefElem'] = (a0, a1, a2) => (_makeDefElem = Module['_makeDefElem'] = wasmExports['makeDefElem'])(a0, a1, a2);
+var _build_reloptions = Module['_build_reloptions'] = (a0, a1, a2, a3, a4, a5) => (_build_reloptions = Module['_build_reloptions'] = wasmExports['build_reloptions'])(a0, a1, a2, a3, a4, a5);
+var _parse_bool = Module['_parse_bool'] = (a0, a1) => (_parse_bool = Module['_parse_bool'] = wasmExports['parse_bool'])(a0, a1);
 var _parse_int = Module['_parse_int'] = (a0, a1, a2, a3) => (_parse_int = Module['_parse_int'] = wasmExports['parse_int'])(a0, a1, a2, a3);
 var _parse_real = Module['_parse_real'] = (a0, a1, a2, a3) => (_parse_real = Module['_parse_real'] = wasmExports['parse_real'])(a0, a1, a2, a3);
-var _typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = (a0, a1, a2, a3) => (_typenameTypeIdAndMod = Module['_typenameTypeIdAndMod'] = wasmExports['typenameTypeIdAndMod'])(a0, a1, a2, a3);
 var _pg_ltoa = Module['_pg_ltoa'] = (a0, a1) => (_pg_ltoa = Module['_pg_ltoa'] = wasmExports['pg_ltoa'])(a0, a1);
-var _RelationIdGetRelation = Module['_RelationIdGetRelation'] = (a0) => (_RelationIdGetRelation = Module['_RelationIdGetRelation'] = wasmExports['RelationIdGetRelation'])(a0);
-var _relation_openrv = Module['_relation_openrv'] = (a0, a1) => (_relation_openrv = Module['_relation_openrv'] = wasmExports['relation_openrv'])(a0, a1);
-var _RelationClose = Module['_RelationClose'] = (a0) => (_RelationClose = Module['_RelationClose'] = wasmExports['RelationClose'])(a0);
-var _varstr_cmp = Module['_varstr_cmp'] = (a0, a1, a2, a3, a4) => (_varstr_cmp = Module['_varstr_cmp'] = wasmExports['varstr_cmp'])(a0, a1, a2, a3, a4);
-var _pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = (a0, a1, a2) => (_pg_prng_uint64_range = Module['_pg_prng_uint64_range'] = wasmExports['pg_prng_uint64_range'])(a0, a1, a2);
-var _ginPostingListDecode = Module['_ginPostingListDecode'] = (a0, a1) => (_ginPostingListDecode = Module['_ginPostingListDecode'] = wasmExports['ginPostingListDecode'])(a0, a1);
-var _LockPage = Module['_LockPage'] = (a0, a1, a2) => (_LockPage = Module['_LockPage'] = wasmExports['LockPage'])(a0, a1, a2);
-var _UnlockPage = Module['_UnlockPage'] = (a0, a1, a2) => (_UnlockPage = Module['_UnlockPage'] = wasmExports['UnlockPage'])(a0, a1, a2);
-var __bt_search = Module['__bt_search'] = (a0, a1, a2, a3, a4, a5) => (__bt_search = Module['__bt_search'] = wasmExports['_bt_search'])(a0, a1, a2, a3, a4, a5);
-var __bt_compare = Module['__bt_compare'] = (a0, a1, a2, a3) => (__bt_compare = Module['__bt_compare'] = wasmExports['_bt_compare'])(a0, a1, a2, a3);
+var _toast_open_indexes = Module['_toast_open_indexes'] = (a0, a1, a2, a3) => (_toast_open_indexes = Module['_toast_open_indexes'] = wasmExports['toast_open_indexes'])(a0, a1, a2, a3);
+var _toast_close_indexes = Module['_toast_close_indexes'] = (a0, a1, a2) => (_toast_close_indexes = Module['_toast_close_indexes'] = wasmExports['toast_close_indexes'])(a0, a1, a2);
+var _systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = (a0, a1, a2, a3, a4) => (_systable_beginscan_ordered = Module['_systable_beginscan_ordered'] = wasmExports['systable_beginscan_ordered'])(a0, a1, a2, a3, a4);
+var _systable_getnext_ordered = Module['_systable_getnext_ordered'] = (a0, a1) => (_systable_getnext_ordered = Module['_systable_getnext_ordered'] = wasmExports['systable_getnext_ordered'])(a0, a1);
+var _systable_endscan_ordered = Module['_systable_endscan_ordered'] = (a0) => (_systable_endscan_ordered = Module['_systable_endscan_ordered'] = wasmExports['systable_endscan_ordered'])(a0);
+var _init_toast_snapshot = Module['_init_toast_snapshot'] = (a0) => (_init_toast_snapshot = Module['_init_toast_snapshot'] = wasmExports['init_toast_snapshot'])(a0);
+var __bt_allequalimage = Module['__bt_allequalimage'] = (a0, a1) => (__bt_allequalimage = Module['__bt_allequalimage'] = wasmExports['_bt_allequalimage'])(a0, a1);
+var _RelationGetIndexScan = Module['_RelationGetIndexScan'] = (a0, a1, a2) => (_RelationGetIndexScan = Module['_RelationGetIndexScan'] = wasmExports['RelationGetIndexScan'])(a0, a1, a2);
+var _memmove = Module['_memmove'] = (a0, a1, a2) => (_memmove = Module['_memmove'] = wasmExports['memmove'])(a0, a1, a2);
+var _tbm_add_tuples = Module['_tbm_add_tuples'] = (a0, a1, a2, a3) => (_tbm_add_tuples = Module['_tbm_add_tuples'] = wasmExports['tbm_add_tuples'])(a0, a1, a2, a3);
+var _ConditionVariableSleep = Module['_ConditionVariableSleep'] = (a0, a1) => (_ConditionVariableSleep = Module['_ConditionVariableSleep'] = wasmExports['ConditionVariableSleep'])(a0, a1);
+var _ConditionVariableSignal = Module['_ConditionVariableSignal'] = (a0) => (_ConditionVariableSignal = Module['_ConditionVariableSignal'] = wasmExports['ConditionVariableSignal'])(a0);
+var _LockRelationForExtension = Module['_LockRelationForExtension'] = (a0, a1) => (_LockRelationForExtension = Module['_LockRelationForExtension'] = wasmExports['LockRelationForExtension'])(a0, a1);
+var _UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = (a0, a1) => (_UnlockRelationForExtension = Module['_UnlockRelationForExtension'] = wasmExports['UnlockRelationForExtension'])(a0, a1);
+var _pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = (a0, a1) => (_pgstat_progress_update_param = Module['_pgstat_progress_update_param'] = wasmExports['pgstat_progress_update_param'])(a0, a1);
+var _vacuum_delay_point = Module['_vacuum_delay_point'] = () => (_vacuum_delay_point = Module['_vacuum_delay_point'] = wasmExports['vacuum_delay_point'])();
+var __bt_checkpage = Module['__bt_checkpage'] = (a0, a1) => (__bt_checkpage = Module['__bt_checkpage'] = wasmExports['_bt_checkpage'])(a0, a1);
+var _RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = (a0, a1) => (_RecordFreeIndexPage = Module['_RecordFreeIndexPage'] = wasmExports['RecordFreeIndexPage'])(a0, a1);
 var __bt_relbuf = Module['__bt_relbuf'] = (a0, a1) => (__bt_relbuf = Module['__bt_relbuf'] = wasmExports['_bt_relbuf'])(a0, a1);
+var _IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = (a0) => (_IndexFreeSpaceMapVacuum = Module['_IndexFreeSpaceMapVacuum'] = wasmExports['IndexFreeSpaceMapVacuum'])(a0);
+var __bt_mkscankey = Module['__bt_mkscankey'] = (a0, a1) => (__bt_mkscankey = Module['__bt_mkscankey'] = wasmExports['_bt_mkscankey'])(a0, a1);
+var _ReadBuffer = Module['_ReadBuffer'] = (a0, a1) => (_ReadBuffer = Module['_ReadBuffer'] = wasmExports['ReadBuffer'])(a0, a1);
+var _PageGetFreeSpace = Module['_PageGetFreeSpace'] = (a0) => (_PageGetFreeSpace = Module['_PageGetFreeSpace'] = wasmExports['PageGetFreeSpace'])(a0);
+var __bt_compare = Module['__bt_compare'] = (a0, a1, a2, a3) => (__bt_compare = Module['__bt_compare'] = wasmExports['_bt_compare'])(a0, a1, a2, a3);
+var _smgrsetowner = Module['_smgrsetowner'] = (a0, a1) => (_smgrsetowner = Module['_smgrsetowner'] = wasmExports['smgrsetowner'])(a0, a1);
+var __bt_search = Module['__bt_search'] = (a0, a1, a2, a3, a4, a5) => (__bt_search = Module['__bt_search'] = wasmExports['_bt_search'])(a0, a1, a2, a3, a4, a5);
 var __bt_binsrch_insert = Module['__bt_binsrch_insert'] = (a0, a1) => (__bt_binsrch_insert = Module['__bt_binsrch_insert'] = wasmExports['_bt_binsrch_insert'])(a0, a1);
-var __bt_metaversion = Module['__bt_metaversion'] = (a0, a1, a2) => (__bt_metaversion = Module['__bt_metaversion'] = wasmExports['_bt_metaversion'])(a0, a1, a2);
+var _ItemPointerCompare = Module['_ItemPointerCompare'] = (a0, a1) => (_ItemPointerCompare = Module['_ItemPointerCompare'] = wasmExports['ItemPointerCompare'])(a0, a1);
+var _BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = (a0) => (_BufferGetBlockNumber = Module['_BufferGetBlockNumber'] = wasmExports['BufferGetBlockNumber'])(a0);
 var __bt_freestack = Module['__bt_freestack'] = (a0) => (__bt_freestack = Module['__bt_freestack'] = wasmExports['_bt_freestack'])(a0);
+var _pg_prng_uint32 = Module['_pg_prng_uint32'] = (a0) => (_pg_prng_uint32 = Module['_pg_prng_uint32'] = wasmExports['pg_prng_uint32'])(a0);
+var _PageAddItemExtended = Module['_PageAddItemExtended'] = (a0, a1, a2, a3, a4) => (_PageAddItemExtended = Module['_PageAddItemExtended'] = wasmExports['PageAddItemExtended'])(a0, a1, a2, a3, a4);
+var _bsearch = Module['_bsearch'] = (a0, a1, a2, a3, a4) => (_bsearch = Module['_bsearch'] = wasmExports['bsearch'])(a0, a1, a2, a3, a4);
 var _btboolcmp = Module['_btboolcmp'] = (a0) => (_btboolcmp = Module['_btboolcmp'] = wasmExports['btboolcmp'])(a0);
 var _btint2cmp = Module['_btint2cmp'] = (a0) => (_btint2cmp = Module['_btint2cmp'] = wasmExports['btint2cmp'])(a0);
 var _btint4cmp = Module['_btint4cmp'] = (a0) => (_btint4cmp = Module['_btint4cmp'] = wasmExports['btint4cmp'])(a0);
 var _btint8cmp = Module['_btint8cmp'] = (a0) => (_btint8cmp = Module['_btint8cmp'] = wasmExports['btint8cmp'])(a0);
 var _btoidcmp = Module['_btoidcmp'] = (a0) => (_btoidcmp = Module['_btoidcmp'] = wasmExports['btoidcmp'])(a0);
 var _btcharcmp = Module['_btcharcmp'] = (a0) => (_btcharcmp = Module['_btcharcmp'] = wasmExports['btcharcmp'])(a0);
-var __bt_checkpage = Module['__bt_checkpage'] = (a0, a1) => (__bt_checkpage = Module['__bt_checkpage'] = wasmExports['_bt_checkpage'])(a0, a1);
-var __bt_mkscankey = Module['__bt_mkscankey'] = (a0, a1) => (__bt_mkscankey = Module['__bt_mkscankey'] = wasmExports['_bt_mkscankey'])(a0, a1);
-var __bt_form_posting = Module['__bt_form_posting'] = (a0, a1, a2) => (__bt_form_posting = Module['__bt_form_posting'] = wasmExports['_bt_form_posting'])(a0, a1, a2);
-var __bt_allequalimage = Module['__bt_allequalimage'] = (a0, a1) => (__bt_allequalimage = Module['__bt_allequalimage'] = wasmExports['_bt_allequalimage'])(a0, a1);
-var _ConditionVariableSignal = Module['_ConditionVariableSignal'] = (a0) => (_ConditionVariableSignal = Module['_ConditionVariableSignal'] = wasmExports['ConditionVariableSignal'])(a0);
+var _table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = (a0, a1) => (_table_parallelscan_estimate = Module['_table_parallelscan_estimate'] = wasmExports['table_parallelscan_estimate'])(a0, a1);
 var _tuplesort_estimate_shared = Module['_tuplesort_estimate_shared'] = (a0) => (_tuplesort_estimate_shared = Module['_tuplesort_estimate_shared'] = wasmExports['tuplesort_estimate_shared'])(a0);
+var _table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = (a0, a1, a2) => (_table_parallelscan_initialize = Module['_table_parallelscan_initialize'] = wasmExports['table_parallelscan_initialize'])(a0, a1, a2);
 var _tuplesort_initialize_shared = Module['_tuplesort_initialize_shared'] = (a0, a1, a2) => (_tuplesort_initialize_shared = Module['_tuplesort_initialize_shared'] = wasmExports['tuplesort_initialize_shared'])(a0, a1, a2);
+var _tuplesort_end = Module['_tuplesort_end'] = (a0) => (_tuplesort_end = Module['_tuplesort_end'] = wasmExports['tuplesort_end'])(a0);
+var _tuplesort_performsort = Module['_tuplesort_performsort'] = (a0) => (_tuplesort_performsort = Module['_tuplesort_performsort'] = wasmExports['tuplesort_performsort'])(a0);
+var _pgstat_report_activity = Module['_pgstat_report_activity'] = (a0, a1) => (_pgstat_report_activity = Module['_pgstat_report_activity'] = wasmExports['pgstat_report_activity'])(a0, a1);
 var _tuplesort_attach_shared = Module['_tuplesort_attach_shared'] = (a0, a1) => (_tuplesort_attach_shared = Module['_tuplesort_attach_shared'] = wasmExports['tuplesort_attach_shared'])(a0, a1);
+var _BuildIndexInfo = Module['_BuildIndexInfo'] = (a0) => (_BuildIndexInfo = Module['_BuildIndexInfo'] = wasmExports['BuildIndexInfo'])(a0);
+var _table_beginscan_parallel = Module['_table_beginscan_parallel'] = (a0, a1) => (_table_beginscan_parallel = Module['_table_beginscan_parallel'] = wasmExports['table_beginscan_parallel'])(a0, a1);
+var _PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = (a0, a1, a2, a3) => (_PageIndexTupleOverwrite = Module['_PageIndexTupleOverwrite'] = wasmExports['PageIndexTupleOverwrite'])(a0, a1, a2, a3);
+var __bt_form_posting = Module['__bt_form_posting'] = (a0, a1, a2) => (__bt_form_posting = Module['__bt_form_posting'] = wasmExports['_bt_form_posting'])(a0, a1, a2);
+var _PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = (a0) => (_PageGetExactFreeSpace = Module['_PageGetExactFreeSpace'] = wasmExports['PageGetExactFreeSpace'])(a0);
+var __bt_metaversion = Module['__bt_metaversion'] = (a0, a1, a2) => (__bt_metaversion = Module['__bt_metaversion'] = wasmExports['_bt_metaversion'])(a0, a1, a2);
+var _index_getprocinfo = Module['_index_getprocinfo'] = (a0, a1, a2) => (_index_getprocinfo = Module['_index_getprocinfo'] = wasmExports['index_getprocinfo'])(a0, a1, a2);
+var _ItemPointerEquals = Module['_ItemPointerEquals'] = (a0, a1) => (_ItemPointerEquals = Module['_ItemPointerEquals'] = wasmExports['ItemPointerEquals'])(a0, a1);
 var __bt_check_natts = Module['__bt_check_natts'] = (a0, a1, a2, a3) => (__bt_check_natts = Module['__bt_check_natts'] = wasmExports['_bt_check_natts'])(a0, a1, a2, a3);
-var _smgrread = Module['_smgrread'] = (a0, a1, a2, a3) => (_smgrread = Module['_smgrread'] = wasmExports['smgrread'])(a0, a1, a2, a3);
-var _smgrtruncate = Module['_smgrtruncate'] = (a0, a1, a2, a3) => (_smgrtruncate = Module['_smgrtruncate'] = wasmExports['smgrtruncate'])(a0, a1, a2, a3);
-var _ShmemInitHash = Module['_ShmemInitHash'] = (a0, a1, a2, a3, a4) => (_ShmemInitHash = Module['_ShmemInitHash'] = wasmExports['ShmemInitHash'])(a0, a1, a2, a3, a4);
-var _hash_estimate_size = Module['_hash_estimate_size'] = (a0, a1) => (_hash_estimate_size = Module['_hash_estimate_size'] = wasmExports['hash_estimate_size'])(a0, a1);
-var _on_shmem_exit = Module['_on_shmem_exit'] = (a0, a1) => (_on_shmem_exit = Module['_on_shmem_exit'] = wasmExports['on_shmem_exit'])(a0, a1);
-var _LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = (a0, a1) => (_LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = wasmExports['LWLockRegisterTranche'])(a0, a1);
-var _GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = (a0) => (_GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = wasmExports['GetNamedLWLockTranche'])(a0);
-var _LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = () => (_LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = wasmExports['LWLockNewTrancheId'])();
-var _RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = (a0, a1) => (_RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = wasmExports['RequestNamedLWLockTranche'])(a0, a1);
-var _RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = (a0) => (_RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = wasmExports['RequestAddinShmemSpace'])(a0);
-var _BackendXidGetPid = Module['_BackendXidGetPid'] = (a0) => (_BackendXidGetPid = Module['_BackendXidGetPid'] = wasmExports['BackendXidGetPid'])(a0);
-var _fcntl = Module['_fcntl'] = (a0, a1, a2) => (_fcntl = Module['_fcntl'] = wasmExports['fcntl'])(a0, a1, a2);
-var _poll = Module['_poll'] = (a0, a1, a2) => (_poll = Module['_poll'] = wasmExports['poll'])(a0, a1, a2);
-var _WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = (a0, a1, a2, a3, a4) => (_WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = wasmExports['WaitLatchOrSocket'])(a0, a1, a2, a3, a4);
-var _procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = (a0) => (_procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = wasmExports['procsignal_sigusr1_handler'])(a0);
-var _have_free_buffer = Module['_have_free_buffer'] = () => (_have_free_buffer = Module['_have_free_buffer'] = wasmExports['have_free_buffer'])();
-var _LockBufHdr = Module['_LockBufHdr'] = (a0) => (_LockBufHdr = Module['_LockBufHdr'] = wasmExports['LockBufHdr'])(a0);
-var _copy_file = Module['_copy_file'] = (a0, a1) => (_copy_file = Module['_copy_file'] = wasmExports['copy_file'])(a0, a1);
-var _wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = (a0, a1) => (_wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = wasmExports['wasm_OpenPipeStream'])(a0, a1);
-var _fiprintf = Module['_fiprintf'] = (a0, a1, a2) => (_fiprintf = Module['_fiprintf'] = wasmExports['fiprintf'])(a0, a1, a2);
-var _fsync_fname_ext = Module['_fsync_fname_ext'] = (a0, a1, a2, a3) => (_fsync_fname_ext = Module['_fsync_fname_ext'] = wasmExports['fsync_fname_ext'])(a0, a1, a2, a3);
-var _dup = Module['_dup'] = (a0) => (_dup = Module['_dup'] = wasmExports['dup'])(a0);
-var _open = Module['_open'] = (a0, a1, a2) => (_open = Module['_open'] = wasmExports['open'])(a0, a1, a2);
-var _AcquireExternalFD = Module['_AcquireExternalFD'] = () => (_AcquireExternalFD = Module['_AcquireExternalFD'] = wasmExports['AcquireExternalFD'])();
-var _pclose = Module['_pclose'] = (a0) => (_pclose = Module['_pclose'] = wasmExports['pclose'])(a0);
-var _ClosePipeStream = Module['_ClosePipeStream'] = (a0) => (_ClosePipeStream = Module['_ClosePipeStream'] = wasmExports['ClosePipeStream'])(a0);
-var _get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = (a0, a1) => (_get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = wasmExports['get_tsearch_config_filename'])(a0, a1);
-var _lowerstr = Module['_lowerstr'] = (a0) => (_lowerstr = Module['_lowerstr'] = wasmExports['lowerstr'])(a0);
-var _readstoplist = Module['_readstoplist'] = (a0, a1, a2) => (_readstoplist = Module['_readstoplist'] = wasmExports['readstoplist'])(a0, a1, a2);
-var _lowerstr_with_len = Module['_lowerstr_with_len'] = (a0, a1) => (_lowerstr_with_len = Module['_lowerstr_with_len'] = wasmExports['lowerstr_with_len'])(a0, a1);
-var _searchstoplist = Module['_searchstoplist'] = (a0, a1) => (_searchstoplist = Module['_searchstoplist'] = wasmExports['searchstoplist'])(a0, a1);
-var _tsearch_readline_begin = Module['_tsearch_readline_begin'] = (a0, a1) => (_tsearch_readline_begin = Module['_tsearch_readline_begin'] = wasmExports['tsearch_readline_begin'])(a0, a1);
-var _tsearch_readline = Module['_tsearch_readline'] = (a0) => (_tsearch_readline = Module['_tsearch_readline'] = wasmExports['tsearch_readline'])(a0);
-var _pg_mblen = Module['_pg_mblen'] = (a0) => (_pg_mblen = Module['_pg_mblen'] = wasmExports['pg_mblen'])(a0);
-var _t_isspace = Module['_t_isspace'] = (a0) => (_t_isspace = Module['_t_isspace'] = wasmExports['t_isspace'])(a0);
-var _tsearch_readline_end = Module['_tsearch_readline_end'] = (a0) => (_tsearch_readline_end = Module['_tsearch_readline_end'] = wasmExports['tsearch_readline_end'])(a0);
-var _pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = (a0, a1, a2) => (_pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = wasmExports['pg_mb2wchar_with_len'])(a0, a1, a2);
-var _t_isdigit = Module['_t_isdigit'] = (a0) => (_t_isdigit = Module['_t_isdigit'] = wasmExports['t_isdigit'])(a0);
-var _strcat = Module['_strcat'] = (a0, a1) => (_strcat = Module['_strcat'] = wasmExports['strcat'])(a0, a1);
-var _lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = (a0) => (_lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = wasmExports['lookup_ts_dictionary_cache'])(a0);
-var _construct_array_builtin = Module['_construct_array_builtin'] = (a0, a1, a2) => (_construct_array_builtin = Module['_construct_array_builtin'] = wasmExports['construct_array_builtin'])(a0, a1, a2);
-var _t_isalnum = Module['_t_isalnum'] = (a0) => (_t_isalnum = Module['_t_isalnum'] = wasmExports['t_isalnum'])(a0);
-var _pg_any_to_server = Module['_pg_any_to_server'] = (a0, a1, a2) => (_pg_any_to_server = Module['_pg_any_to_server'] = wasmExports['pg_any_to_server'])(a0, a1, a2);
-var _pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = () => (_pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = wasmExports['pg_database_encoding_max_length'])();
-var _isxdigit = Module['_isxdigit'] = (a0) => (_isxdigit = Module['_isxdigit'] = wasmExports['isxdigit'])(a0);
-var _pg_strtoint32 = Module['_pg_strtoint32'] = (a0) => (_pg_strtoint32 = Module['_pg_strtoint32'] = wasmExports['pg_strtoint32'])(a0);
-var _textToQualifiedNameList = Module['_textToQualifiedNameList'] = (a0) => (_textToQualifiedNameList = Module['_textToQualifiedNameList'] = wasmExports['textToQualifiedNameList'])(a0);
-var _DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = wasmExports['DirectFunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
-var _get_restriction_variable = Module['_get_restriction_variable'] = (a0, a1, a2, a3, a4, a5) => (_get_restriction_variable = Module['_get_restriction_variable'] = wasmExports['get_restriction_variable'])(a0, a1, a2, a3, a4, a5);
+var _PageInit = Module['_PageInit'] = (a0, a1, a2) => (_PageInit = Module['_PageInit'] = wasmExports['PageInit'])(a0, a1, a2);
+var _GetFreeIndexPage = Module['_GetFreeIndexPage'] = (a0) => (_GetFreeIndexPage = Module['_GetFreeIndexPage'] = wasmExports['GetFreeIndexPage'])(a0);
+var _ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = (a0) => (_ConditionalLockBuffer = Module['_ConditionalLockBuffer'] = wasmExports['ConditionalLockBuffer'])(a0);
+var _ExtendBufferedRel = Module['_ExtendBufferedRel'] = (a0, a1, a2, a3) => (_ExtendBufferedRel = Module['_ExtendBufferedRel'] = wasmExports['ExtendBufferedRel'])(a0, a1, a2, a3);
+var _PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = (a0, a1, a2) => (_PageIndexMultiDelete = Module['_PageIndexMultiDelete'] = wasmExports['PageIndexMultiDelete'])(a0, a1, a2);
+var _GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = (a0) => (_GetOldestNonRemovableTransactionId = Module['_GetOldestNonRemovableTransactionId'] = wasmExports['GetOldestNonRemovableTransactionId'])(a0);
+var _SearchSysCacheList = Module['_SearchSysCacheList'] = (a0, a1, a2, a3, a4) => (_SearchSysCacheList = Module['_SearchSysCacheList'] = wasmExports['SearchSysCacheList'])(a0, a1, a2, a3, a4);
+var _check_amproc_signature = Module['_check_amproc_signature'] = (a0, a1, a2, a3, a4, a5) => (_check_amproc_signature = Module['_check_amproc_signature'] = wasmExports['check_amproc_signature'])(a0, a1, a2, a3, a4, a5);
+var _check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = (a0) => (_check_amoptsproc_signature = Module['_check_amoptsproc_signature'] = wasmExports['check_amoptsproc_signature'])(a0);
+var _format_procedure = Module['_format_procedure'] = (a0) => (_format_procedure = Module['_format_procedure'] = wasmExports['format_procedure'])(a0);
+var _format_operator = Module['_format_operator'] = (a0) => (_format_operator = Module['_format_operator'] = wasmExports['format_operator'])(a0);
+var _check_amop_signature = Module['_check_amop_signature'] = (a0, a1, a2, a3) => (_check_amop_signature = Module['_check_amop_signature'] = wasmExports['check_amop_signature'])(a0, a1, a2, a3);
+var _identify_opfamily_groups = Module['_identify_opfamily_groups'] = (a0, a1) => (_identify_opfamily_groups = Module['_identify_opfamily_groups'] = wasmExports['identify_opfamily_groups'])(a0, a1);
+var _ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = (a0) => (_ReleaseCatCacheList = Module['_ReleaseCatCacheList'] = wasmExports['ReleaseCatCacheList'])(a0);
+var _TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = (a0, a1) => (_TestForOldSnapshot_impl = Module['_TestForOldSnapshot_impl'] = wasmExports['TestForOldSnapshot_impl'])(a0, a1);
+var _pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = (a0) => (_pgstat_assoc_relation = Module['_pgstat_assoc_relation'] = wasmExports['pgstat_assoc_relation'])(a0);
+var _XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = (a0, a1, a2, a3, a4) => (_XLogRecGetBlockRefInfo = Module['_XLogRecGetBlockRefInfo'] = wasmExports['XLogRecGetBlockRefInfo'])(a0, a1, a2, a3, a4);
+var _strncpy = Module['_strncpy'] = (a0, a1, a2) => (_strncpy = Module['_strncpy'] = wasmExports['strncpy'])(a0, a1, a2);
+var _index_getprocid = Module['_index_getprocid'] = (a0, a1, a2) => (_index_getprocid = Module['_index_getprocid'] = wasmExports['index_getprocid'])(a0, a1, a2);
+var _gistcheckpage = Module['_gistcheckpage'] = (a0, a1) => (_gistcheckpage = Module['_gistcheckpage'] = wasmExports['gistcheckpage'])(a0, a1);
+var _FunctionCall1Coll = Module['_FunctionCall1Coll'] = (a0, a1, a2) => (_FunctionCall1Coll = Module['_FunctionCall1Coll'] = wasmExports['FunctionCall1Coll'])(a0, a1, a2);
+var _pairingheap_remove_first = Module['_pairingheap_remove_first'] = (a0) => (_pairingheap_remove_first = Module['_pairingheap_remove_first'] = wasmExports['pairingheap_remove_first'])(a0);
+var _pairingheap_add = Module['_pairingheap_add'] = (a0, a1) => (_pairingheap_add = Module['_pairingheap_add'] = wasmExports['pairingheap_add'])(a0, a1);
+var _pow = Module['_pow'] = (a0, a1) => (_pow = Module['_pow'] = wasmExports['pow'])(a0, a1);
+var _GenerationContextCreate = Module['_GenerationContextCreate'] = (a0, a1, a2, a3, a4) => (_GenerationContextCreate = Module['_GenerationContextCreate'] = wasmExports['GenerationContextCreate'])(a0, a1, a2, a3, a4);
+var _float_overflow_error = Module['_float_overflow_error'] = () => (_float_overflow_error = Module['_float_overflow_error'] = wasmExports['float_overflow_error'])();
+var _float_underflow_error = Module['_float_underflow_error'] = () => (_float_underflow_error = Module['_float_underflow_error'] = wasmExports['float_underflow_error'])();
+var _DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = (a0, a1, a2, a3, a4, a5, a6) => (_DirectFunctionCall5Coll = Module['_DirectFunctionCall5Coll'] = wasmExports['DirectFunctionCall5Coll'])(a0, a1, a2, a3, a4, a5, a6);
+var _Float8GetDatum = Module['_Float8GetDatum'] = (a0) => (_Float8GetDatum = Module['_Float8GetDatum'] = wasmExports['Float8GetDatum'])(a0);
+var _pairingheap_allocate = Module['_pairingheap_allocate'] = (a0, a1) => (_pairingheap_allocate = Module['_pairingheap_allocate'] = wasmExports['pairingheap_allocate'])(a0, a1);
+var __hash_getbuf = Module['__hash_getbuf'] = (a0, a1, a2, a3) => (__hash_getbuf = Module['__hash_getbuf'] = wasmExports['_hash_getbuf'])(a0, a1, a2, a3);
+var __hash_relbuf = Module['__hash_relbuf'] = (a0, a1) => (__hash_relbuf = Module['__hash_relbuf'] = wasmExports['_hash_relbuf'])(a0, a1);
+var __hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = (a0) => (__hash_get_indextuple_hashkey = Module['__hash_get_indextuple_hashkey'] = wasmExports['_hash_get_indextuple_hashkey'])(a0);
+var __hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = (a0, a1, a2, a3, a4) => (__hash_getbuf_with_strategy = Module['__hash_getbuf_with_strategy'] = wasmExports['_hash_getbuf_with_strategy'])(a0, a1, a2, a3, a4);
+var _hash_bytes_extended = Module['_hash_bytes_extended'] = (a0, a1, a2) => (_hash_bytes_extended = Module['_hash_bytes_extended'] = wasmExports['hash_bytes_extended'])(a0, a1, a2);
+var __hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = (a0, a1) => (__hash_ovflblkno_to_bitno = Module['__hash_ovflblkno_to_bitno'] = wasmExports['_hash_ovflblkno_to_bitno'])(a0, a1);
+var _pg_class_aclcheck = Module['_pg_class_aclcheck'] = (a0, a1, a2) => (_pg_class_aclcheck = Module['_pg_class_aclcheck'] = wasmExports['pg_class_aclcheck'])(a0, a1, a2);
+var _ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = (a0, a1, a2) => (_ExecFetchSlotHeapTuple = Module['_ExecFetchSlotHeapTuple'] = wasmExports['ExecFetchSlotHeapTuple'])(a0, a1, a2);
+var _HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = (a0, a1, a2) => (_HeapTupleSatisfiesUpdate = Module['_HeapTupleSatisfiesUpdate'] = wasmExports['HeapTupleSatisfiesUpdate'])(a0, a1, a2);
+var _HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = (a0) => (_HeapTupleGetUpdateXid = Module['_HeapTupleGetUpdateXid'] = wasmExports['HeapTupleGetUpdateXid'])(a0);
+var _HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = (a0, a1, a2) => (_HeapTupleSatisfiesVacuum = Module['_HeapTupleSatisfiesVacuum'] = wasmExports['HeapTupleSatisfiesVacuum'])(a0, a1, a2);
+var _HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = (a0, a1, a2) => (_HeapTupleSatisfiesVisibility = Module['_HeapTupleSatisfiesVisibility'] = wasmExports['HeapTupleSatisfiesVisibility'])(a0, a1, a2);
+var _PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = (a0) => (_PageGetHeapFreeSpace = Module['_PageGetHeapFreeSpace'] = wasmExports['PageGetHeapFreeSpace'])(a0);
+var _ftruncate = Module['_ftruncate'] = (a0, a1) => (_ftruncate = Module['_ftruncate'] = wasmExports['ftruncate'])(a0, a1);
+var _heap_getnext = Module['_heap_getnext'] = (a0, a1) => (_heap_getnext = Module['_heap_getnext'] = wasmExports['heap_getnext'])(a0, a1);
+var _MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = (a0, a1) => (_MakeSingleTupleTableSlot = Module['_MakeSingleTupleTableSlot'] = wasmExports['MakeSingleTupleTableSlot'])(a0, a1);
+var _ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = (a0, a1, a2) => (_ExecStoreHeapTuple = Module['_ExecStoreHeapTuple'] = wasmExports['ExecStoreHeapTuple'])(a0, a1, a2);
+var _visibilitymap_pin = Module['_visibilitymap_pin'] = (a0, a1, a2) => (_visibilitymap_pin = Module['_visibilitymap_pin'] = wasmExports['visibilitymap_pin'])(a0, a1, a2);
+var _visibilitymap_clear = Module['_visibilitymap_clear'] = (a0, a1, a2, a3) => (_visibilitymap_clear = Module['_visibilitymap_clear'] = wasmExports['visibilitymap_clear'])(a0, a1, a2, a3);
+var _visibilitymap_get_status = Module['_visibilitymap_get_status'] = (a0, a1, a2) => (_visibilitymap_get_status = Module['_visibilitymap_get_status'] = wasmExports['visibilitymap_get_status'])(a0, a1, a2);
+var _visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = (a0, a1) => (_visibilitymap_prepare_truncate = Module['_visibilitymap_prepare_truncate'] = wasmExports['visibilitymap_prepare_truncate'])(a0, a1);
+var _get_namespace_name = Module['_get_namespace_name'] = (a0) => (_get_namespace_name = Module['_get_namespace_name'] = wasmExports['get_namespace_name'])(a0);
+var _vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = (a0, a1, a2, a3) => (_vac_estimate_reltuples = Module['_vac_estimate_reltuples'] = wasmExports['vac_estimate_reltuples'])(a0, a1, a2, a3);
+var _PrefetchBuffer = Module['_PrefetchBuffer'] = (a0, a1, a2, a3) => (_PrefetchBuffer = Module['_PrefetchBuffer'] = wasmExports['PrefetchBuffer'])(a0, a1, a2, a3);
+var _WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = (a0, a1, a2) => (_WalUsageAccumDiff = Module['_WalUsageAccumDiff'] = wasmExports['WalUsageAccumDiff'])(a0, a1, a2);
+var _BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = (a0, a1, a2) => (_BufferUsageAccumDiff = Module['_BufferUsageAccumDiff'] = wasmExports['BufferUsageAccumDiff'])(a0, a1, a2);
+var _GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = (a0, a1) => (_GetRecordedFreeSpace = Module['_GetRecordedFreeSpace'] = wasmExports['GetRecordedFreeSpace'])(a0, a1);
+var _heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = (a0) => (_heap_tuple_needs_eventual_freeze = Module['_heap_tuple_needs_eventual_freeze'] = wasmExports['heap_tuple_needs_eventual_freeze'])(a0);
+var _GetAccessStrategy = Module['_GetAccessStrategy'] = (a0) => (_GetAccessStrategy = Module['_GetAccessStrategy'] = wasmExports['GetAccessStrategy'])(a0);
+var _FreeAccessStrategy = Module['_FreeAccessStrategy'] = (a0) => (_FreeAccessStrategy = Module['_FreeAccessStrategy'] = wasmExports['FreeAccessStrategy'])(a0);
+var _ginPostingListDecode = Module['_ginPostingListDecode'] = (a0, a1) => (_ginPostingListDecode = Module['_ginPostingListDecode'] = wasmExports['ginPostingListDecode'])(a0, a1);
+var _LockPage = Module['_LockPage'] = (a0, a1, a2) => (_LockPage = Module['_LockPage'] = wasmExports['LockPage'])(a0, a1, a2);
+var _UnlockPage = Module['_UnlockPage'] = (a0, a1, a2) => (_UnlockPage = Module['_UnlockPage'] = wasmExports['UnlockPage'])(a0, a1, a2);
+var _object_ownercheck = Module['_object_ownercheck'] = (a0, a1, a2) => (_object_ownercheck = Module['_object_ownercheck'] = wasmExports['object_ownercheck'])(a0, a1, a2);
+var _aclcheck_error = Module['_aclcheck_error'] = (a0, a1, a2) => (_aclcheck_error = Module['_aclcheck_error'] = wasmExports['aclcheck_error'])(a0, a1, a2);
+var _FunctionCall4Coll = Module['_FunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_FunctionCall4Coll = Module['_FunctionCall4Coll'] = wasmExports['FunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
+var _varstr_cmp = Module['_varstr_cmp'] = (a0, a1, a2, a3, a4) => (_varstr_cmp = Module['_varstr_cmp'] = wasmExports['varstr_cmp'])(a0, a1, a2, a3, a4);
+var _table_openrv = Module['_table_openrv'] = (a0, a1) => (_table_openrv = Module['_table_openrv'] = wasmExports['table_openrv'])(a0, a1);
+var _get_fn_opclass_options = Module['_get_fn_opclass_options'] = (a0) => (_get_fn_opclass_options = Module['_get_fn_opclass_options'] = wasmExports['get_fn_opclass_options'])(a0);
+var _pg_popcount = Module['_pg_popcount'] = (a0, a1) => (_pg_popcount = Module['_pg_popcount'] = wasmExports['pg_popcount'])(a0, a1);
+var _brin_deform_tuple = Module['_brin_deform_tuple'] = (a0, a1, a2) => (_brin_deform_tuple = Module['_brin_deform_tuple'] = wasmExports['brin_deform_tuple'])(a0, a1, a2);
+var _brin_build_desc = Module['_brin_build_desc'] = (a0) => (_brin_build_desc = Module['_brin_build_desc'] = wasmExports['brin_build_desc'])(a0);
+var _IndexGetRelation = Module['_IndexGetRelation'] = (a0, a1) => (_IndexGetRelation = Module['_IndexGetRelation'] = wasmExports['IndexGetRelation'])(a0, a1);
+var _brin_free_desc = Module['_brin_free_desc'] = (a0) => (_brin_free_desc = Module['_brin_free_desc'] = wasmExports['brin_free_desc'])(a0);
+var _numeric_sub = Module['_numeric_sub'] = (a0) => (_numeric_sub = Module['_numeric_sub'] = wasmExports['numeric_sub'])(a0);
+var _DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = (a0, a1, a2) => (_DirectFunctionCall1Coll = Module['_DirectFunctionCall1Coll'] = wasmExports['DirectFunctionCall1Coll'])(a0, a1, a2);
+var _cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = (a0, a1) => (_cstring_to_text_with_len = Module['_cstring_to_text_with_len'] = wasmExports['cstring_to_text_with_len'])(a0, a1);
+var _bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = (a0) => (_bbsink_forward_begin_backup = Module['_bbsink_forward_begin_backup'] = wasmExports['bbsink_forward_begin_backup'])(a0);
+var _bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = (a0, a1) => (_bbsink_forward_begin_archive = Module['_bbsink_forward_begin_archive'] = wasmExports['bbsink_forward_begin_archive'])(a0, a1);
+var _bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = (a0, a1) => (_bbsink_forward_archive_contents = Module['_bbsink_forward_archive_contents'] = wasmExports['bbsink_forward_archive_contents'])(a0, a1);
+var _bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = (a0) => (_bbsink_forward_end_archive = Module['_bbsink_forward_end_archive'] = wasmExports['bbsink_forward_end_archive'])(a0);
+var _bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = (a0) => (_bbsink_forward_begin_manifest = Module['_bbsink_forward_begin_manifest'] = wasmExports['bbsink_forward_begin_manifest'])(a0);
+var _bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = (a0, a1) => (_bbsink_forward_manifest_contents = Module['_bbsink_forward_manifest_contents'] = wasmExports['bbsink_forward_manifest_contents'])(a0, a1);
+var _bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = (a0) => (_bbsink_forward_end_manifest = Module['_bbsink_forward_end_manifest'] = wasmExports['bbsink_forward_end_manifest'])(a0);
+var _bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = (a0, a1, a2) => (_bbsink_forward_end_backup = Module['_bbsink_forward_end_backup'] = wasmExports['bbsink_forward_end_backup'])(a0, a1, a2);
+var _bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = (a0) => (_bbsink_forward_cleanup = Module['_bbsink_forward_cleanup'] = wasmExports['bbsink_forward_cleanup'])(a0);
+var _geteuid = Module['_geteuid'] = () => (_geteuid = Module['_geteuid'] = wasmExports['geteuid'])();
+var _atoi = Module['_atoi'] = (a0) => (_atoi = Module['_atoi'] = wasmExports['atoi'])(a0);
+var _pg_checksum_page = Module['_pg_checksum_page'] = (a0, a1) => (_pg_checksum_page = Module['_pg_checksum_page'] = wasmExports['pg_checksum_page'])(a0, a1);
+var _escape_json = Module['_escape_json'] = (a0, a1) => (_escape_json = Module['_escape_json'] = wasmExports['escape_json'])(a0, a1);
+var _BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = (a0, a1, a2) => (_BaseBackupAddTarget = Module['_BaseBackupAddTarget'] = wasmExports['BaseBackupAddTarget'])(a0, a1, a2);
+var _CreateDestReceiver = Module['_CreateDestReceiver'] = (a0) => (_CreateDestReceiver = Module['_CreateDestReceiver'] = wasmExports['CreateDestReceiver'])(a0);
+var _has_privs_of_role = Module['_has_privs_of_role'] = (a0, a1) => (_has_privs_of_role = Module['_has_privs_of_role'] = wasmExports['has_privs_of_role'])(a0, a1);
+var _list_make4_impl = Module['_list_make4_impl'] = (a0, a1, a2, a3, a4) => (_list_make4_impl = Module['_list_make4_impl'] = wasmExports['list_make4_impl'])(a0, a1, a2, a3, a4);
+var _list_make5_impl = Module['_list_make5_impl'] = (a0, a1, a2, a3, a4, a5) => (_list_make5_impl = Module['_list_make5_impl'] = wasmExports['list_make5_impl'])(a0, a1, a2, a3, a4, a5);
+var _lappend_xid = Module['_lappend_xid'] = (a0, a1) => (_lappend_xid = Module['_lappend_xid'] = wasmExports['lappend_xid'])(a0, a1);
+var _list_member_xid = Module['_list_member_xid'] = (a0, a1) => (_list_member_xid = Module['_list_member_xid'] = wasmExports['list_member_xid'])(a0, a1);
+var _list_delete = Module['_list_delete'] = (a0, a1) => (_list_delete = Module['_list_delete'] = wasmExports['list_delete'])(a0, a1);
+var _CleanQuerytext = Module['_CleanQuerytext'] = (a0, a1, a2) => (_CleanQuerytext = Module['_CleanQuerytext'] = wasmExports['CleanQuerytext'])(a0, a1, a2);
+var _scanner_isspace = Module['_scanner_isspace'] = (a0) => (_scanner_isspace = Module['_scanner_isspace'] = wasmExports['scanner_isspace'])(a0);
+var _EnableQueryId = Module['_EnableQueryId'] = () => (_EnableQueryId = Module['_EnableQueryId'] = wasmExports['EnableQueryId'])();
+var _get_rel_type_id = Module['_get_rel_type_id'] = (a0) => (_get_rel_type_id = Module['_get_rel_type_id'] = wasmExports['get_rel_type_id'])(a0);
+var _makeRangeVar = Module['_makeRangeVar'] = (a0, a1, a2) => (_makeRangeVar = Module['_makeRangeVar'] = wasmExports['makeRangeVar'])(a0, a1, a2);
+var _makeTypeName = Module['_makeTypeName'] = (a0) => (_makeTypeName = Module['_makeTypeName'] = wasmExports['makeTypeName'])(a0);
+var _makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = (a0) => (_makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = wasmExports['makeTypeNameFromNameList'])(a0);
+var _MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = (a0, a1, a2) => (_MemoryContextAllocExtended = Module['_MemoryContextAllocExtended'] = wasmExports['MemoryContextAllocExtended'])(a0, a1, a2);
+var _exprIsLengthCoercion = Module['_exprIsLengthCoercion'] = (a0, a1) => (_exprIsLengthCoercion = Module['_exprIsLengthCoercion'] = wasmExports['exprIsLengthCoercion'])(a0, a1);
+var _strip_implicit_coercions = Module['_strip_implicit_coercions'] = (a0) => (_strip_implicit_coercions = Module['_strip_implicit_coercions'] = wasmExports['strip_implicit_coercions'])(a0);
+var _exprLocation = Module['_exprLocation'] = (a0) => (_exprLocation = Module['_exprLocation'] = wasmExports['exprLocation'])(a0);
+var _makeParamList = Module['_makeParamList'] = (a0) => (_makeParamList = Module['_makeParamList'] = wasmExports['makeParamList'])(a0);
+var _appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = (a0, a1, a2) => (_appendStringInfoStringQuoted = Module['_appendStringInfoStringQuoted'] = wasmExports['appendStringInfoStringQuoted'])(a0, a1, a2);
+var _get_typcollation = Module['_get_typcollation'] = (a0) => (_get_typcollation = Module['_get_typcollation'] = wasmExports['get_typcollation'])(a0);
+var _makeInteger = Module['_makeInteger'] = (a0) => (_makeInteger = Module['_makeInteger'] = wasmExports['makeInteger'])(a0);
+var _makeBoolean = Module['_makeBoolean'] = (a0) => (_makeBoolean = Module['_makeBoolean'] = wasmExports['makeBoolean'])(a0);
 var _GetForeignDataWrapper = Module['_GetForeignDataWrapper'] = (a0) => (_GetForeignDataWrapper = Module['_GetForeignDataWrapper'] = wasmExports['GetForeignDataWrapper'])(a0);
 var _GetSysCacheOid = Module['_GetSysCacheOid'] = (a0, a1, a2, a3, a4, a5) => (_GetSysCacheOid = Module['_GetSysCacheOid'] = wasmExports['GetSysCacheOid'])(a0, a1, a2, a3, a4, a5);
 var _GetForeignServer = Module['_GetForeignServer'] = (a0) => (_GetForeignServer = Module['_GetForeignServer'] = wasmExports['GetForeignServer'])(a0);
@@ -9632,42 +9502,424 @@ var _initClosestMatch = Module['_initClosestMatch'] = (a0, a1, a2) => (_initClos
 var _updateClosestMatch = Module['_updateClosestMatch'] = (a0, a1) => (_updateClosestMatch = Module['_updateClosestMatch'] = wasmExports['updateClosestMatch'])(a0, a1);
 var _getClosestMatch = Module['_getClosestMatch'] = (a0) => (_getClosestMatch = Module['_getClosestMatch'] = wasmExports['getClosestMatch'])(a0);
 var _GetExistingLocalJoinPath = Module['_GetExistingLocalJoinPath'] = (a0) => (_GetExistingLocalJoinPath = Module['_GetExistingLocalJoinPath'] = wasmExports['GetExistingLocalJoinPath'])(a0);
-var _find_base_rel = Module['_find_base_rel'] = (a0, a1) => (_find_base_rel = Module['_find_base_rel'] = wasmExports['find_base_rel'])(a0, a1);
-var _bms_equal = Module['_bms_equal'] = (a0, a1) => (_bms_equal = Module['_bms_equal'] = wasmExports['bms_equal'])(a0, a1);
-var _list_copy = Module['_list_copy'] = (a0) => (_list_copy = Module['_list_copy'] = wasmExports['list_copy'])(a0);
-var _list_make3_impl = Module['_list_make3_impl'] = (a0, a1, a2, a3) => (_list_make3_impl = Module['_list_make3_impl'] = wasmExports['list_make3_impl'])(a0, a1, a2, a3);
-var _parser_errposition = Module['_parser_errposition'] = (a0, a1) => (_parser_errposition = Module['_parser_errposition'] = wasmExports['parser_errposition'])(a0, a1);
-var _get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = (a0, a1) => (_get_fn_expr_argtype = Module['_get_fn_expr_argtype'] = wasmExports['get_fn_expr_argtype'])(a0, a1);
+var _LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = (a0, a1) => (_LWLockRegisterTranche = Module['_LWLockRegisterTranche'] = wasmExports['LWLockRegisterTranche'])(a0, a1);
+var _GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = (a0) => (_GetNamedLWLockTranche = Module['_GetNamedLWLockTranche'] = wasmExports['GetNamedLWLockTranche'])(a0);
+var _LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = () => (_LWLockNewTrancheId = Module['_LWLockNewTrancheId'] = wasmExports['LWLockNewTrancheId'])();
+var _RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = (a0, a1) => (_RequestNamedLWLockTranche = Module['_RequestNamedLWLockTranche'] = wasmExports['RequestNamedLWLockTranche'])(a0, a1);
+var _resetStringInfo = Module['_resetStringInfo'] = (a0) => (_resetStringInfo = Module['_resetStringInfo'] = wasmExports['resetStringInfo'])(a0);
+var _ShmemInitHash = Module['_ShmemInitHash'] = (a0, a1, a2, a3, a4) => (_ShmemInitHash = Module['_ShmemInitHash'] = wasmExports['ShmemInitHash'])(a0, a1, a2, a3, a4);
+var _hash_estimate_size = Module['_hash_estimate_size'] = (a0, a1) => (_hash_estimate_size = Module['_hash_estimate_size'] = wasmExports['hash_estimate_size'])(a0, a1);
+var _smgrread = Module['_smgrread'] = (a0, a1, a2, a3) => (_smgrread = Module['_smgrread'] = wasmExports['smgrread'])(a0, a1, a2, a3);
+var _smgrtruncate = Module['_smgrtruncate'] = (a0, a1, a2, a3) => (_smgrtruncate = Module['_smgrtruncate'] = wasmExports['smgrtruncate'])(a0, a1, a2, a3);
+var _BackendXidGetPid = Module['_BackendXidGetPid'] = (a0) => (_BackendXidGetPid = Module['_BackendXidGetPid'] = wasmExports['BackendXidGetPid'])(a0);
+var _superuser = Module['_superuser'] = () => (_superuser = Module['_superuser'] = wasmExports['superuser'])();
+var _fcntl = Module['_fcntl'] = (a0, a1, a2) => (_fcntl = Module['_fcntl'] = wasmExports['fcntl'])(a0, a1, a2);
+var _AddWaitEventToSet = Module['_AddWaitEventToSet'] = (a0, a1, a2, a3, a4) => (_AddWaitEventToSet = Module['_AddWaitEventToSet'] = wasmExports['AddWaitEventToSet'])(a0, a1, a2, a3, a4);
+var _poll = Module['_poll'] = (a0, a1, a2) => (_poll = Module['_poll'] = wasmExports['poll'])(a0, a1, a2);
+var _WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = (a0, a1, a2, a3, a4) => (_WaitLatchOrSocket = Module['_WaitLatchOrSocket'] = wasmExports['WaitLatchOrSocket'])(a0, a1, a2, a3, a4);
+var _GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = (a0) => (_GetNumRegisteredWaitEvents = Module['_GetNumRegisteredWaitEvents'] = wasmExports['GetNumRegisteredWaitEvents'])(a0);
+var _RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = (a0) => (_RequestAddinShmemSpace = Module['_RequestAddinShmemSpace'] = wasmExports['RequestAddinShmemSpace'])(a0);
+var _procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = (a0) => (_procsignal_sigusr1_handler = Module['_procsignal_sigusr1_handler'] = wasmExports['procsignal_sigusr1_handler'])(a0);
+var _wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = (a0, a1) => (_wasm_OpenPipeStream = Module['_wasm_OpenPipeStream'] = wasmExports['wasm_OpenPipeStream'])(a0, a1);
+var _fiprintf = Module['_fiprintf'] = (a0, a1, a2) => (_fiprintf = Module['_fiprintf'] = wasmExports['fiprintf'])(a0, a1, a2);
+var _fopen = Module['_fopen'] = (a0, a1) => (_fopen = Module['_fopen'] = wasmExports['fopen'])(a0, a1);
+var _fclose = Module['_fclose'] = (a0) => (_fclose = Module['_fclose'] = wasmExports['fclose'])(a0);
+var _fsync_fname_ext = Module['_fsync_fname_ext'] = (a0, a1, a2, a3) => (_fsync_fname_ext = Module['_fsync_fname_ext'] = wasmExports['fsync_fname_ext'])(a0, a1, a2, a3);
+var _rename = Module['_rename'] = (a0, a1) => (_rename = Module['_rename'] = wasmExports['rename'])(a0, a1);
+var _dup = Module['_dup'] = (a0) => (_dup = Module['_dup'] = wasmExports['dup'])(a0);
+var _open = Module['_open'] = (a0, a1, a2) => (_open = Module['_open'] = wasmExports['open'])(a0, a1, a2);
+var _AcquireExternalFD = Module['_AcquireExternalFD'] = () => (_AcquireExternalFD = Module['_AcquireExternalFD'] = wasmExports['AcquireExternalFD'])();
+var _realloc = Module['_realloc'] = (a0, a1) => (_realloc = Module['_realloc'] = wasmExports['realloc'])(a0, a1);
+var _pclose = Module['_pclose'] = (a0) => (_pclose = Module['_pclose'] = wasmExports['pclose'])(a0);
+var _ClosePipeStream = Module['_ClosePipeStream'] = (a0) => (_ClosePipeStream = Module['_ClosePipeStream'] = wasmExports['ClosePipeStream'])(a0);
+var _copy_file = Module['_copy_file'] = (a0, a1) => (_copy_file = Module['_copy_file'] = wasmExports['copy_file'])(a0, a1);
+var _have_free_buffer = Module['_have_free_buffer'] = () => (_have_free_buffer = Module['_have_free_buffer'] = wasmExports['have_free_buffer'])();
+var _LockBufHdr = Module['_LockBufHdr'] = (a0) => (_LockBufHdr = Module['_LockBufHdr'] = wasmExports['LockBufHdr'])(a0);
+var _calloc = Module['_calloc'] = (a0, a1) => (_calloc = Module['_calloc'] = wasmExports['calloc'])(a0, a1);
+var _pg_md5_encrypt = Module['_pg_md5_encrypt'] = (a0, a1, a2, a3, a4) => (_pg_md5_encrypt = Module['_pg_md5_encrypt'] = wasmExports['pg_md5_encrypt'])(a0, a1, a2, a3, a4);
+var _plain_crypt_verify = Module['_plain_crypt_verify'] = (a0, a1, a2, a3) => (_plain_crypt_verify = Module['_plain_crypt_verify'] = wasmExports['plain_crypt_verify'])(a0, a1, a2, a3);
+var _feof = Module['_feof'] = (a0) => (_feof = Module['_feof'] = wasmExports['feof'])(a0);
+var _pg_strip_crlf = Module['_pg_strip_crlf'] = (a0) => (_pg_strip_crlf = Module['_pg_strip_crlf'] = wasmExports['pg_strip_crlf'])(a0);
+var _pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = (a0, a1, a2, a3) => (_pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = wasmExports['pg_getaddrinfo_all'])(a0, a1, a2, a3);
+var _pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = (a0, a1) => (_pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = wasmExports['pg_freeaddrinfo_all'])(a0, a1);
+var _gai_strerror = Module['_gai_strerror'] = (a0) => (_gai_strerror = Module['_gai_strerror'] = wasmExports['gai_strerror'])(a0);
+var _pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = (a0, a1, a2) => (_pg_mb2wchar_with_len = Module['_pg_mb2wchar_with_len'] = wasmExports['pg_mb2wchar_with_len'])(a0, a1, a2);
+var _pg_regcomp = Module['_pg_regcomp'] = (a0, a1, a2, a3, a4) => (_pg_regcomp = Module['_pg_regcomp'] = wasmExports['pg_regcomp'])(a0, a1, a2, a3, a4);
+var _pg_regerror = Module['_pg_regerror'] = (a0, a1, a2, a3) => (_pg_regerror = Module['_pg_regerror'] = wasmExports['pg_regerror'])(a0, a1, a2, a3);
+var _get_role_oid = Module['_get_role_oid'] = (a0, a1) => (_get_role_oid = Module['_get_role_oid'] = wasmExports['get_role_oid'])(a0, a1);
+var _strcat = Module['_strcat'] = (a0, a1) => (_strcat = Module['_strcat'] = wasmExports['strcat'])(a0, a1);
+var _pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = (a0, a1, a2, a3, a4, a5, a6) => (_pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = wasmExports['pg_getnameinfo_all'])(a0, a1, a2, a3, a4, a5, a6);
+var _pg_strtoint32 = Module['_pg_strtoint32'] = (a0) => (_pg_strtoint32 = Module['_pg_strtoint32'] = wasmExports['pg_strtoint32'])(a0);
+var _getpeereid = Module['_getpeereid'] = (a0, a1, a2) => (_getpeereid = Module['_getpeereid'] = wasmExports['getpeereid'])(a0, a1, a2);
+var _socket = Module['_socket'] = (a0, a1, a2) => (_socket = Module['_socket'] = wasmExports['socket'])(a0, a1, a2);
+var _connect = Module['_connect'] = (a0, a1, a2) => (_connect = Module['_connect'] = wasmExports['connect'])(a0, a1, a2);
+var _send = Module['_send'] = (a0, a1, a2, a3) => (_send = Module['_send'] = wasmExports['send'])(a0, a1, a2, a3);
+var _recv = Module['_recv'] = (a0, a1, a2, a3) => (_recv = Module['_recv'] = wasmExports['recv'])(a0, a1, a2, a3);
+var _pq_sendtext = Module['_pq_sendtext'] = (a0, a1, a2) => (_pq_sendtext = Module['_pq_sendtext'] = wasmExports['pq_sendtext'])(a0, a1, a2);
+var _pq_sendfloat4 = Module['_pq_sendfloat4'] = (a0, a1) => (_pq_sendfloat4 = Module['_pq_sendfloat4'] = wasmExports['pq_sendfloat4'])(a0, a1);
+var _pq_sendfloat8 = Module['_pq_sendfloat8'] = (a0, a1) => (_pq_sendfloat8 = Module['_pq_sendfloat8'] = wasmExports['pq_sendfloat8'])(a0, a1);
+var _pq_begintypsend = Module['_pq_begintypsend'] = (a0) => (_pq_begintypsend = Module['_pq_begintypsend'] = wasmExports['pq_begintypsend'])(a0);
+var _pq_endtypsend = Module['_pq_endtypsend'] = (a0) => (_pq_endtypsend = Module['_pq_endtypsend'] = wasmExports['pq_endtypsend'])(a0);
+var _pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = (a0) => (_pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = wasmExports['pq_getmsgfloat4'])(a0);
+var _pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = (a0) => (_pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = wasmExports['pq_getmsgfloat8'])(a0);
+var _pq_getmsgtext = Module['_pq_getmsgtext'] = (a0, a1, a2) => (_pq_getmsgtext = Module['_pq_getmsgtext'] = wasmExports['pq_getmsgtext'])(a0, a1, a2);
+var _be_lo_unlink = Module['_be_lo_unlink'] = (a0) => (_be_lo_unlink = Module['_be_lo_unlink'] = wasmExports['be_lo_unlink'])(a0);
+var _text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = (a0, a1, a2) => (_text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = wasmExports['text_to_cstring_buffer'])(a0, a1, a2);
+var _explicit_bzero = Module['_explicit_bzero'] = (a0, a1) => (_explicit_bzero = Module['_explicit_bzero'] = wasmExports['explicit_bzero'])(a0, a1);
+var _setsockopt = Module['_setsockopt'] = (a0, a1, a2, a3, a4) => (_setsockopt = Module['_setsockopt'] = wasmExports['setsockopt'])(a0, a1, a2, a3, a4);
+var _getsockname = Module['_getsockname'] = (a0, a1, a2) => (_getsockname = Module['_getsockname'] = wasmExports['getsockname'])(a0, a1, a2);
+var _pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = (a0, a1) => (_pq_recvbuf_fill = Module['_pq_recvbuf_fill'] = wasmExports['pq_recvbuf_fill'])(a0, a1);
+var _fread = Module['_fread'] = (a0, a1, a2, a3) => (_fread = Module['_fread'] = wasmExports['fread'])(a0, a1, a2, a3);
 var _fwrite = Module['_fwrite'] = (a0, a1, a2, a3) => (_fwrite = Module['_fwrite'] = wasmExports['fwrite'])(a0, a1, a2, a3);
-var _fputc = Module['_fputc'] = (a0, a1) => (_fputc = Module['_fputc'] = wasmExports['fputc'])(a0, a1);
-var _MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = (a0, a1) => (_MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = wasmExports['MemoryContextAllocHuge'])(a0, a1);
-var _hash_seq_term = Module['_hash_seq_term'] = (a0) => (_hash_seq_term = Module['_hash_seq_term'] = wasmExports['hash_seq_term'])(a0);
-var _PinPortal = Module['_PinPortal'] = (a0) => (_PinPortal = Module['_PinPortal'] = wasmExports['PinPortal'])(a0);
-var _UnpinPortal = Module['_UnpinPortal'] = (a0) => (_UnpinPortal = Module['_UnpinPortal'] = wasmExports['UnpinPortal'])(a0);
-var _strnlen = Module['_strnlen'] = (a0, a1) => (_strnlen = Module['_strnlen'] = wasmExports['strnlen'])(a0, a1);
+var _getsockopt = Module['_getsockopt'] = (a0, a1, a2, a3, a4) => (_getsockopt = Module['_getsockopt'] = wasmExports['getsockopt'])(a0, a1, a2, a3, a4);
+var _sigemptyset = Module['_sigemptyset'] = (a0) => (_sigemptyset = Module['_sigemptyset'] = wasmExports['sigemptyset'])(a0);
+var _pg_b64_enc_len = Module['_pg_b64_enc_len'] = (a0) => (_pg_b64_enc_len = Module['_pg_b64_enc_len'] = wasmExports['pg_b64_enc_len'])(a0);
+var _pg_b64_encode = Module['_pg_b64_encode'] = (a0, a1, a2, a3) => (_pg_b64_encode = Module['_pg_b64_encode'] = wasmExports['pg_b64_encode'])(a0, a1, a2, a3);
+var _pg_b64_dec_len = Module['_pg_b64_dec_len'] = (a0) => (_pg_b64_dec_len = Module['_pg_b64_dec_len'] = wasmExports['pg_b64_dec_len'])(a0);
+var _pg_b64_decode = Module['_pg_b64_decode'] = (a0, a1, a2, a3) => (_pg_b64_decode = Module['_pg_b64_decode'] = wasmExports['pg_b64_decode'])(a0, a1, a2, a3);
+var _pg_hmac_create = Module['_pg_hmac_create'] = (a0) => (_pg_hmac_create = Module['_pg_hmac_create'] = wasmExports['pg_hmac_create'])(a0);
+var _pg_hmac_init = Module['_pg_hmac_init'] = (a0, a1, a2) => (_pg_hmac_init = Module['_pg_hmac_init'] = wasmExports['pg_hmac_init'])(a0, a1, a2);
+var _pg_hmac_update = Module['_pg_hmac_update'] = (a0, a1, a2) => (_pg_hmac_update = Module['_pg_hmac_update'] = wasmExports['pg_hmac_update'])(a0, a1, a2);
+var _pg_hmac_final = Module['_pg_hmac_final'] = (a0, a1, a2) => (_pg_hmac_final = Module['_pg_hmac_final'] = wasmExports['pg_hmac_final'])(a0, a1, a2);
+var _pg_hmac_error = Module['_pg_hmac_error'] = (a0) => (_pg_hmac_error = Module['_pg_hmac_error'] = wasmExports['pg_hmac_error'])(a0);
+var _pg_hmac_free = Module['_pg_hmac_free'] = (a0) => (_pg_hmac_free = Module['_pg_hmac_free'] = wasmExports['pg_hmac_free'])(a0);
+var _scram_H = Module['_scram_H'] = (a0, a1, a2, a3, a4) => (_scram_H = Module['_scram_H'] = wasmExports['scram_H'])(a0, a1, a2, a3, a4);
+var _pg_saslprep = Module['_pg_saslprep'] = (a0, a1) => (_pg_saslprep = Module['_pg_saslprep'] = wasmExports['pg_saslprep'])(a0, a1);
+var _scram_build_secret = Module['_scram_build_secret'] = (a0, a1, a2, a3, a4, a5, a6) => (_scram_build_secret = Module['_scram_build_secret'] = wasmExports['scram_build_secret'])(a0, a1, a2, a3, a4, a5, a6);
+var _scram_SaltedPassword = Module['_scram_SaltedPassword'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_scram_SaltedPassword = Module['_scram_SaltedPassword'] = wasmExports['scram_SaltedPassword'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _scram_ServerKey = Module['_scram_ServerKey'] = (a0, a1, a2, a3, a4) => (_scram_ServerKey = Module['_scram_ServerKey'] = wasmExports['scram_ServerKey'])(a0, a1, a2, a3, a4);
+var _pg_initdb = Module['_pg_initdb'] = () => (_pg_initdb = Module['_pg_initdb'] = wasmExports['pg_initdb'])();
+var _pg_initdb_main = Module['_pg_initdb_main'] = () => (_pg_initdb_main = Module['_pg_initdb_main'] = wasmExports['pg_initdb_main'])();
+var ___cxa_throw = Module['___cxa_throw'] = (a0, a1, a2) => (___cxa_throw = Module['___cxa_throw'] = wasmExports['__cxa_throw'])(a0, a1, a2);
+var _main_repl = Module['_main_repl'] = () => (_main_repl = Module['_main_repl'] = wasmExports['main_repl'])();
+var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
+var _setenv = Module['_setenv'] = (a0, a1, a2) => (_setenv = Module['_setenv'] = wasmExports['setenv'])(a0, a1, a2);
+var _pg_repl_raf = Module['_pg_repl_raf'] = () => (_pg_repl_raf = Module['_pg_repl_raf'] = wasmExports['pg_repl_raf'])();
+var _bloom_create = Module['_bloom_create'] = (a0, a1, a2) => (_bloom_create = Module['_bloom_create'] = wasmExports['bloom_create'])(a0, a1, a2);
+var _bloom_free = Module['_bloom_free'] = (a0) => (_bloom_free = Module['_bloom_free'] = wasmExports['bloom_free'])(a0);
+var _bloom_add_element = Module['_bloom_add_element'] = (a0, a1, a2) => (_bloom_add_element = Module['_bloom_add_element'] = wasmExports['bloom_add_element'])(a0, a1, a2);
+var _bloom_lacks_element = Module['_bloom_lacks_element'] = (a0, a1, a2) => (_bloom_lacks_element = Module['_bloom_lacks_element'] = wasmExports['bloom_lacks_element'])(a0, a1, a2);
+var _bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = (a0) => (_bloom_prop_bits_set = Module['_bloom_prop_bits_set'] = wasmExports['bloom_prop_bits_set'])(a0);
+var _pairingheap_free = Module['_pairingheap_free'] = (a0) => (_pairingheap_free = Module['_pairingheap_free'] = wasmExports['pairingheap_free'])(a0);
+var _pairingheap_first = Module['_pairingheap_first'] = (a0) => (_pairingheap_first = Module['_pairingheap_first'] = wasmExports['pairingheap_first'])(a0);
+var _get_relkind_objtype = Module['_get_relkind_objtype'] = (a0) => (_get_relkind_objtype = Module['_get_relkind_objtype'] = wasmExports['get_relkind_objtype'])(a0);
+var _coerce_to_target_type = Module['_coerce_to_target_type'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_coerce_to_target_type = Module['_coerce_to_target_type'] = wasmExports['coerce_to_target_type'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _t_isdigit = Module['_t_isdigit'] = (a0) => (_t_isdigit = Module['_t_isdigit'] = wasmExports['t_isdigit'])(a0);
+var _pg_mblen = Module['_pg_mblen'] = (a0) => (_pg_mblen = Module['_pg_mblen'] = wasmExports['pg_mblen'])(a0);
+var _t_isspace = Module['_t_isspace'] = (a0) => (_t_isspace = Module['_t_isspace'] = wasmExports['t_isspace'])(a0);
+var _t_isalnum = Module['_t_isalnum'] = (a0) => (_t_isalnum = Module['_t_isalnum'] = wasmExports['t_isalnum'])(a0);
+var _isalnum = Module['_isalnum'] = (a0) => (_isalnum = Module['_isalnum'] = wasmExports['isalnum'])(a0);
+var _tsearch_readline_begin = Module['_tsearch_readline_begin'] = (a0, a1) => (_tsearch_readline_begin = Module['_tsearch_readline_begin'] = wasmExports['tsearch_readline_begin'])(a0, a1);
+var _tsearch_readline = Module['_tsearch_readline'] = (a0) => (_tsearch_readline = Module['_tsearch_readline'] = wasmExports['tsearch_readline'])(a0);
+var _pg_any_to_server = Module['_pg_any_to_server'] = (a0, a1, a2) => (_pg_any_to_server = Module['_pg_any_to_server'] = wasmExports['pg_any_to_server'])(a0, a1, a2);
+var _tsearch_readline_end = Module['_tsearch_readline_end'] = (a0) => (_tsearch_readline_end = Module['_tsearch_readline_end'] = wasmExports['tsearch_readline_end'])(a0);
+var _lowerstr = Module['_lowerstr'] = (a0) => (_lowerstr = Module['_lowerstr'] = wasmExports['lowerstr'])(a0);
+var _lowerstr_with_len = Module['_lowerstr_with_len'] = (a0, a1) => (_lowerstr_with_len = Module['_lowerstr_with_len'] = wasmExports['lowerstr_with_len'])(a0, a1);
+var _pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = () => (_pg_database_encoding_max_length = Module['_pg_database_encoding_max_length'] = wasmExports['pg_database_encoding_max_length'])();
+var _tolower = Module['_tolower'] = (a0) => (_tolower = Module['_tolower'] = wasmExports['tolower'])(a0);
+var _readstoplist = Module['_readstoplist'] = (a0, a1, a2) => (_readstoplist = Module['_readstoplist'] = wasmExports['readstoplist'])(a0, a1, a2);
+var _searchstoplist = Module['_searchstoplist'] = (a0, a1) => (_searchstoplist = Module['_searchstoplist'] = wasmExports['searchstoplist'])(a0, a1);
+var _get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = (a0, a1) => (_get_tsearch_config_filename = Module['_get_tsearch_config_filename'] = wasmExports['get_tsearch_config_filename'])(a0, a1);
+var _pnstrdup = Module['_pnstrdup'] = (a0, a1) => (_pnstrdup = Module['_pnstrdup'] = wasmExports['pnstrdup'])(a0, a1);
+var _textToQualifiedNameList = Module['_textToQualifiedNameList'] = (a0) => (_textToQualifiedNameList = Module['_textToQualifiedNameList'] = wasmExports['textToQualifiedNameList'])(a0);
+var _DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = (a0, a1, a2, a3, a4, a5) => (_DirectFunctionCall4Coll = Module['_DirectFunctionCall4Coll'] = wasmExports['DirectFunctionCall4Coll'])(a0, a1, a2, a3, a4, a5);
+var _lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = (a0) => (_lookup_ts_dictionary_cache = Module['_lookup_ts_dictionary_cache'] = wasmExports['lookup_ts_dictionary_cache'])(a0);
+var _isxdigit = Module['_isxdigit'] = (a0) => (_isxdigit = Module['_isxdigit'] = wasmExports['isxdigit'])(a0);
+var _get_restriction_variable = Module['_get_restriction_variable'] = (a0, a1, a2, a3, a4, a5) => (_get_restriction_variable = Module['_get_restriction_variable'] = wasmExports['get_restriction_variable'])(a0, a1, a2, a3, a4, a5);
+var _get_attstatsslot = Module['_get_attstatsslot'] = (a0, a1, a2, a3, a4) => (_get_attstatsslot = Module['_get_attstatsslot'] = wasmExports['get_attstatsslot'])(a0, a1, a2, a3, a4);
+var _free_attstatsslot = Module['_free_attstatsslot'] = (a0) => (_free_attstatsslot = Module['_free_attstatsslot'] = wasmExports['free_attstatsslot'])(a0);
+var _construct_array_builtin = Module['_construct_array_builtin'] = (a0, a1, a2) => (_construct_array_builtin = Module['_construct_array_builtin'] = wasmExports['construct_array_builtin'])(a0, a1, a2);
+var _LookupTypeName = Module['_LookupTypeName'] = (a0, a1, a2, a3) => (_LookupTypeName = Module['_LookupTypeName'] = wasmExports['LookupTypeName'])(a0, a1, a2, a3);
+var _NameListToString = Module['_NameListToString'] = (a0) => (_NameListToString = Module['_NameListToString'] = wasmExports['NameListToString'])(a0);
+var _get_collation_oid = Module['_get_collation_oid'] = (a0, a1) => (_get_collation_oid = Module['_get_collation_oid'] = wasmExports['get_collation_oid'])(a0, a1);
+var _typeStringToTypeName = Module['_typeStringToTypeName'] = (a0, a1) => (_typeStringToTypeName = Module['_typeStringToTypeName'] = wasmExports['typeStringToTypeName'])(a0, a1);
+var _raw_parser = Module['_raw_parser'] = (a0, a1) => (_raw_parser = Module['_raw_parser'] = wasmExports['raw_parser'])(a0, a1);
+var _errsave_start = Module['_errsave_start'] = (a0, a1) => (_errsave_start = Module['_errsave_start'] = wasmExports['errsave_start'])(a0, a1);
+var _errsave_finish = Module['_errsave_finish'] = (a0, a1, a2, a3) => (_errsave_finish = Module['_errsave_finish'] = wasmExports['errsave_finish'])(a0, a1, a2, a3);
+var _transformExpr = Module['_transformExpr'] = (a0, a1, a2) => (_transformExpr = Module['_transformExpr'] = wasmExports['transformExpr'])(a0, a1, a2);
+var _get_base_element_type = Module['_get_base_element_type'] = (a0) => (_get_base_element_type = Module['_get_base_element_type'] = wasmExports['get_base_element_type'])(a0);
+var _lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = (a0, a1) => (_lookup_rowtype_tupdesc = Module['_lookup_rowtype_tupdesc'] = wasmExports['lookup_rowtype_tupdesc'])(a0, a1);
+var _quote_qualified_identifier = Module['_quote_qualified_identifier'] = (a0, a1) => (_quote_qualified_identifier = Module['_quote_qualified_identifier'] = wasmExports['quote_qualified_identifier'])(a0, a1);
+var _get_attname = Module['_get_attname'] = (a0, a1, a2) => (_get_attname = Module['_get_attname'] = wasmExports['get_attname'])(a0, a1, a2);
+var _get_rel_namespace = Module['_get_rel_namespace'] = (a0) => (_get_rel_namespace = Module['_get_rel_namespace'] = wasmExports['get_rel_namespace'])(a0);
+var _makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = (a0) => (_makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = wasmExports['makeRangeVarFromNameList'])(a0);
+var _varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = wasmExports['varstr_levenshtein_less_equal'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _core_yylex = Module['_core_yylex'] = (a0, a1, a2) => (_core_yylex = Module['_core_yylex'] = wasmExports['core_yylex'])(a0, a1, a2);
+var _pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = (a0, a1) => (_pg_mbstrlen_with_len = Module['_pg_mbstrlen_with_len'] = wasmExports['pg_mbstrlen_with_len'])(a0, a1);
+var _truncate_identifier = Module['_truncate_identifier'] = (a0, a1, a2) => (_truncate_identifier = Module['_truncate_identifier'] = wasmExports['truncate_identifier'])(a0, a1, a2);
+var _downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = (a0, a1, a2) => (_downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = wasmExports['downcase_truncate_identifier'])(a0, a1, a2);
+var _getc = Module['_getc'] = (a0) => (_getc = Module['_getc'] = wasmExports['getc'])(a0);
+var _clearerr = Module['_clearerr'] = (a0) => (_clearerr = Module['_clearerr'] = wasmExports['clearerr'])(a0);
+var _scanner_init = Module['_scanner_init'] = (a0, a1, a2, a3) => (_scanner_init = Module['_scanner_init'] = wasmExports['scanner_init'])(a0, a1, a2, a3);
+var _scanner_finish = Module['_scanner_finish'] = (a0) => (_scanner_finish = Module['_scanner_finish'] = wasmExports['scanner_finish'])(a0);
+var _bit_in = Module['_bit_in'] = (a0) => (_bit_in = Module['_bit_in'] = wasmExports['bit_in'])(a0);
+var _construct_array = Module['_construct_array'] = (a0, a1, a2, a3, a4, a5) => (_construct_array = Module['_construct_array'] = wasmExports['construct_array'])(a0, a1, a2, a3, a4, a5);
+var _canonicalize_path = Module['_canonicalize_path'] = (a0) => (_canonicalize_path = Module['_canonicalize_path'] = wasmExports['canonicalize_path'])(a0);
+var _path_is_prefix_of_path = Module['_path_is_prefix_of_path'] = (a0, a1) => (_path_is_prefix_of_path = Module['_path_is_prefix_of_path'] = wasmExports['path_is_prefix_of_path'])(a0, a1);
+var _namein = Module['_namein'] = (a0) => (_namein = Module['_namein'] = wasmExports['namein'])(a0);
+var _SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = (a0, a1, a2, a3, a4, a5) => (_SetTuplestoreDestReceiverParams = Module['_SetTuplestoreDestReceiverParams'] = wasmExports['SetTuplestoreDestReceiverParams'])(a0, a1, a2, a3, a4, a5);
+var _MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = (a0) => (_MemoryContextDeleteChildren = Module['_MemoryContextDeleteChildren'] = wasmExports['MemoryContextDeleteChildren'])(a0);
+var _set_config_option = Module['_set_config_option'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_set_config_option = Module['_set_config_option'] = wasmExports['set_config_option'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = (a0, a1) => (_ReleaseCachedPlan = Module['_ReleaseCachedPlan'] = wasmExports['ReleaseCachedPlan'])(a0, a1);
+var _tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = (a0, a1, a2) => (_tuplestore_begin_heap = Module['_tuplestore_begin_heap'] = wasmExports['tuplestore_begin_heap'])(a0, a1, a2);
+var _ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = (a0, a1, a2) => (_ExecForceStoreHeapTuple = Module['_ExecForceStoreHeapTuple'] = wasmExports['ExecForceStoreHeapTuple'])(a0, a1, a2);
+var _tuplestore_end = Module['_tuplestore_end'] = (a0) => (_tuplestore_end = Module['_tuplestore_end'] = wasmExports['tuplestore_end'])(a0);
+var _strtod = Module['_strtod'] = (a0, a1) => (_strtod = Module['_strtod'] = wasmExports['strtod'])(a0, a1);
+var _pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = (a0) => (_pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = wasmExports['pg_encoding_to_char_private'])(a0);
+var _GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = () => (_GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = wasmExports['GetDatabaseEncodingName'])();
+var _pg_is_ascii = Module['_pg_is_ascii'] = (a0) => (_pg_is_ascii = Module['_pg_is_ascii'] = wasmExports['pg_is_ascii'])(a0);
+var _pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = (a0, a1) => (_pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = wasmExports['pg_get_encoding_from_locale'])(a0, a1);
+var _pg_encoding_max_length = Module['_pg_encoding_max_length'] = (a0) => (_pg_encoding_max_length = Module['_pg_encoding_max_length'] = wasmExports['pg_encoding_max_length'])(a0);
+var _report_invalid_encoding = Module['_report_invalid_encoding'] = (a0, a1, a2) => (_report_invalid_encoding = Module['_report_invalid_encoding'] = wasmExports['report_invalid_encoding'])(a0, a1, a2);
+var _NextCopyFrom = Module['_NextCopyFrom'] = (a0, a1, a2, a3) => (_NextCopyFrom = Module['_NextCopyFrom'] = wasmExports['NextCopyFrom'])(a0, a1, a2, a3);
+var _InputFunctionCall = Module['_InputFunctionCall'] = (a0, a1, a2, a3) => (_InputFunctionCall = Module['_InputFunctionCall'] = wasmExports['InputFunctionCall'])(a0, a1, a2, a3);
+var _defGetStreamingMode = Module['_defGetStreamingMode'] = (a0) => (_defGetStreamingMode = Module['_defGetStreamingMode'] = wasmExports['defGetStreamingMode'])(a0);
+var _pg_lsn_in = Module['_pg_lsn_in'] = (a0) => (_pg_lsn_in = Module['_pg_lsn_in'] = wasmExports['pg_lsn_in'])(a0);
+var _quote_identifier = Module['_quote_identifier'] = (a0) => (_quote_identifier = Module['_quote_identifier'] = wasmExports['quote_identifier'])(a0);
+var _quote_literal_cstr = Module['_quote_literal_cstr'] = (a0) => (_quote_literal_cstr = Module['_quote_literal_cstr'] = wasmExports['quote_literal_cstr'])(a0);
+var _SPI_connect = Module['_SPI_connect'] = () => (_SPI_connect = Module['_SPI_connect'] = wasmExports['SPI_connect'])();
+var _SPI_exec = Module['_SPI_exec'] = (a0, a1) => (_SPI_exec = Module['_SPI_exec'] = wasmExports['SPI_exec'])(a0, a1);
+var _SPI_execute = Module['_SPI_execute'] = (a0, a1, a2) => (_SPI_execute = Module['_SPI_execute'] = wasmExports['SPI_execute'])(a0, a1, a2);
+var _SPI_getvalue = Module['_SPI_getvalue'] = (a0, a1, a2) => (_SPI_getvalue = Module['_SPI_getvalue'] = wasmExports['SPI_getvalue'])(a0, a1, a2);
+var _SPI_finish = Module['_SPI_finish'] = () => (_SPI_finish = Module['_SPI_finish'] = wasmExports['SPI_finish'])();
+var _pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = (a0) => (_pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = wasmExports['pg_char_to_encoding_private'])(a0);
+var _BlockSampler_Init = Module['_BlockSampler_Init'] = (a0, a1, a2, a3) => (_BlockSampler_Init = Module['_BlockSampler_Init'] = wasmExports['BlockSampler_Init'])(a0, a1, a2, a3);
+var _reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = (a0, a1) => (_reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = wasmExports['reservoir_init_selection_state'])(a0, a1);
+var _BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = (a0) => (_BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = wasmExports['BlockSampler_HasMore'])(a0);
+var _BlockSampler_Next = Module['_BlockSampler_Next'] = (a0) => (_BlockSampler_Next = Module['_BlockSampler_Next'] = wasmExports['BlockSampler_Next'])(a0);
+var _reservoir_get_next_S = Module['_reservoir_get_next_S'] = (a0, a1, a2) => (_reservoir_get_next_S = Module['_reservoir_get_next_S'] = wasmExports['reservoir_get_next_S'])(a0, a1, a2);
+var _sampler_random_fract = Module['_sampler_random_fract'] = (a0) => (_sampler_random_fract = Module['_sampler_random_fract'] = wasmExports['sampler_random_fract'])(a0);
+var _ProcessConfigFile = Module['_ProcessConfigFile'] = (a0) => (_ProcessConfigFile = Module['_ProcessConfigFile'] = wasmExports['ProcessConfigFile'])(a0);
+var _nextval = Module['_nextval'] = (a0) => (_nextval = Module['_nextval'] = wasmExports['nextval'])(a0);
+var _ProcessCopyOptions = Module['_ProcessCopyOptions'] = (a0, a1, a2, a3) => (_ProcessCopyOptions = Module['_ProcessCopyOptions'] = wasmExports['ProcessCopyOptions'])(a0, a1, a2, a3);
+var _pg_server_to_any = Module['_pg_server_to_any'] = (a0, a1, a2) => (_pg_server_to_any = Module['_pg_server_to_any'] = wasmExports['pg_server_to_any'])(a0, a1, a2);
+var _pg_encoding_mblen = Module['_pg_encoding_mblen'] = (a0, a1) => (_pg_encoding_mblen = Module['_pg_encoding_mblen'] = wasmExports['pg_encoding_mblen'])(a0, a1);
+var _GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = (a0, a1, a2) => (_GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = wasmExports['GetTopMostAncestorInPublication'])(a0, a1, a2);
+var _pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = (a0, a1, a2) => (_pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = wasmExports['pub_collist_to_bitmapset'])(a0, a1, a2);
+var _get_typtype = Module['_get_typtype'] = (a0) => (_get_typtype = Module['_get_typtype'] = wasmExports['get_typtype'])(a0);
+var _Async_Notify = Module['_Async_Notify'] = (a0, a1) => (_Async_Notify = Module['_Async_Notify'] = wasmExports['Async_Notify'])(a0, a1);
+var _ExplainBeginOutput = Module['_ExplainBeginOutput'] = (a0) => (_ExplainBeginOutput = Module['_ExplainBeginOutput'] = wasmExports['ExplainBeginOutput'])(a0);
+var _NewExplainState = Module['_NewExplainState'] = () => (_NewExplainState = Module['_NewExplainState'] = wasmExports['NewExplainState'])();
+var _ExplainEndOutput = Module['_ExplainEndOutput'] = (a0) => (_ExplainEndOutput = Module['_ExplainEndOutput'] = wasmExports['ExplainEndOutput'])(a0);
+var _appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = (a0, a1) => (_appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = wasmExports['appendStringInfoSpaces'])(a0, a1);
+var _ExplainPrintPlan = Module['_ExplainPrintPlan'] = (a0, a1) => (_ExplainPrintPlan = Module['_ExplainPrintPlan'] = wasmExports['ExplainPrintPlan'])(a0, a1);
+var _ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = (a0, a1) => (_ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = wasmExports['ExplainPrintTriggers'])(a0, a1);
+var _ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = (a0, a1) => (_ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = wasmExports['ExplainPrintJITSummary'])(a0, a1);
+var _InstrEndLoop = Module['_InstrEndLoop'] = (a0) => (_InstrEndLoop = Module['_InstrEndLoop'] = wasmExports['InstrEndLoop'])(a0);
+var _ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = (a0, a1, a2, a3) => (_ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = wasmExports['ExplainPropertyInteger'])(a0, a1, a2, a3);
+var _ExplainQueryText = Module['_ExplainQueryText'] = (a0, a1) => (_ExplainQueryText = Module['_ExplainQueryText'] = wasmExports['ExplainQueryText'])(a0, a1);
+var _ExplainPropertyText = Module['_ExplainPropertyText'] = (a0, a1, a2) => (_ExplainPropertyText = Module['_ExplainPropertyText'] = wasmExports['ExplainPropertyText'])(a0, a1, a2);
+var _ExplainQueryParameters = Module['_ExplainQueryParameters'] = (a0, a1, a2) => (_ExplainQueryParameters = Module['_ExplainQueryParameters'] = wasmExports['ExplainQueryParameters'])(a0, a1, a2);
+var _get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = (a0) => (_get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = wasmExports['get_namespace_name_or_temp'])(a0);
+var _get_func_namespace = Module['_get_func_namespace'] = (a0) => (_get_func_namespace = Module['_get_func_namespace'] = wasmExports['get_func_namespace'])(a0);
+var _construct_empty_array = Module['_construct_empty_array'] = (a0) => (_construct_empty_array = Module['_construct_empty_array'] = wasmExports['construct_empty_array'])(a0);
+var _GetCommandTagName = Module['_GetCommandTagName'] = (a0) => (_GetCommandTagName = Module['_GetCommandTagName'] = wasmExports['GetCommandTagName'])(a0);
+var _CreateExprContext = Module['_CreateExprContext'] = (a0) => (_CreateExprContext = Module['_CreateExprContext'] = wasmExports['CreateExprContext'])(a0);
+var _EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = () => (_EnsurePortalSnapshotExists = Module['_EnsurePortalSnapshotExists'] = wasmExports['EnsurePortalSnapshotExists'])();
+var _BeginCopyFrom = Module['_BeginCopyFrom'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_BeginCopyFrom = Module['_BeginCopyFrom'] = wasmExports['BeginCopyFrom'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _EndCopyFrom = Module['_EndCopyFrom'] = (a0) => (_EndCopyFrom = Module['_EndCopyFrom'] = wasmExports['EndCopyFrom'])(a0);
+var _get_extension_oid = Module['_get_extension_oid'] = (a0, a1) => (_get_extension_oid = Module['_get_extension_oid'] = wasmExports['get_extension_oid'])(a0, a1);
+var _strrchr = Module['_strrchr'] = (a0, a1) => (_strrchr = Module['_strrchr'] = wasmExports['strrchr'])(a0, a1);
+var _getExtensionOfObject = Module['_getExtensionOfObject'] = (a0, a1) => (_getExtensionOfObject = Module['_getExtensionOfObject'] = wasmExports['getExtensionOfObject'])(a0, a1);
+var _GetRelationPublications = Module['_GetRelationPublications'] = (a0) => (_GetRelationPublications = Module['_GetRelationPublications'] = wasmExports['GetRelationPublications'])(a0);
+var _ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = (a0) => (_ExecStoreAllNullTuple = Module['_ExecStoreAllNullTuple'] = wasmExports['ExecStoreAllNullTuple'])(a0);
+var _CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = (a0) => (_CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = wasmExports['CopyFromErrorCallback'])(a0);
+var _ExecInitRangeTable = Module['_ExecInitRangeTable'] = (a0, a1, a2) => (_ExecInitRangeTable = Module['_ExecInitRangeTable'] = wasmExports['ExecInitRangeTable'])(a0, a1, a2);
+var _format_type_extended = Module['_format_type_extended'] = (a0, a1, a2) => (_format_type_extended = Module['_format_type_extended'] = wasmExports['format_type_extended'])(a0, a1, a2);
+var _ExecReScan = Module['_ExecReScan'] = (a0) => (_ExecReScan = Module['_ExecReScan'] = wasmExports['ExecReScan'])(a0);
+var _ExecInitExprList = Module['_ExecInitExprList'] = (a0, a1) => (_ExecInitExprList = Module['_ExecInitExprList'] = wasmExports['ExecInitExprList'])(a0, a1);
+var _InstrAlloc = Module['_InstrAlloc'] = (a0, a1, a2) => (_InstrAlloc = Module['_InstrAlloc'] = wasmExports['InstrAlloc'])(a0, a1, a2);
+var _standard_ExecutorStart = Module['_standard_ExecutorStart'] = (a0, a1) => (_standard_ExecutorStart = Module['_standard_ExecutorStart'] = wasmExports['standard_ExecutorStart'])(a0, a1);
+var _standard_ExecutorRun = Module['_standard_ExecutorRun'] = (a0, a1, a2, a3) => (_standard_ExecutorRun = Module['_standard_ExecutorRun'] = wasmExports['standard_ExecutorRun'])(a0, a1, a2, a3);
+var _standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = (a0) => (_standard_ExecutorFinish = Module['_standard_ExecutorFinish'] = wasmExports['standard_ExecutorFinish'])(a0);
+var _standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = (a0) => (_standard_ExecutorEnd = Module['_standard_ExecutorEnd'] = wasmExports['standard_ExecutorEnd'])(a0);
+var _get_partition_ancestors = Module['_get_partition_ancestors'] = (a0) => (_get_partition_ancestors = Module['_get_partition_ancestors'] = wasmExports['get_partition_ancestors'])(a0);
+var _MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = (a0, a1) => (_MakeTupleTableSlot = Module['_MakeTupleTableSlot'] = wasmExports['MakeTupleTableSlot'])(a0, a1);
+var _ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = (a0, a1) => (_ExecFindJunkAttributeInTlist = Module['_ExecFindJunkAttributeInTlist'] = wasmExports['ExecFindJunkAttributeInTlist'])(a0, a1);
+var _ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = (a0, a1) => (_ExecGetReturningSlot = Module['_ExecGetReturningSlot'] = wasmExports['ExecGetReturningSlot'])(a0, a1);
+var _ExecAsyncResponse = Module['_ExecAsyncResponse'] = (a0) => (_ExecAsyncResponse = Module['_ExecAsyncResponse'] = wasmExports['ExecAsyncResponse'])(a0);
+var _ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = (a0, a1) => (_ExecAsyncRequestDone = Module['_ExecAsyncRequestDone'] = wasmExports['ExecAsyncRequestDone'])(a0, a1);
+var _ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = (a0) => (_ExecAsyncRequestPending = Module['_ExecAsyncRequestPending'] = wasmExports['ExecAsyncRequestPending'])(a0);
+var _InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = (a0, a1) => (_InstrUpdateTupleCount = Module['_InstrUpdateTupleCount'] = wasmExports['InstrUpdateTupleCount'])(a0, a1);
+var _ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = (a0, a1, a2) => (_ExecOpenScanRelation = Module['_ExecOpenScanRelation'] = wasmExports['ExecOpenScanRelation'])(a0, a1, a2);
+var _ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = (a0, a1) => (_ExecInitExprWithParams = Module['_ExecInitExprWithParams'] = wasmExports['ExecInitExprWithParams'])(a0, a1);
+var _ExprEvalPushStep = Module['_ExprEvalPushStep'] = (a0, a1) => (_ExprEvalPushStep = Module['_ExprEvalPushStep'] = wasmExports['ExprEvalPushStep'])(a0, a1);
+var _get_call_expr_argtype = Module['_get_call_expr_argtype'] = (a0, a1) => (_get_call_expr_argtype = Module['_get_call_expr_argtype'] = wasmExports['get_call_expr_argtype'])(a0, a1);
+var _MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = (a0) => (_MakeExpandedObjectReadOnlyInternal = Module['_MakeExpandedObjectReadOnlyInternal'] = wasmExports['MakeExpandedObjectReadOnlyInternal'])(a0);
+var _SPI_connect_ext = Module['_SPI_connect_ext'] = (a0) => (_SPI_connect_ext = Module['_SPI_connect_ext'] = wasmExports['SPI_connect_ext'])(a0);
+var _SPI_commit = Module['_SPI_commit'] = () => (_SPI_commit = Module['_SPI_commit'] = wasmExports['SPI_commit'])();
+var _CopyErrorData = Module['_CopyErrorData'] = () => (_CopyErrorData = Module['_CopyErrorData'] = wasmExports['CopyErrorData'])();
+var _FlushErrorState = Module['_FlushErrorState'] = () => (_FlushErrorState = Module['_FlushErrorState'] = wasmExports['FlushErrorState'])();
+var _ReThrowError = Module['_ReThrowError'] = (a0) => (_ReThrowError = Module['_ReThrowError'] = wasmExports['ReThrowError'])(a0);
+var _SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = () => (_SPI_commit_and_chain = Module['_SPI_commit_and_chain'] = wasmExports['SPI_commit_and_chain'])();
+var _SPI_rollback = Module['_SPI_rollback'] = () => (_SPI_rollback = Module['_SPI_rollback'] = wasmExports['SPI_rollback'])();
+var _SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = () => (_SPI_rollback_and_chain = Module['_SPI_rollback_and_chain'] = wasmExports['SPI_rollback_and_chain'])();
+var _SPI_freetuptable = Module['_SPI_freetuptable'] = (a0) => (_SPI_freetuptable = Module['_SPI_freetuptable'] = wasmExports['SPI_freetuptable'])(a0);
+var _SPI_execute_extended = Module['_SPI_execute_extended'] = (a0, a1) => (_SPI_execute_extended = Module['_SPI_execute_extended'] = wasmExports['SPI_execute_extended'])(a0, a1);
+var _SPI_execp = Module['_SPI_execp'] = (a0, a1, a2, a3) => (_SPI_execp = Module['_SPI_execp'] = wasmExports['SPI_execp'])(a0, a1, a2, a3);
+var _SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = (a0, a1) => (_SPI_execute_plan_extended = Module['_SPI_execute_plan_extended'] = wasmExports['SPI_execute_plan_extended'])(a0, a1);
+var _SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_execute_plan_with_paramlist = Module['_SPI_execute_plan_with_paramlist'] = wasmExports['SPI_execute_plan_with_paramlist'])(a0, a1, a2, a3);
+var _SPI_prepare = Module['_SPI_prepare'] = (a0, a1, a2) => (_SPI_prepare = Module['_SPI_prepare'] = wasmExports['SPI_prepare'])(a0, a1, a2);
+var _SPI_prepare_extended = Module['_SPI_prepare_extended'] = (a0, a1) => (_SPI_prepare_extended = Module['_SPI_prepare_extended'] = wasmExports['SPI_prepare_extended'])(a0, a1);
+var _SPI_keepplan = Module['_SPI_keepplan'] = (a0) => (_SPI_keepplan = Module['_SPI_keepplan'] = wasmExports['SPI_keepplan'])(a0);
+var _SPI_freeplan = Module['_SPI_freeplan'] = (a0) => (_SPI_freeplan = Module['_SPI_freeplan'] = wasmExports['SPI_freeplan'])(a0);
+var _SPI_copytuple = Module['_SPI_copytuple'] = (a0) => (_SPI_copytuple = Module['_SPI_copytuple'] = wasmExports['SPI_copytuple'])(a0);
+var _SPI_returntuple = Module['_SPI_returntuple'] = (a0, a1) => (_SPI_returntuple = Module['_SPI_returntuple'] = wasmExports['SPI_returntuple'])(a0, a1);
+var _SPI_fnumber = Module['_SPI_fnumber'] = (a0, a1) => (_SPI_fnumber = Module['_SPI_fnumber'] = wasmExports['SPI_fnumber'])(a0, a1);
+var _SPI_fname = Module['_SPI_fname'] = (a0, a1) => (_SPI_fname = Module['_SPI_fname'] = wasmExports['SPI_fname'])(a0, a1);
+var _SPI_getbinval = Module['_SPI_getbinval'] = (a0, a1, a2, a3) => (_SPI_getbinval = Module['_SPI_getbinval'] = wasmExports['SPI_getbinval'])(a0, a1, a2, a3);
+var _SPI_gettype = Module['_SPI_gettype'] = (a0, a1) => (_SPI_gettype = Module['_SPI_gettype'] = wasmExports['SPI_gettype'])(a0, a1);
+var _SPI_gettypeid = Module['_SPI_gettypeid'] = (a0, a1) => (_SPI_gettypeid = Module['_SPI_gettypeid'] = wasmExports['SPI_gettypeid'])(a0, a1);
+var _SPI_getrelname = Module['_SPI_getrelname'] = (a0) => (_SPI_getrelname = Module['_SPI_getrelname'] = wasmExports['SPI_getrelname'])(a0);
+var _SPI_palloc = Module['_SPI_palloc'] = (a0) => (_SPI_palloc = Module['_SPI_palloc'] = wasmExports['SPI_palloc'])(a0);
+var _SPI_datumTransfer = Module['_SPI_datumTransfer'] = (a0, a1, a2) => (_SPI_datumTransfer = Module['_SPI_datumTransfer'] = wasmExports['SPI_datumTransfer'])(a0, a1, a2);
+var _datumTransfer = Module['_datumTransfer'] = (a0, a1, a2) => (_datumTransfer = Module['_datumTransfer'] = wasmExports['datumTransfer'])(a0, a1, a2);
+var _SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = (a0, a1, a2, a3) => (_SPI_cursor_open_with_paramlist = Module['_SPI_cursor_open_with_paramlist'] = wasmExports['SPI_cursor_open_with_paramlist'])(a0, a1, a2, a3);
+var _SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = (a0, a1, a2) => (_SPI_cursor_parse_open = Module['_SPI_cursor_parse_open'] = wasmExports['SPI_cursor_parse_open'])(a0, a1, a2);
+var _SPI_cursor_find = Module['_SPI_cursor_find'] = (a0) => (_SPI_cursor_find = Module['_SPI_cursor_find'] = wasmExports['SPI_cursor_find'])(a0);
+var _SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = (a0, a1, a2) => (_SPI_cursor_fetch = Module['_SPI_cursor_fetch'] = wasmExports['SPI_cursor_fetch'])(a0, a1, a2);
+var _SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = (a0, a1, a2) => (_SPI_scroll_cursor_fetch = Module['_SPI_scroll_cursor_fetch'] = wasmExports['SPI_scroll_cursor_fetch'])(a0, a1, a2);
+var _SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = (a0, a1, a2) => (_SPI_scroll_cursor_move = Module['_SPI_scroll_cursor_move'] = wasmExports['SPI_scroll_cursor_move'])(a0, a1, a2);
+var _SPI_cursor_close = Module['_SPI_cursor_close'] = (a0) => (_SPI_cursor_close = Module['_SPI_cursor_close'] = wasmExports['SPI_cursor_close'])(a0);
+var _SPI_result_code_string = Module['_SPI_result_code_string'] = (a0) => (_SPI_result_code_string = Module['_SPI_result_code_string'] = wasmExports['SPI_result_code_string'])(a0);
+var _SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = (a0) => (_SPI_plan_get_plan_sources = Module['_SPI_plan_get_plan_sources'] = wasmExports['SPI_plan_get_plan_sources'])(a0);
+var _SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = (a0) => (_SPI_plan_get_cached_plan = Module['_SPI_plan_get_cached_plan'] = wasmExports['SPI_plan_get_cached_plan'])(a0);
+var _SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = (a0) => (_SPI_register_trigger_data = Module['_SPI_register_trigger_data'] = wasmExports['SPI_register_trigger_data'])(a0);
+var _tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = (a0) => (_tuplestore_tuple_count = Module['_tuplestore_tuple_count'] = wasmExports['tuplestore_tuple_count'])(a0);
+var _tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = (a0, a1, a2, a3, a4) => (_tuplesort_gettupleslot = Module['_tuplesort_gettupleslot'] = wasmExports['tuplesort_gettupleslot'])(a0, a1, a2, a3, a4);
+var _tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_tuplesort_begin_heap = Module['_tuplesort_begin_heap'] = wasmExports['tuplesort_begin_heap'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _tuplesort_reset = Module['_tuplesort_reset'] = (a0) => (_tuplesort_reset = Module['_tuplesort_reset'] = wasmExports['tuplesort_reset'])(a0);
+var _tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = (a0, a1) => (_tuplesort_puttupleslot = Module['_tuplesort_puttupleslot'] = wasmExports['tuplesort_puttupleslot'])(a0, a1);
+var _construct_md_array = Module['_construct_md_array'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_construct_md_array = Module['_construct_md_array'] = wasmExports['construct_md_array'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
+var _expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = (a0) => (_expanded_record_fetch_tupdesc = Module['_expanded_record_fetch_tupdesc'] = wasmExports['expanded_record_fetch_tupdesc'])(a0);
+var _expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = (a0, a1, a2) => (_expanded_record_fetch_field = Module['_expanded_record_fetch_field'] = wasmExports['expanded_record_fetch_field'])(a0, a1, a2);
+var _MemoryContextGetParent = Module['_MemoryContextGetParent'] = (a0) => (_MemoryContextGetParent = Module['_MemoryContextGetParent'] = wasmExports['MemoryContextGetParent'])(a0);
+var _DeleteExpandedObject = Module['_DeleteExpandedObject'] = (a0) => (_DeleteExpandedObject = Module['_DeleteExpandedObject'] = wasmExports['DeleteExpandedObject'])(a0);
+var _FreeExprContext = Module['_FreeExprContext'] = (a0, a1) => (_FreeExprContext = Module['_FreeExprContext'] = wasmExports['FreeExprContext'])(a0, a1);
+var _ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = (a0, a1) => (_ExecGetResultRelCheckAsUser = Module['_ExecGetResultRelCheckAsUser'] = wasmExports['ExecGetResultRelCheckAsUser'])(a0, a1);
+var _MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = (a0, a1) => (_MemoryContextMemAllocated = Module['_MemoryContextMemAllocated'] = wasmExports['MemoryContextMemAllocated'])(a0, a1);
+var _tuplestore_puttuple = Module['_tuplestore_puttuple'] = (a0, a1) => (_tuplestore_puttuple = Module['_tuplestore_puttuple'] = wasmExports['tuplestore_puttuple'])(a0, a1);
+var _standard_ProcessUtility = Module['_standard_ProcessUtility'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_standard_ProcessUtility = Module['_standard_ProcessUtility'] = wasmExports['standard_ProcessUtility'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _sigaddset = Module['_sigaddset'] = (a0, a1) => (_sigaddset = Module['_sigaddset'] = wasmExports['sigaddset'])(a0, a1);
+var _fsync_pgdata = Module['_fsync_pgdata'] = (a0, a1) => (_fsync_pgdata = Module['_fsync_pgdata'] = wasmExports['fsync_pgdata'])(a0, a1);
+var _get_restricted_token = Module['_get_restricted_token'] = () => (_get_restricted_token = Module['_get_restricted_token'] = wasmExports['get_restricted_token'])();
+var _pg_malloc = Module['_pg_malloc'] = (a0) => (_pg_malloc = Module['_pg_malloc'] = wasmExports['pg_malloc'])(a0);
+var _pg_realloc = Module['_pg_realloc'] = (a0, a1) => (_pg_realloc = Module['_pg_realloc'] = wasmExports['pg_realloc'])(a0, a1);
+var _pg_strdup = Module['_pg_strdup'] = (a0) => (_pg_strdup = Module['_pg_strdup'] = wasmExports['pg_strdup'])(a0);
+var _simple_prompt = Module['_simple_prompt'] = (a0, a1) => (_simple_prompt = Module['_simple_prompt'] = wasmExports['simple_prompt'])(a0, a1);
+var _EmitErrorReport = Module['_EmitErrorReport'] = () => (_EmitErrorReport = Module['_EmitErrorReport'] = wasmExports['EmitErrorReport'])();
+var _interactive_file = Module['_interactive_file'] = () => (_interactive_file = Module['_interactive_file'] = wasmExports['interactive_file'])();
+var _interactive_one = Module['_interactive_one'] = () => (_interactive_one = Module['_interactive_one'] = wasmExports['interactive_one'])();
+var _pg_shutdown = Module['_pg_shutdown'] = () => (_pg_shutdown = Module['_pg_shutdown'] = wasmExports['pg_shutdown'])();
+var _errhidestmt = Module['_errhidestmt'] = (a0) => (_errhidestmt = Module['_errhidestmt'] = wasmExports['errhidestmt'])(a0);
+var _interactive_write = Module['_interactive_write'] = (a0) => (_interactive_write = Module['_interactive_write'] = wasmExports['interactive_write'])(a0);
+var _interactive_read = Module['_interactive_read'] = () => (_interactive_read = Module['_interactive_read'] = wasmExports['interactive_read'])();
+var _SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = (a0) => (_SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = wasmExports['SignalHandlerForConfigReload'])(a0);
+var _PQconnectStartParams = Module['_PQconnectStartParams'] = (a0, a1, a2) => (_PQconnectStartParams = Module['_PQconnectStartParams'] = wasmExports['PQconnectStartParams'])(a0, a1, a2);
+var _PQstatus = Module['_PQstatus'] = (a0) => (_PQstatus = Module['_PQstatus'] = wasmExports['PQstatus'])(a0);
+var _PQsocket = Module['_PQsocket'] = (a0) => (_PQsocket = Module['_PQsocket'] = wasmExports['PQsocket'])(a0);
+var _ProcessWalRcvInterrupts = Module['_ProcessWalRcvInterrupts'] = () => (_ProcessWalRcvInterrupts = Module['_ProcessWalRcvInterrupts'] = wasmExports['ProcessWalRcvInterrupts'])();
+var _PQconnectPoll = Module['_PQconnectPoll'] = (a0) => (_PQconnectPoll = Module['_PQconnectPoll'] = wasmExports['PQconnectPoll'])(a0);
+var _PQconnectionUsedPassword = Module['_PQconnectionUsedPassword'] = (a0) => (_PQconnectionUsedPassword = Module['_PQconnectionUsedPassword'] = wasmExports['PQconnectionUsedPassword'])(a0);
+var _PQfinish = Module['_PQfinish'] = (a0) => (_PQfinish = Module['_PQfinish'] = wasmExports['PQfinish'])(a0);
+var _PQresultStatus = Module['_PQresultStatus'] = (a0) => (_PQresultStatus = Module['_PQresultStatus'] = wasmExports['PQresultStatus'])(a0);
+var _PQclear = Module['_PQclear'] = (a0) => (_PQclear = Module['_PQclear'] = wasmExports['PQclear'])(a0);
+var _PQerrorMessage = Module['_PQerrorMessage'] = (a0) => (_PQerrorMessage = Module['_PQerrorMessage'] = wasmExports['PQerrorMessage'])(a0);
 var _pchomp = Module['_pchomp'] = (a0) => (_pchomp = Module['_pchomp'] = wasmExports['pchomp'])(a0);
+var _PQnfields = Module['_PQnfields'] = (a0) => (_PQnfields = Module['_PQnfields'] = wasmExports['PQnfields'])(a0);
+var _PQntuples = Module['_PQntuples'] = (a0) => (_PQntuples = Module['_PQntuples'] = wasmExports['PQntuples'])(a0);
+var _PQgetvalue = Module['_PQgetvalue'] = (a0, a1, a2) => (_PQgetvalue = Module['_PQgetvalue'] = wasmExports['PQgetvalue'])(a0, a1, a2);
+var _PQconsumeInput = Module['_PQconsumeInput'] = (a0) => (_PQconsumeInput = Module['_PQconsumeInput'] = wasmExports['PQconsumeInput'])(a0);
+var _PQgetisnull = Module['_PQgetisnull'] = (a0, a1, a2) => (_PQgetisnull = Module['_PQgetisnull'] = wasmExports['PQgetisnull'])(a0, a1, a2);
+var _PQresultErrorField = Module['_PQresultErrorField'] = (a0, a1) => (_PQresultErrorField = Module['_PQresultErrorField'] = wasmExports['PQresultErrorField'])(a0, a1);
+var _PQsendQuery = Module['_PQsendQuery'] = (a0, a1) => (_PQsendQuery = Module['_PQsendQuery'] = wasmExports['PQsendQuery'])(a0, a1);
+var _PQisBusy = Module['_PQisBusy'] = (a0) => (_PQisBusy = Module['_PQisBusy'] = wasmExports['PQisBusy'])(a0);
+var _PQgetResult = Module['_PQgetResult'] = (a0) => (_PQgetResult = Module['_PQgetResult'] = wasmExports['PQgetResult'])(a0);
+var _CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = (a0, a1) => (_CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = wasmExports['CacheRegisterRelcacheCallback'])(a0, a1);
+var _hash_seq_term = Module['_hash_seq_term'] = (a0) => (_hash_seq_term = Module['_hash_seq_term'] = wasmExports['hash_seq_term'])(a0);
+var _SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = (a0) => (_SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = wasmExports['SignalHandlerForShutdownRequest'])(a0);
+var _replorigin_by_oid = Module['_replorigin_by_oid'] = (a0, a1, a2) => (_replorigin_by_oid = Module['_replorigin_by_oid'] = wasmExports['replorigin_by_oid'])(a0, a1, a2);
+var _logicalrep_write_begin = Module['_logicalrep_write_begin'] = (a0, a1) => (_logicalrep_write_begin = Module['_logicalrep_write_begin'] = wasmExports['logicalrep_write_begin'])(a0, a1);
+var _logicalrep_write_commit = Module['_logicalrep_write_commit'] = (a0, a1, a2) => (_logicalrep_write_commit = Module['_logicalrep_write_commit'] = wasmExports['logicalrep_write_commit'])(a0, a1, a2);
+var _logicalrep_write_begin_prepare = Module['_logicalrep_write_begin_prepare'] = (a0, a1) => (_logicalrep_write_begin_prepare = Module['_logicalrep_write_begin_prepare'] = wasmExports['logicalrep_write_begin_prepare'])(a0, a1);
+var _logicalrep_write_prepare = Module['_logicalrep_write_prepare'] = (a0, a1, a2) => (_logicalrep_write_prepare = Module['_logicalrep_write_prepare'] = wasmExports['logicalrep_write_prepare'])(a0, a1, a2);
+var _logicalrep_write_commit_prepared = Module['_logicalrep_write_commit_prepared'] = (a0, a1, a2) => (_logicalrep_write_commit_prepared = Module['_logicalrep_write_commit_prepared'] = wasmExports['logicalrep_write_commit_prepared'])(a0, a1, a2);
+var _logicalrep_write_rollback_prepared = Module['_logicalrep_write_rollback_prepared'] = (a0, a1, a2, a3) => (_logicalrep_write_rollback_prepared = Module['_logicalrep_write_rollback_prepared'] = wasmExports['logicalrep_write_rollback_prepared'])(a0, a1, a2, a3);
+var _logicalrep_write_stream_prepare = Module['_logicalrep_write_stream_prepare'] = (a0, a1, a2) => (_logicalrep_write_stream_prepare = Module['_logicalrep_write_stream_prepare'] = wasmExports['logicalrep_write_stream_prepare'])(a0, a1, a2);
+var _logicalrep_write_origin = Module['_logicalrep_write_origin'] = (a0, a1, a2) => (_logicalrep_write_origin = Module['_logicalrep_write_origin'] = wasmExports['logicalrep_write_origin'])(a0, a1, a2);
+var _logicalrep_write_insert = Module['_logicalrep_write_insert'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_insert = Module['_logicalrep_write_insert'] = wasmExports['logicalrep_write_insert'])(a0, a1, a2, a3, a4, a5);
+var _logicalrep_write_update = Module['_logicalrep_write_update'] = (a0, a1, a2, a3, a4, a5, a6) => (_logicalrep_write_update = Module['_logicalrep_write_update'] = wasmExports['logicalrep_write_update'])(a0, a1, a2, a3, a4, a5, a6);
+var _logicalrep_write_delete = Module['_logicalrep_write_delete'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_delete = Module['_logicalrep_write_delete'] = wasmExports['logicalrep_write_delete'])(a0, a1, a2, a3, a4, a5);
+var _logicalrep_write_truncate = Module['_logicalrep_write_truncate'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_truncate = Module['_logicalrep_write_truncate'] = wasmExports['logicalrep_write_truncate'])(a0, a1, a2, a3, a4, a5);
+var _logicalrep_write_message = Module['_logicalrep_write_message'] = (a0, a1, a2, a3, a4, a5, a6) => (_logicalrep_write_message = Module['_logicalrep_write_message'] = wasmExports['logicalrep_write_message'])(a0, a1, a2, a3, a4, a5, a6);
+var _logicalrep_write_rel = Module['_logicalrep_write_rel'] = (a0, a1, a2, a3) => (_logicalrep_write_rel = Module['_logicalrep_write_rel'] = wasmExports['logicalrep_write_rel'])(a0, a1, a2, a3);
+var _logicalrep_write_typ = Module['_logicalrep_write_typ'] = (a0, a1, a2) => (_logicalrep_write_typ = Module['_logicalrep_write_typ'] = wasmExports['logicalrep_write_typ'])(a0, a1, a2);
+var _logicalrep_write_stream_start = Module['_logicalrep_write_stream_start'] = (a0, a1, a2) => (_logicalrep_write_stream_start = Module['_logicalrep_write_stream_start'] = wasmExports['logicalrep_write_stream_start'])(a0, a1, a2);
+var _logicalrep_write_stream_stop = Module['_logicalrep_write_stream_stop'] = (a0) => (_logicalrep_write_stream_stop = Module['_logicalrep_write_stream_stop'] = wasmExports['logicalrep_write_stream_stop'])(a0);
+var _logicalrep_write_stream_commit = Module['_logicalrep_write_stream_commit'] = (a0, a1, a2) => (_logicalrep_write_stream_commit = Module['_logicalrep_write_stream_commit'] = wasmExports['logicalrep_write_stream_commit'])(a0, a1, a2);
+var _logicalrep_write_stream_abort = Module['_logicalrep_write_stream_abort'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_stream_abort = Module['_logicalrep_write_stream_abort'] = wasmExports['logicalrep_write_stream_abort'])(a0, a1, a2, a3, a4, a5);
+var _FreeErrorData = Module['_FreeErrorData'] = (a0) => (_FreeErrorData = Module['_FreeErrorData'] = wasmExports['FreeErrorData'])(a0);
+var _RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = (a0, a1) => (_RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = wasmExports['RelidByRelfilenumber'])(a0, a1);
+var _array_contains_nulls = Module['_array_contains_nulls'] = (a0) => (_array_contains_nulls = Module['_array_contains_nulls'] = wasmExports['array_contains_nulls'])(a0);
+var _OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = (a0, a1) => (_OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = wasmExports['OutputPluginPrepareWrite'])(a0, a1);
+var _OutputPluginWrite = Module['_OutputPluginWrite'] = (a0, a1) => (_OutputPluginWrite = Module['_OutputPluginWrite'] = wasmExports['OutputPluginWrite'])(a0, a1);
+var _OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = (a0, a1) => (_OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = wasmExports['OutputPluginUpdateProgress'])(a0, a1);
+var _RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = (a0) => (_RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = wasmExports['RegisterBackgroundWorker'])(a0);
+var _toupper = Module['_toupper'] = (a0) => (_toupper = Module['_toupper'] = wasmExports['toupper'])(a0);
+var _pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = (a0) => (_pg_reg_getinitialstate = Module['_pg_reg_getinitialstate'] = wasmExports['pg_reg_getinitialstate'])(a0);
+var _pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = (a0) => (_pg_reg_getfinalstate = Module['_pg_reg_getfinalstate'] = wasmExports['pg_reg_getfinalstate'])(a0);
+var _pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = (a0, a1) => (_pg_reg_getnumoutarcs = Module['_pg_reg_getnumoutarcs'] = wasmExports['pg_reg_getnumoutarcs'])(a0, a1);
+var _pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = (a0, a1, a2, a3) => (_pg_reg_getoutarcs = Module['_pg_reg_getoutarcs'] = wasmExports['pg_reg_getoutarcs'])(a0, a1, a2, a3);
+var _pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = (a0) => (_pg_reg_getnumcolors = Module['_pg_reg_getnumcolors'] = wasmExports['pg_reg_getnumcolors'])(a0);
+var _pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = (a0, a1) => (_pg_reg_colorisbegin = Module['_pg_reg_colorisbegin'] = wasmExports['pg_reg_colorisbegin'])(a0, a1);
+var _pg_reg_colorisend = Module['_pg_reg_colorisend'] = (a0, a1) => (_pg_reg_colorisend = Module['_pg_reg_colorisend'] = wasmExports['pg_reg_colorisend'])(a0, a1);
+var _pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = (a0, a1) => (_pg_reg_getnumcharacters = Module['_pg_reg_getnumcharacters'] = wasmExports['pg_reg_getnumcharacters'])(a0, a1);
+var _pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = (a0, a1, a2, a3) => (_pg_reg_getcharacters = Module['_pg_reg_getcharacters'] = wasmExports['pg_reg_getcharacters'])(a0, a1, a2, a3);
+var _GetConfigOption = Module['_GetConfigOption'] = (a0, a1, a2) => (_GetConfigOption = Module['_GetConfigOption'] = wasmExports['GetConfigOption'])(a0, a1, a2);
+var _pg_prng_seed_check = Module['_pg_prng_seed_check'] = (a0) => (_pg_prng_seed_check = Module['_pg_prng_seed_check'] = wasmExports['pg_prng_seed_check'])(a0);
+var _pg_prng_seed = Module['_pg_prng_seed'] = (a0, a1) => (_pg_prng_seed = Module['_pg_prng_seed'] = wasmExports['pg_prng_seed'])(a0, a1);
+var _fputc = Module['_fputc'] = (a0, a1) => (_fputc = Module['_fputc'] = wasmExports['fputc'])(a0, a1);
+var _WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = (a0, a1) => (_WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = wasmExports['WaitForBackgroundWorkerStartup'])(a0, a1);
 var _dlsym = Module['_dlsym'] = (a0, a1) => (_dlsym = Module['_dlsym'] = wasmExports['dlsym'])(a0, a1);
 var _dlopen = Module['_dlopen'] = (a0, a1) => (_dlopen = Module['_dlopen'] = wasmExports['dlopen'])(a0, a1);
 var _dlerror = Module['_dlerror'] = () => (_dlerror = Module['_dlerror'] = wasmExports['dlerror'])();
 var _dlclose = Module['_dlclose'] = (a0) => (_dlclose = Module['_dlclose'] = wasmExports['dlclose'])(a0);
 var _find_rendezvous_variable = Module['_find_rendezvous_variable'] = (a0) => (_find_rendezvous_variable = Module['_find_rendezvous_variable'] = wasmExports['find_rendezvous_variable'])(a0);
-var _canonicalize_path = Module['_canonicalize_path'] = (a0) => (_canonicalize_path = Module['_canonicalize_path'] = wasmExports['canonicalize_path'])(a0);
+var _resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = (a0, a1, a2, a3) => (_resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = wasmExports['resolve_polymorphic_argtypes'])(a0, a1, a2, a3);
+var _get_func_arg_info = Module['_get_func_arg_info'] = (a0, a1, a2, a3) => (_get_func_arg_info = Module['_get_func_arg_info'] = wasmExports['get_func_arg_info'])(a0, a1, a2, a3);
 var _CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = (a0, a1, a2, a3, a4) => (_CallerFInfoFunctionCall2 = Module['_CallerFInfoFunctionCall2'] = wasmExports['CallerFInfoFunctionCall2'])(a0, a1, a2, a3, a4);
 var _FunctionCall0Coll = Module['_FunctionCall0Coll'] = (a0, a1) => (_FunctionCall0Coll = Module['_FunctionCall0Coll'] = wasmExports['FunctionCall0Coll'])(a0, a1);
 var _get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = (a0) => (_get_fn_expr_rettype = Module['_get_fn_expr_rettype'] = wasmExports['get_fn_expr_rettype'])(a0);
-var _get_base_element_type = Module['_get_base_element_type'] = (a0) => (_get_base_element_type = Module['_get_base_element_type'] = wasmExports['get_base_element_type'])(a0);
 var _has_fn_opclass_options = Module['_has_fn_opclass_options'] = (a0) => (_has_fn_opclass_options = Module['_has_fn_opclass_options'] = wasmExports['has_fn_opclass_options'])(a0);
 var _CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = (a0, a1) => (_CheckFunctionValidatorAccess = Module['_CheckFunctionValidatorAccess'] = wasmExports['CheckFunctionValidatorAccess'])(a0, a1);
-var _resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = (a0, a1, a2, a3) => (_resolve_polymorphic_argtypes = Module['_resolve_polymorphic_argtypes'] = wasmExports['resolve_polymorphic_argtypes'])(a0, a1, a2, a3);
-var _get_func_arg_info = Module['_get_func_arg_info'] = (a0, a1, a2, a3) => (_get_func_arg_info = Module['_get_func_arg_info'] = wasmExports['get_func_arg_info'])(a0, a1, a2, a3);
-var _makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = (a0) => (_makeRangeVarFromNameList = Module['_makeRangeVarFromNameList'] = wasmExports['makeRangeVarFromNameList'])(a0);
-var _pg_hmac_free = Module['_pg_hmac_free'] = (a0) => (_pg_hmac_free = Module['_pg_hmac_free'] = wasmExports['pg_hmac_free'])(a0);
+var _pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = (a0, a1, a2, a3) => (_pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = wasmExports['pg_do_encoding_conversion'])(a0, a1, a2, a3);
+var _MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = (a0, a1) => (_MemoryContextAllocHuge = Module['_MemoryContextAllocHuge'] = wasmExports['MemoryContextAllocHuge'])(a0, a1);
+var _pg_utf_mblen = Module['_pg_utf_mblen'] = (a0) => (_pg_utf_mblen = Module['_pg_utf_mblen'] = wasmExports['pg_utf_mblen'])(a0);
+var _pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = (a0, a1, a2) => (_pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = wasmExports['pg_wchar2mb_with_len'])(a0, a1, a2);
+var _check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = (a0, a1, a2, a3, a4) => (_check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = wasmExports['check_encoding_conversion_args'])(a0, a1, a2, a3, a4);
+var _report_untranslatable_char = Module['_report_untranslatable_char'] = (a0, a1, a2, a3) => (_report_untranslatable_char = Module['_report_untranslatable_char'] = wasmExports['report_untranslatable_char'])(a0, a1, a2, a3);
+var _local2local = Module['_local2local'] = (a0, a1, a2, a3, a4, a5, a6) => (_local2local = Module['_local2local'] = wasmExports['local2local'])(a0, a1, a2, a3, a4, a5, a6);
+var _latin2mic = Module['_latin2mic'] = (a0, a1, a2, a3, a4, a5) => (_latin2mic = Module['_latin2mic'] = wasmExports['latin2mic'])(a0, a1, a2, a3, a4, a5);
+var _mic2latin = Module['_mic2latin'] = (a0, a1, a2, a3, a4, a5) => (_mic2latin = Module['_mic2latin'] = wasmExports['mic2latin'])(a0, a1, a2, a3, a4, a5);
+var _latin2mic_with_table = Module['_latin2mic_with_table'] = (a0, a1, a2, a3, a4, a5, a6) => (_latin2mic_with_table = Module['_latin2mic_with_table'] = wasmExports['latin2mic_with_table'])(a0, a1, a2, a3, a4, a5, a6);
+var _mic2latin_with_table = Module['_mic2latin_with_table'] = (a0, a1, a2, a3, a4, a5, a6) => (_mic2latin_with_table = Module['_mic2latin_with_table'] = wasmExports['mic2latin_with_table'])(a0, a1, a2, a3, a4, a5, a6);
+var _pg_encoding_verifymbchar = Module['_pg_encoding_verifymbchar'] = (a0, a1, a2) => (_pg_encoding_verifymbchar = Module['_pg_encoding_verifymbchar'] = wasmExports['pg_encoding_verifymbchar'])(a0, a1, a2);
 var _ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = (a0) => (_ResourceOwnerReleaseAllPlanCacheRefs = Module['_ResourceOwnerReleaseAllPlanCacheRefs'] = wasmExports['ResourceOwnerReleaseAllPlanCacheRefs'])(a0);
 var _RegisterResourceReleaseCallback = Module['_RegisterResourceReleaseCallback'] = (a0, a1) => (_RegisterResourceReleaseCallback = Module['_RegisterResourceReleaseCallback'] = wasmExports['RegisterResourceReleaseCallback'])(a0, a1);
-var _namein = Module['_namein'] = (a0) => (_namein = Module['_namein'] = wasmExports['namein'])(a0);
+var _is_publishable_relation = Module['_is_publishable_relation'] = (a0) => (_is_publishable_relation = Module['_is_publishable_relation'] = wasmExports['is_publishable_relation'])(a0);
+var _GetSchemaPublications = Module['_GetSchemaPublications'] = (a0) => (_GetSchemaPublications = Module['_GetSchemaPublications'] = wasmExports['GetSchemaPublications'])(a0);
+var _err_generic_string = Module['_err_generic_string'] = (a0, a1) => (_err_generic_string = Module['_err_generic_string'] = wasmExports['err_generic_string'])(a0, a1);
+var _get_rel_relispartition = Module['_get_rel_relispartition'] = (a0) => (_get_rel_relispartition = Module['_get_rel_relispartition'] = wasmExports['get_rel_relispartition'])(a0);
+var _texteq = Module['_texteq'] = (a0) => (_texteq = Module['_texteq'] = wasmExports['texteq'])(a0);
+var _get_typsubscript = Module['_get_typsubscript'] = (a0, a1) => (_get_typsubscript = Module['_get_typsubscript'] = wasmExports['get_typsubscript'])(a0, a1);
+var _CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = (a0, a1, a2) => (_CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = wasmExports['CachedPlanAllowsSimpleValidityCheck'])(a0, a1, a2);
+var _CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = (a0, a1, a2) => (_CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = wasmExports['CachedPlanIsSimplyValid'])(a0, a1, a2);
+var _GetCachedExpression = Module['_GetCachedExpression'] = (a0) => (_GetCachedExpression = Module['_GetCachedExpression'] = wasmExports['GetCachedExpression'])(a0);
+var _FreeCachedExpression = Module['_FreeCachedExpression'] = (a0) => (_FreeCachedExpression = Module['_FreeCachedExpression'] = wasmExports['FreeCachedExpression'])(a0);
+var _strlcat = Module['_strlcat'] = (a0, a1, a2) => (_strlcat = Module['_strlcat'] = wasmExports['strlcat'])(a0, a1, a2);
+var _pg_bindtextdomain = Module['_pg_bindtextdomain'] = (a0) => (_pg_bindtextdomain = Module['_pg_bindtextdomain'] = wasmExports['pg_bindtextdomain'])(a0);
 var _tidin = Module['_tidin'] = (a0) => (_tidin = Module['_tidin'] = wasmExports['tidin'])(a0);
 var _tidout = Module['_tidout'] = (a0) => (_tidout = Module['_tidout'] = wasmExports['tidout'])(a0);
-var _texteq = Module['_texteq'] = (a0) => (_texteq = Module['_texteq'] = wasmExports['texteq'])(a0);
 var _btfloat4cmp = Module['_btfloat4cmp'] = (a0) => (_btfloat4cmp = Module['_btfloat4cmp'] = wasmExports['btfloat4cmp'])(a0);
 var _btfloat8cmp = Module['_btfloat8cmp'] = (a0) => (_btfloat8cmp = Module['_btfloat8cmp'] = wasmExports['btfloat8cmp'])(a0);
 var _btnamecmp = Module['_btnamecmp'] = (a0) => (_btnamecmp = Module['_btnamecmp'] = wasmExports['btnamecmp'])(a0);
@@ -9686,7 +9938,6 @@ var _macaddr_ge = Module['_macaddr_ge'] = (a0) => (_macaddr_ge = Module['_macadd
 var _macaddr_cmp = Module['_macaddr_cmp'] = (a0) => (_macaddr_cmp = Module['_macaddr_cmp'] = wasmExports['macaddr_cmp'])(a0);
 var _inet_in = Module['_inet_in'] = (a0) => (_inet_in = Module['_inet_in'] = wasmExports['inet_in'])(a0);
 var _network_cmp = Module['_network_cmp'] = (a0) => (_network_cmp = Module['_network_cmp'] = wasmExports['network_cmp'])(a0);
-var _be_lo_unlink = Module['_be_lo_unlink'] = (a0) => (_be_lo_unlink = Module['_be_lo_unlink'] = wasmExports['be_lo_unlink'])(a0);
 var _bpchareq = Module['_bpchareq'] = (a0) => (_bpchareq = Module['_bpchareq'] = wasmExports['bpchareq'])(a0);
 var _bpcharlt = Module['_bpcharlt'] = (a0) => (_bpcharlt = Module['_bpcharlt'] = wasmExports['bpcharlt'])(a0);
 var _bpcharle = Module['_bpcharle'] = (a0) => (_bpcharle = Module['_bpcharle'] = wasmExports['bpcharle'])(a0);
@@ -9724,7 +9975,6 @@ var _timestamp_in = Module['_timestamp_in'] = (a0) => (_timestamp_in = Module['_
 var _timestamp_cmp = Module['_timestamp_cmp'] = (a0) => (_timestamp_cmp = Module['_timestamp_cmp'] = wasmExports['timestamp_cmp'])(a0);
 var _interval_cmp = Module['_interval_cmp'] = (a0) => (_interval_cmp = Module['_interval_cmp'] = wasmExports['interval_cmp'])(a0);
 var _timetz_cmp = Module['_timetz_cmp'] = (a0) => (_timetz_cmp = Module['_timetz_cmp'] = wasmExports['timetz_cmp'])(a0);
-var _bit_in = Module['_bit_in'] = (a0) => (_bit_in = Module['_bit_in'] = wasmExports['bit_in'])(a0);
 var _varbit_in = Module['_varbit_in'] = (a0) => (_varbit_in = Module['_varbit_in'] = wasmExports['varbit_in'])(a0);
 var _biteq = Module['_biteq'] = (a0) => (_biteq = Module['_biteq'] = wasmExports['biteq'])(a0);
 var _bitge = Module['_bitge'] = (a0) => (_bitge = Module['_bitge'] = wasmExports['bitge'])(a0);
@@ -9751,7 +10001,6 @@ var _to_hex32 = Module['_to_hex32'] = (a0) => (_to_hex32 = Module['_to_hex32'] =
 var _uuid_in = Module['_uuid_in'] = (a0) => (_uuid_in = Module['_uuid_in'] = wasmExports['uuid_in'])(a0);
 var _uuid_out = Module['_uuid_out'] = (a0) => (_uuid_out = Module['_uuid_out'] = wasmExports['uuid_out'])(a0);
 var _uuid_cmp = Module['_uuid_cmp'] = (a0) => (_uuid_cmp = Module['_uuid_cmp'] = wasmExports['uuid_cmp'])(a0);
-var _pg_lsn_in = Module['_pg_lsn_in'] = (a0) => (_pg_lsn_in = Module['_pg_lsn_in'] = wasmExports['pg_lsn_in'])(a0);
 var _gen_random_uuid = Module['_gen_random_uuid'] = (a0) => (_gen_random_uuid = Module['_gen_random_uuid'] = wasmExports['gen_random_uuid'])(a0);
 var _enum_lt = Module['_enum_lt'] = (a0) => (_enum_lt = Module['_enum_lt'] = wasmExports['enum_lt'])(a0);
 var _enum_gt = Module['_enum_gt'] = (a0) => (_enum_gt = Module['_enum_gt'] = wasmExports['enum_gt'])(a0);
@@ -9766,40 +10015,9 @@ var _macaddr8_le = Module['_macaddr8_le'] = (a0) => (_macaddr8_le = Module['_mac
 var _macaddr8_gt = Module['_macaddr8_gt'] = (a0) => (_macaddr8_gt = Module['_macaddr8_gt'] = wasmExports['macaddr8_gt'])(a0);
 var _macaddr8_ge = Module['_macaddr8_ge'] = (a0) => (_macaddr8_ge = Module['_macaddr8_ge'] = wasmExports['macaddr8_ge'])(a0);
 var _macaddr8_cmp = Module['_macaddr8_cmp'] = (a0) => (_macaddr8_cmp = Module['_macaddr8_cmp'] = wasmExports['macaddr8_cmp'])(a0);
-var _local2local = Module['_local2local'] = (a0, a1, a2, a3, a4, a5, a6) => (_local2local = Module['_local2local'] = wasmExports['local2local'])(a0, a1, a2, a3, a4, a5, a6);
-var _report_invalid_encoding = Module['_report_invalid_encoding'] = (a0, a1, a2) => (_report_invalid_encoding = Module['_report_invalid_encoding'] = wasmExports['report_invalid_encoding'])(a0, a1, a2);
-var _report_untranslatable_char = Module['_report_untranslatable_char'] = (a0, a1, a2, a3) => (_report_untranslatable_char = Module['_report_untranslatable_char'] = wasmExports['report_untranslatable_char'])(a0, a1, a2, a3);
-var _latin2mic = Module['_latin2mic'] = (a0, a1, a2, a3, a4, a5) => (_latin2mic = Module['_latin2mic'] = wasmExports['latin2mic'])(a0, a1, a2, a3, a4, a5);
-var _mic2latin = Module['_mic2latin'] = (a0, a1, a2, a3, a4, a5) => (_mic2latin = Module['_mic2latin'] = wasmExports['mic2latin'])(a0, a1, a2, a3, a4, a5);
-var _latin2mic_with_table = Module['_latin2mic_with_table'] = (a0, a1, a2, a3, a4, a5, a6) => (_latin2mic_with_table = Module['_latin2mic_with_table'] = wasmExports['latin2mic_with_table'])(a0, a1, a2, a3, a4, a5, a6);
-var _mic2latin_with_table = Module['_mic2latin_with_table'] = (a0, a1, a2, a3, a4, a5, a6) => (_mic2latin_with_table = Module['_mic2latin_with_table'] = wasmExports['mic2latin_with_table'])(a0, a1, a2, a3, a4, a5, a6);
-var _pg_utf_mblen = Module['_pg_utf_mblen'] = (a0) => (_pg_utf_mblen = Module['_pg_utf_mblen'] = wasmExports['pg_utf_mblen'])(a0);
-var _pg_encoding_verifymbchar = Module['_pg_encoding_verifymbchar'] = (a0, a1, a2) => (_pg_encoding_verifymbchar = Module['_pg_encoding_verifymbchar'] = wasmExports['pg_encoding_verifymbchar'])(a0, a1, a2);
-var _GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = () => (_GetDatabaseEncodingName = Module['_GetDatabaseEncodingName'] = wasmExports['GetDatabaseEncodingName'])();
-var _pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = (a0, a1, a2, a3) => (_pg_do_encoding_conversion = Module['_pg_do_encoding_conversion'] = wasmExports['pg_do_encoding_conversion'])(a0, a1, a2, a3);
-var _pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = (a0) => (_pg_encoding_to_char_private = Module['_pg_encoding_to_char_private'] = wasmExports['pg_encoding_to_char_private'])(a0);
-var _pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = (a0) => (_pg_char_to_encoding_private = Module['_pg_char_to_encoding_private'] = wasmExports['pg_char_to_encoding_private'])(a0);
-var _pg_encoding_max_length = Module['_pg_encoding_max_length'] = (a0) => (_pg_encoding_max_length = Module['_pg_encoding_max_length'] = wasmExports['pg_encoding_max_length'])(a0);
-var _pg_server_to_any = Module['_pg_server_to_any'] = (a0, a1, a2) => (_pg_server_to_any = Module['_pg_server_to_any'] = wasmExports['pg_server_to_any'])(a0, a1, a2);
-var _pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = (a0, a1, a2) => (_pg_wchar2mb_with_len = Module['_pg_wchar2mb_with_len'] = wasmExports['pg_wchar2mb_with_len'])(a0, a1, a2);
-var _pg_encoding_mblen = Module['_pg_encoding_mblen'] = (a0, a1) => (_pg_encoding_mblen = Module['_pg_encoding_mblen'] = wasmExports['pg_encoding_mblen'])(a0, a1);
-var _check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = (a0, a1, a2, a3, a4) => (_check_encoding_conversion_args = Module['_check_encoding_conversion_args'] = wasmExports['check_encoding_conversion_args'])(a0, a1, a2, a3, a4);
-var _set_config_option = Module['_set_config_option'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_set_config_option = Module['_set_config_option'] = wasmExports['set_config_option'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _quote_identifier = Module['_quote_identifier'] = (a0) => (_quote_identifier = Module['_quote_identifier'] = wasmExports['quote_identifier'])(a0);
-var _list_delete = Module['_list_delete'] = (a0, a1) => (_list_delete = Module['_list_delete'] = wasmExports['list_delete'])(a0, a1);
-var _feof = Module['_feof'] = (a0) => (_feof = Module['_feof'] = wasmExports['feof'])(a0);
-var _BlockSampler_Init = Module['_BlockSampler_Init'] = (a0, a1, a2, a3) => (_BlockSampler_Init = Module['_BlockSampler_Init'] = wasmExports['BlockSampler_Init'])(a0, a1, a2, a3);
-var _pg_prng_seed = Module['_pg_prng_seed'] = (a0, a1) => (_pg_prng_seed = Module['_pg_prng_seed'] = wasmExports['pg_prng_seed'])(a0, a1);
-var _sampler_random_init_state = Module['_sampler_random_init_state'] = (a0, a1) => (_sampler_random_init_state = Module['_sampler_random_init_state'] = wasmExports['sampler_random_init_state'])(a0, a1);
-var _BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = (a0) => (_BlockSampler_HasMore = Module['_BlockSampler_HasMore'] = wasmExports['BlockSampler_HasMore'])(a0);
-var _BlockSampler_Next = Module['_BlockSampler_Next'] = (a0) => (_BlockSampler_Next = Module['_BlockSampler_Next'] = wasmExports['BlockSampler_Next'])(a0);
-var _sampler_random_fract = Module['_sampler_random_fract'] = (a0) => (_sampler_random_fract = Module['_sampler_random_fract'] = wasmExports['sampler_random_fract'])(a0);
-var _reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = (a0, a1) => (_reservoir_init_selection_state = Module['_reservoir_init_selection_state'] = wasmExports['reservoir_init_selection_state'])(a0, a1);
-var _reservoir_get_next_S = Module['_reservoir_get_next_S'] = (a0, a1, a2) => (_reservoir_get_next_S = Module['_reservoir_get_next_S'] = wasmExports['reservoir_get_next_S'])(a0, a1, a2);
-var _GetConfigOption = Module['_GetConfigOption'] = (a0, a1, a2) => (_GetConfigOption = Module['_GetConfigOption'] = wasmExports['GetConfigOption'])(a0, a1, a2);
-var _ProcessConfigFile = Module['_ProcessConfigFile'] = (a0) => (_ProcessConfigFile = Module['_ProcessConfigFile'] = wasmExports['ProcessConfigFile'])(a0);
-var _strtod = Module['_strtod'] = (a0, a1) => (_strtod = Module['_strtod'] = wasmExports['strtod'])(a0, a1);
-var _truncate_identifier = Module['_truncate_identifier'] = (a0, a1, a2) => (_truncate_identifier = Module['_truncate_identifier'] = wasmExports['truncate_identifier'])(a0, a1, a2);
+var _PinPortal = Module['_PinPortal'] = (a0) => (_PinPortal = Module['_PinPortal'] = wasmExports['PinPortal'])(a0);
+var _UnpinPortal = Module['_UnpinPortal'] = (a0) => (_UnpinPortal = Module['_UnpinPortal'] = wasmExports['UnpinPortal'])(a0);
+var _strnlen = Module['_strnlen'] = (a0, a1) => (_strnlen = Module['_strnlen'] = wasmExports['strnlen'])(a0, a1);
 var _DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_DefineCustomBoolVariable = Module['_DefineCustomBoolVariable'] = wasmExports['DefineCustomBoolVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
 var _DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) => (_DefineCustomIntVariable = Module['_DefineCustomIntVariable'] = wasmExports['DefineCustomIntVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
 var _DefineCustomRealVariable = Module['_DefineCustomRealVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11) => (_DefineCustomRealVariable = Module['_DefineCustomRealVariable'] = wasmExports['DefineCustomRealVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11);
@@ -9807,59 +10025,15 @@ var _DefineCustomStringVariable = Module['_DefineCustomStringVariable'] = (a0, a
 var _DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10) => (_DefineCustomEnumVariable = Module['_DefineCustomEnumVariable'] = wasmExports['DefineCustomEnumVariable'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10);
 var _MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = (a0) => (_MarkGUCPrefixReserved = Module['_MarkGUCPrefixReserved'] = wasmExports['MarkGUCPrefixReserved'])(a0);
 var _strcspn = Module['_strcspn'] = (a0, a1) => (_strcspn = Module['_strcspn'] = wasmExports['strcspn'])(a0, a1);
-var _CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = (a0, a1, a2) => (_CacheRegisterSyscacheCallback = Module['_CacheRegisterSyscacheCallback'] = wasmExports['CacheRegisterSyscacheCallback'])(a0, a1, a2);
-var _TransferExpandedObject = Module['_TransferExpandedObject'] = (a0, a1) => (_TransferExpandedObject = Module['_TransferExpandedObject'] = wasmExports['TransferExpandedObject'])(a0, a1);
-var _errsave_start = Module['_errsave_start'] = (a0, a1) => (_errsave_start = Module['_errsave_start'] = wasmExports['errsave_start'])(a0, a1);
-var _errsave_finish = Module['_errsave_finish'] = (a0, a1, a2, a3) => (_errsave_finish = Module['_errsave_finish'] = wasmExports['errsave_finish'])(a0, a1, a2, a3);
-var _pq_getmsgtext = Module['_pq_getmsgtext'] = (a0, a1, a2) => (_pq_getmsgtext = Module['_pq_getmsgtext'] = wasmExports['pq_getmsgtext'])(a0, a1, a2);
-var _pq_begintypsend = Module['_pq_begintypsend'] = (a0) => (_pq_begintypsend = Module['_pq_begintypsend'] = wasmExports['pq_begintypsend'])(a0);
-var _pq_sendtext = Module['_pq_sendtext'] = (a0, a1, a2) => (_pq_sendtext = Module['_pq_sendtext'] = wasmExports['pq_sendtext'])(a0, a1, a2);
-var _pq_endtypsend = Module['_pq_endtypsend'] = (a0) => (_pq_endtypsend = Module['_pq_endtypsend'] = wasmExports['pq_endtypsend'])(a0);
-var _downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = (a0, a1, a2) => (_downcase_truncate_identifier = Module['_downcase_truncate_identifier'] = wasmExports['downcase_truncate_identifier'])(a0, a1, a2);
-var _int64_to_numeric = Module['_int64_to_numeric'] = (a0) => (_int64_to_numeric = Module['_int64_to_numeric'] = wasmExports['int64_to_numeric'])(a0);
-var _ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = (a0, a1) => (_ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = wasmExports['ArrayGetIntegerTypmods'])(a0, a1);
-var _text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = (a0, a1, a2) => (_text_to_cstring_buffer = Module['_text_to_cstring_buffer'] = wasmExports['text_to_cstring_buffer'])(a0, a1, a2);
-var _array_contains_nulls = Module['_array_contains_nulls'] = (a0) => (_array_contains_nulls = Module['_array_contains_nulls'] = wasmExports['array_contains_nulls'])(a0);
+var _sampler_random_init_state = Module['_sampler_random_init_state'] = (a0, a1) => (_sampler_random_init_state = Module['_sampler_random_init_state'] = wasmExports['sampler_random_init_state'])(a0, a1);
+var _unpack_sql_state = Module['_unpack_sql_state'] = (a0) => (_unpack_sql_state = Module['_unpack_sql_state'] = wasmExports['unpack_sql_state'])(a0);
 var _JsonbValueToJsonb = Module['_JsonbValueToJsonb'] = (a0) => (_JsonbValueToJsonb = Module['_JsonbValueToJsonb'] = wasmExports['JsonbValueToJsonb'])(a0);
-var _pushJsonbValue = Module['_pushJsonbValue'] = (a0, a1, a2) => (_pushJsonbValue = Module['_pushJsonbValue'] = wasmExports['pushJsonbValue'])(a0, a1, a2);
-var _float4in_internal = Module['_float4in_internal'] = (a0, a1, a2, a3, a4) => (_float4in_internal = Module['_float4in_internal'] = wasmExports['float4in_internal'])(a0, a1, a2, a3, a4);
-var _strtof = Module['_strtof'] = (a0, a1) => (_strtof = Module['_strtof'] = wasmExports['strtof'])(a0, a1);
-var _float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = (a0, a1) => (_float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = wasmExports['float_to_shortest_decimal_buf'])(a0, a1);
-var _pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = (a0) => (_pq_getmsgfloat4 = Module['_pq_getmsgfloat4'] = wasmExports['pq_getmsgfloat4'])(a0);
-var _pq_sendfloat4 = Module['_pq_sendfloat4'] = (a0, a1) => (_pq_sendfloat4 = Module['_pq_sendfloat4'] = wasmExports['pq_sendfloat4'])(a0, a1);
-var _float8in_internal = Module['_float8in_internal'] = (a0, a1, a2, a3, a4) => (_float8in_internal = Module['_float8in_internal'] = wasmExports['float8in_internal'])(a0, a1, a2, a3, a4);
-var _float8out_internal = Module['_float8out_internal'] = (a0) => (_float8out_internal = Module['_float8out_internal'] = wasmExports['float8out_internal'])(a0);
-var _pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = (a0) => (_pq_getmsgfloat8 = Module['_pq_getmsgfloat8'] = wasmExports['pq_getmsgfloat8'])(a0);
-var _pq_sendfloat8 = Module['_pq_sendfloat8'] = (a0, a1) => (_pq_sendfloat8 = Module['_pq_sendfloat8'] = wasmExports['pq_sendfloat8'])(a0, a1);
+var _ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = (a0, a1) => (_ArrayGetIntegerTypmods = Module['_ArrayGetIntegerTypmods'] = wasmExports['ArrayGetIntegerTypmods'])(a0, a1);
+var _numeric_is_nan = Module['_numeric_is_nan'] = (a0) => (_numeric_is_nan = Module['_numeric_is_nan'] = wasmExports['numeric_is_nan'])(a0);
 var _log10 = Module['_log10'] = (a0) => (_log10 = Module['_log10'] = wasmExports['log10'])(a0);
-var _acos = Module['_acos'] = (a0) => (_acos = Module['_acos'] = wasmExports['acos'])(a0);
-var _asin = Module['_asin'] = (a0) => (_asin = Module['_asin'] = wasmExports['asin'])(a0);
-var _cos = Module['_cos'] = (a0) => (_cos = Module['_cos'] = wasmExports['cos'])(a0);
-var _sin = Module['_sin'] = (a0) => (_sin = Module['_sin'] = wasmExports['sin'])(a0);
-var _fmod = Module['_fmod'] = (a0, a1) => (_fmod = Module['_fmod'] = wasmExports['fmod'])(a0, a1);
-var _pg_prng_seed_check = Module['_pg_prng_seed_check'] = (a0) => (_pg_prng_seed_check = Module['_pg_prng_seed_check'] = wasmExports['pg_prng_seed_check'])(a0);
-var _construct_array = Module['_construct_array'] = (a0, a1, a2, a3, a4, a5) => (_construct_array = Module['_construct_array'] = wasmExports['construct_array'])(a0, a1, a2, a3, a4, a5);
-var _quote_literal_cstr = Module['_quote_literal_cstr'] = (a0) => (_quote_literal_cstr = Module['_quote_literal_cstr'] = wasmExports['quote_literal_cstr'])(a0);
-var _pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = (a0, a1, a2, a3, a4) => (_pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = wasmExports['pg_inet_net_ntop'])(a0, a1, a2, a3, a4);
-var _convert_network_to_scalar = Module['_convert_network_to_scalar'] = (a0, a1, a2) => (_convert_network_to_scalar = Module['_convert_network_to_scalar'] = wasmExports['convert_network_to_scalar'])(a0, a1, a2);
-var _pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = (a0, a1, a2, a3, a4, a5, a6) => (_pg_getnameinfo_all = Module['_pg_getnameinfo_all'] = wasmExports['pg_getnameinfo_all'])(a0, a1, a2, a3, a4, a5, a6);
-var _appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = (a0, a1) => (_appendStringInfoSpaces = Module['_appendStringInfoSpaces'] = wasmExports['appendStringInfoSpaces'])(a0, a1);
-var _format_type_extended = Module['_format_type_extended'] = (a0, a1, a2) => (_format_type_extended = Module['_format_type_extended'] = wasmExports['format_type_extended'])(a0, a1, a2);
-var _get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = (a0) => (_get_namespace_name_or_temp = Module['_get_namespace_name_or_temp'] = wasmExports['get_namespace_name_or_temp'])(a0);
-var _quote_qualified_identifier = Module['_quote_qualified_identifier'] = (a0, a1) => (_quote_qualified_identifier = Module['_quote_qualified_identifier'] = wasmExports['quote_qualified_identifier'])(a0, a1);
-var _make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = (a0, a1, a2) => (_make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = wasmExports['make_expanded_record_from_typeid'])(a0, a1, a2);
-var _make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = (a0, a1) => (_make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = wasmExports['make_expanded_record_from_tupdesc'])(a0, a1);
-var _make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = (a0, a1) => (_make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = wasmExports['make_expanded_record_from_exprecord'])(a0, a1);
-var _expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = (a0, a1, a2, a3) => (_expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = wasmExports['expanded_record_set_tuple'])(a0, a1, a2, a3);
-var _domain_check = Module['_domain_check'] = (a0, a1, a2, a3, a4) => (_domain_check = Module['_domain_check'] = wasmExports['domain_check'])(a0, a1, a2, a3, a4);
-var _expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = (a0) => (_expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = wasmExports['expanded_record_get_tuple'])(a0);
-var _deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = (a0) => (_deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = wasmExports['deconstruct_expanded_record'])(a0);
-var _expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = (a0, a1, a2) => (_expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = wasmExports['expanded_record_lookup_field'])(a0, a1, a2);
-var _expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = (a0, a1, a2, a3, a4, a5) => (_expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = wasmExports['expanded_record_set_field_internal'])(a0, a1, a2, a3, a4, a5);
-var _expanded_record_set_fields = Module['_expanded_record_set_fields'] = (a0, a1, a2, a3) => (_expanded_record_set_fields = Module['_expanded_record_set_fields'] = wasmExports['expanded_record_set_fields'])(a0, a1, a2, a3);
-var _err_generic_string = Module['_err_generic_string'] = (a0, a1) => (_err_generic_string = Module['_err_generic_string'] = wasmExports['err_generic_string'])(a0, a1);
-var _forkname_to_number = Module['_forkname_to_number'] = (a0) => (_forkname_to_number = Module['_forkname_to_number'] = wasmExports['forkname_to_number'])(a0);
-var _RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = (a0, a1) => (_RelidByRelfilenumber = Module['_RelidByRelfilenumber'] = wasmExports['RelidByRelfilenumber'])(a0, a1);
+var ___multi3 = Module['___multi3'] = (a0, a1, a2, a3, a4) => (___multi3 = Module['___multi3'] = wasmExports['__multi3'])(a0, a1, a2, a3, a4);
+var _int64_to_numeric = Module['_int64_to_numeric'] = (a0) => (_int64_to_numeric = Module['_int64_to_numeric'] = wasmExports['int64_to_numeric'])(a0);
+var _numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = (a0) => (_numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = wasmExports['numeric_float8_no_overflow'])(a0);
 var _pg_xml_init = Module['_pg_xml_init'] = (a0) => (_pg_xml_init = Module['_pg_xml_init'] = wasmExports['pg_xml_init'])(a0);
 var _xmlInitParser = Module['_xmlInitParser'] = () => (_xmlInitParser = Module['_xmlInitParser'] = wasmExports['xmlInitParser'])();
 var _xml_ereport = Module['_xml_ereport'] = (a0, a1, a2, a3) => (_xml_ereport = Module['_xml_ereport'] = wasmExports['xml_ereport'])(a0, a1, a2, a3);
@@ -9873,225 +10047,51 @@ var _xmlXPathFreeCompExpr = Module['_xmlXPathFreeCompExpr'] = (a0) => (_xmlXPath
 var _xmlStrdup = Module['_xmlStrdup'] = (a0) => (_xmlStrdup = Module['_xmlStrdup'] = wasmExports['xmlStrdup'])(a0);
 var _initArrayResult = Module['_initArrayResult'] = (a0, a1, a2) => (_initArrayResult = Module['_initArrayResult'] = wasmExports['initArrayResult'])(a0, a1, a2);
 var _xmlXPathCastNodeToString = Module['_xmlXPathCastNodeToString'] = (a0) => (_xmlXPathCastNodeToString = Module['_xmlXPathCastNodeToString'] = wasmExports['xmlXPathCastNodeToString'])(a0);
-var _str_tolower = Module['_str_tolower'] = (a0, a1, a2) => (_str_tolower = Module['_str_tolower'] = wasmExports['str_tolower'])(a0, a1, a2);
-var _GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = (a0, a1, a2, a3, a4) => (_GetSysCacheHashValue = Module['_GetSysCacheHashValue'] = wasmExports['GetSysCacheHashValue'])(a0, a1, a2, a3, a4);
-var ___multi3 = Module['___multi3'] = (a0, a1, a2, a3, a4) => (___multi3 = Module['___multi3'] = wasmExports['__multi3'])(a0, a1, a2, a3, a4);
-var _expand_array = Module['_expand_array'] = (a0, a1, a2) => (_expand_array = Module['_expand_array'] = wasmExports['expand_array'])(a0, a1, a2);
+var _TransferExpandedObject = Module['_TransferExpandedObject'] = (a0, a1) => (_TransferExpandedObject = Module['_TransferExpandedObject'] = wasmExports['TransferExpandedObject'])(a0, a1);
+var _pushJsonbValue = Module['_pushJsonbValue'] = (a0, a1, a2) => (_pushJsonbValue = Module['_pushJsonbValue'] = wasmExports['pushJsonbValue'])(a0, a1, a2);
+var _varstr_levenshtein = Module['_varstr_levenshtein'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_varstr_levenshtein = Module['_varstr_levenshtein'] = wasmExports['varstr_levenshtein'])(a0, a1, a2, a3, a4, a5, a6, a7);
+var _utf8_to_unicode = Module['_utf8_to_unicode'] = (a0) => (_utf8_to_unicode = Module['_utf8_to_unicode'] = wasmExports['utf8_to_unicode'])(a0);
 var _generic_restriction_selectivity = Module['_generic_restriction_selectivity'] = (a0, a1, a2, a3, a4, a5) => (_generic_restriction_selectivity = Module['_generic_restriction_selectivity'] = wasmExports['generic_restriction_selectivity'])(a0, a1, a2, a3, a4, a5);
-var _bms_membership = Module['_bms_membership'] = (a0) => (_bms_membership = Module['_bms_membership'] = wasmExports['bms_membership'])(a0);
-var _find_join_rel = Module['_find_join_rel'] = (a0, a1) => (_find_join_rel = Module['_find_join_rel'] = wasmExports['find_join_rel'])(a0, a1);
-var _bms_is_subset = Module['_bms_is_subset'] = (a0, a1) => (_bms_is_subset = Module['_bms_is_subset'] = wasmExports['bms_is_subset'])(a0, a1);
-var _estimate_num_groups = Module['_estimate_num_groups'] = (a0, a1, a2, a3, a4) => (_estimate_num_groups = Module['_estimate_num_groups'] = wasmExports['estimate_num_groups'])(a0, a1, a2, a3, a4);
-var _pull_var_clause = Module['_pull_var_clause'] = (a0, a1) => (_pull_var_clause = Module['_pull_var_clause'] = wasmExports['pull_var_clause'])(a0, a1);
+var _convert_network_to_scalar = Module['_convert_network_to_scalar'] = (a0, a1, a2) => (_convert_network_to_scalar = Module['_convert_network_to_scalar'] = wasmExports['convert_network_to_scalar'])(a0, a1, a2);
 var _genericcostestimate = Module['_genericcostestimate'] = (a0, a1, a2, a3) => (_genericcostestimate = Module['_genericcostestimate'] = wasmExports['genericcostestimate'])(a0, a1, a2, a3);
-var _clauselist_selectivity = Module['_clauselist_selectivity'] = (a0, a1, a2, a3, a4) => (_clauselist_selectivity = Module['_clauselist_selectivity'] = wasmExports['clauselist_selectivity'])(a0, a1, a2, a3, a4);
-var _get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = (a0, a1, a2) => (_get_tablespace_page_costs = Module['_get_tablespace_page_costs'] = wasmExports['get_tablespace_page_costs'])(a0, a1, a2);
-var _numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = (a0) => (_numeric_float8_no_overflow = Module['_numeric_float8_no_overflow'] = wasmExports['numeric_float8_no_overflow'])(a0);
+var _IsValidJsonNumber = Module['_IsValidJsonNumber'] = (a0, a1) => (_IsValidJsonNumber = Module['_IsValidJsonNumber'] = wasmExports['IsValidJsonNumber'])(a0, a1);
 var _array_create_iterator = Module['_array_create_iterator'] = (a0, a1, a2) => (_array_create_iterator = Module['_array_create_iterator'] = wasmExports['array_create_iterator'])(a0, a1, a2);
 var _array_iterate = Module['_array_iterate'] = (a0, a1, a2) => (_array_iterate = Module['_array_iterate'] = wasmExports['array_iterate'])(a0, a1, a2);
-var _transformExpr = Module['_transformExpr'] = (a0, a1, a2) => (_transformExpr = Module['_transformExpr'] = wasmExports['transformExpr'])(a0, a1, a2);
-var _numeric_is_nan = Module['_numeric_is_nan'] = (a0) => (_numeric_is_nan = Module['_numeric_is_nan'] = wasmExports['numeric_is_nan'])(a0);
-var _get_attname = Module['_get_attname'] = (a0, a1, a2) => (_get_attname = Module['_get_attname'] = wasmExports['get_attname'])(a0, a1, a2);
+var _pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = (a0, a1, a2, a3, a4) => (_pg_inet_net_ntop = Module['_pg_inet_net_ntop'] = wasmExports['pg_inet_net_ntop'])(a0, a1, a2, a3, a4);
+var _expand_array = Module['_expand_array'] = (a0, a1, a2) => (_expand_array = Module['_expand_array'] = wasmExports['expand_array'])(a0, a1, a2);
+var _forkname_to_number = Module['_forkname_to_number'] = (a0) => (_forkname_to_number = Module['_forkname_to_number'] = wasmExports['forkname_to_number'])(a0);
+var _path_is_relative_and_below_cwd = Module['_path_is_relative_and_below_cwd'] = (a0) => (_path_is_relative_and_below_cwd = Module['_path_is_relative_and_below_cwd'] = wasmExports['path_is_relative_and_below_cwd'])(a0);
+var _make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = (a0, a1, a2) => (_make_expanded_record_from_typeid = Module['_make_expanded_record_from_typeid'] = wasmExports['make_expanded_record_from_typeid'])(a0, a1, a2);
+var _make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = (a0, a1) => (_make_expanded_record_from_tupdesc = Module['_make_expanded_record_from_tupdesc'] = wasmExports['make_expanded_record_from_tupdesc'])(a0, a1);
+var _make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = (a0, a1) => (_make_expanded_record_from_exprecord = Module['_make_expanded_record_from_exprecord'] = wasmExports['make_expanded_record_from_exprecord'])(a0, a1);
+var _expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = (a0, a1, a2, a3) => (_expanded_record_set_tuple = Module['_expanded_record_set_tuple'] = wasmExports['expanded_record_set_tuple'])(a0, a1, a2, a3);
+var _domain_check = Module['_domain_check'] = (a0, a1, a2, a3, a4) => (_domain_check = Module['_domain_check'] = wasmExports['domain_check'])(a0, a1, a2, a3, a4);
+var _expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = (a0) => (_expanded_record_get_tuple = Module['_expanded_record_get_tuple'] = wasmExports['expanded_record_get_tuple'])(a0);
+var _deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = (a0) => (_deconstruct_expanded_record = Module['_deconstruct_expanded_record'] = wasmExports['deconstruct_expanded_record'])(a0);
+var _expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = (a0, a1, a2) => (_expanded_record_lookup_field = Module['_expanded_record_lookup_field'] = wasmExports['expanded_record_lookup_field'])(a0, a1, a2);
+var _expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = (a0, a1, a2, a3, a4, a5) => (_expanded_record_set_field_internal = Module['_expanded_record_set_field_internal'] = wasmExports['expanded_record_set_field_internal'])(a0, a1, a2, a3, a4, a5);
+var _expanded_record_set_fields = Module['_expanded_record_set_fields'] = (a0, a1, a2, a3) => (_expanded_record_set_fields = Module['_expanded_record_set_fields'] = wasmExports['expanded_record_set_fields'])(a0, a1, a2, a3);
+var _float8in_internal = Module['_float8in_internal'] = (a0, a1, a2, a3, a4) => (_float8in_internal = Module['_float8in_internal'] = wasmExports['float8in_internal'])(a0, a1, a2, a3, a4);
+var _str_tolower = Module['_str_tolower'] = (a0, a1, a2) => (_str_tolower = Module['_str_tolower'] = wasmExports['str_tolower'])(a0, a1, a2);
 var _pg_get_indexdef_columns_extended = Module['_pg_get_indexdef_columns_extended'] = (a0, a1) => (_pg_get_indexdef_columns_extended = Module['_pg_get_indexdef_columns_extended'] = wasmExports['pg_get_indexdef_columns_extended'])(a0, a1);
 var _RelationIsVisible = Module['_RelationIsVisible'] = (a0) => (_RelationIsVisible = Module['_RelationIsVisible'] = wasmExports['RelationIsVisible'])(a0);
-var _exprIsLengthCoercion = Module['_exprIsLengthCoercion'] = (a0, a1) => (_exprIsLengthCoercion = Module['_exprIsLengthCoercion'] = wasmExports['exprIsLengthCoercion'])(a0, a1);
-var _get_sortgroupref_tle = Module['_get_sortgroupref_tle'] = (a0, a1) => (_get_sortgroupref_tle = Module['_get_sortgroupref_tle'] = wasmExports['get_sortgroupref_tle'])(a0, a1);
-var _strrchr = Module['_strrchr'] = (a0, a1) => (_strrchr = Module['_strrchr'] = wasmExports['strrchr'])(a0, a1);
-var _get_rel_relispartition = Module['_get_rel_relispartition'] = (a0) => (_get_rel_relispartition = Module['_get_rel_relispartition'] = wasmExports['get_rel_relispartition'])(a0);
-var _scanner_isspace = Module['_scanner_isspace'] = (a0) => (_scanner_isspace = Module['_scanner_isspace'] = wasmExports['scanner_isspace'])(a0);
-var _varstr_levenshtein = Module['_varstr_levenshtein'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_varstr_levenshtein = Module['_varstr_levenshtein'] = wasmExports['varstr_levenshtein'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_varstr_levenshtein_less_equal = Module['_varstr_levenshtein_less_equal'] = wasmExports['varstr_levenshtein_less_equal'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _utf8_to_unicode = Module['_utf8_to_unicode'] = (a0) => (_utf8_to_unicode = Module['_utf8_to_unicode'] = wasmExports['utf8_to_unicode'])(a0);
-var _unpack_sql_state = Module['_unpack_sql_state'] = (a0) => (_unpack_sql_state = Module['_unpack_sql_state'] = wasmExports['unpack_sql_state'])(a0);
-var _get_role_oid = Module['_get_role_oid'] = (a0, a1) => (_get_role_oid = Module['_get_role_oid'] = wasmExports['get_role_oid'])(a0, a1);
-var _NameListToString = Module['_NameListToString'] = (a0) => (_NameListToString = Module['_NameListToString'] = wasmExports['NameListToString'])(a0);
-var _get_collation_oid = Module['_get_collation_oid'] = (a0, a1) => (_get_collation_oid = Module['_get_collation_oid'] = wasmExports['get_collation_oid'])(a0, a1);
-var _path_is_prefix_of_path = Module['_path_is_prefix_of_path'] = (a0, a1) => (_path_is_prefix_of_path = Module['_path_is_prefix_of_path'] = wasmExports['path_is_prefix_of_path'])(a0, a1);
-var _path_is_relative_and_below_cwd = Module['_path_is_relative_and_below_cwd'] = (a0) => (_path_is_relative_and_below_cwd = Module['_path_is_relative_and_below_cwd'] = wasmExports['path_is_relative_and_below_cwd'])(a0);
-var _setenv = Module['_setenv'] = (a0, a1, a2) => (_setenv = Module['_setenv'] = wasmExports['setenv'])(a0, a1, a2);
-var _pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = (a0, a1) => (_pg_get_encoding_from_locale = Module['_pg_get_encoding_from_locale'] = wasmExports['pg_get_encoding_from_locale'])(a0, a1);
+var _float4in_internal = Module['_float4in_internal'] = (a0, a1, a2, a3, a4) => (_float4in_internal = Module['_float4in_internal'] = wasmExports['float4in_internal'])(a0, a1, a2, a3, a4);
+var _strtof = Module['_strtof'] = (a0, a1) => (_strtof = Module['_strtof'] = wasmExports['strtof'])(a0, a1);
+var _float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = (a0, a1) => (_float_to_shortest_decimal_buf = Module['_float_to_shortest_decimal_buf'] = wasmExports['float_to_shortest_decimal_buf'])(a0, a1);
+var _float8out_internal = Module['_float8out_internal'] = (a0) => (_float8out_internal = Module['_float8out_internal'] = wasmExports['float8out_internal'])(a0);
+var _acos = Module['_acos'] = (a0) => (_acos = Module['_acos'] = wasmExports['acos'])(a0);
+var _asin = Module['_asin'] = (a0) => (_asin = Module['_asin'] = wasmExports['asin'])(a0);
+var _cos = Module['_cos'] = (a0) => (_cos = Module['_cos'] = wasmExports['cos'])(a0);
+var _sin = Module['_sin'] = (a0) => (_sin = Module['_sin'] = wasmExports['sin'])(a0);
+var _fmod = Module['_fmod'] = (a0, a1) => (_fmod = Module['_fmod'] = wasmExports['fmod'])(a0, a1);
 var _localtime = Module['_localtime'] = (a0) => (_localtime = Module['_localtime'] = wasmExports['localtime'])(a0);
 var _strftime = Module['_strftime'] = (a0, a1, a2, a3) => (_strftime = Module['_strftime'] = wasmExports['strftime'])(a0, a1, a2, a3);
-var _get_extension_oid = Module['_get_extension_oid'] = (a0, a1) => (_get_extension_oid = Module['_get_extension_oid'] = wasmExports['get_extension_oid'])(a0, a1);
-var _IsValidJsonNumber = Module['_IsValidJsonNumber'] = (a0, a1) => (_IsValidJsonNumber = Module['_IsValidJsonNumber'] = wasmExports['IsValidJsonNumber'])(a0, a1);
-var _strlcat = Module['_strlcat'] = (a0, a1, a2) => (_strlcat = Module['_strlcat'] = wasmExports['strlcat'])(a0, a1, a2);
-var _pg_bindtextdomain = Module['_pg_bindtextdomain'] = (a0) => (_pg_bindtextdomain = Module['_pg_bindtextdomain'] = wasmExports['pg_bindtextdomain'])(a0);
-var _CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = (a0, a1) => (_CacheRegisterRelcacheCallback = Module['_CacheRegisterRelcacheCallback'] = wasmExports['CacheRegisterRelcacheCallback'])(a0, a1);
-var _CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = (a0, a1, a2) => (_CachedPlanAllowsSimpleValidityCheck = Module['_CachedPlanAllowsSimpleValidityCheck'] = wasmExports['CachedPlanAllowsSimpleValidityCheck'])(a0, a1, a2);
-var _CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = (a0, a1, a2) => (_CachedPlanIsSimplyValid = Module['_CachedPlanIsSimplyValid'] = wasmExports['CachedPlanIsSimplyValid'])(a0, a1, a2);
-var _GetCachedExpression = Module['_GetCachedExpression'] = (a0) => (_GetCachedExpression = Module['_GetCachedExpression'] = wasmExports['GetCachedExpression'])(a0);
-var _FreeCachedExpression = Module['_FreeCachedExpression'] = (a0) => (_FreeCachedExpression = Module['_FreeCachedExpression'] = wasmExports['FreeCachedExpression'])(a0);
-var _SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = (a0, a1) => (_SearchSysCacheAttName = Module['_SearchSysCacheAttName'] = wasmExports['SearchSysCacheAttName'])(a0, a1);
-var _get_func_namespace = Module['_get_func_namespace'] = (a0) => (_get_func_namespace = Module['_get_func_namespace'] = wasmExports['get_func_namespace'])(a0);
-var _get_rel_type_id = Module['_get_rel_type_id'] = (a0) => (_get_rel_type_id = Module['_get_rel_type_id'] = wasmExports['get_rel_type_id'])(a0);
-var _get_typsubscript = Module['_get_typsubscript'] = (a0, a1) => (_get_typsubscript = Module['_get_typsubscript'] = wasmExports['get_typsubscript'])(a0, a1);
-var _is_publishable_relation = Module['_is_publishable_relation'] = (a0) => (_is_publishable_relation = Module['_is_publishable_relation'] = wasmExports['is_publishable_relation'])(a0);
-var _GetRelationPublications = Module['_GetRelationPublications'] = (a0) => (_GetRelationPublications = Module['_GetRelationPublications'] = wasmExports['GetRelationPublications'])(a0);
-var _GetSchemaPublications = Module['_GetSchemaPublications'] = (a0) => (_GetSchemaPublications = Module['_GetSchemaPublications'] = wasmExports['GetSchemaPublications'])(a0);
 var _in_error_recursion_trouble = Module['_in_error_recursion_trouble'] = () => (_in_error_recursion_trouble = Module['_in_error_recursion_trouble'] = wasmExports['in_error_recursion_trouble'])();
 var _getinternalerrposition = Module['_getinternalerrposition'] = () => (_getinternalerrposition = Module['_getinternalerrposition'] = wasmExports['getinternalerrposition'])();
-var _FreeErrorData = Module['_FreeErrorData'] = (a0) => (_FreeErrorData = Module['_FreeErrorData'] = wasmExports['FreeErrorData'])(a0);
 var _GetErrorContextStack = Module['_GetErrorContextStack'] = () => (_GetErrorContextStack = Module['_GetErrorContextStack'] = wasmExports['GetErrorContextStack'])();
-var _scanner_init = Module['_scanner_init'] = (a0, a1, a2, a3) => (_scanner_init = Module['_scanner_init'] = wasmExports['scanner_init'])(a0, a1, a2, a3);
-var _scanner_finish = Module['_scanner_finish'] = (a0) => (_scanner_finish = Module['_scanner_finish'] = wasmExports['scanner_finish'])(a0);
-var _core_yylex = Module['_core_yylex'] = (a0, a1, a2) => (_core_yylex = Module['_core_yylex'] = wasmExports['core_yylex'])(a0, a1, a2);
-var _LookupTypeName = Module['_LookupTypeName'] = (a0, a1, a2, a3) => (_LookupTypeName = Module['_LookupTypeName'] = wasmExports['LookupTypeName'])(a0, a1, a2, a3);
-var _typeStringToTypeName = Module['_typeStringToTypeName'] = (a0, a1) => (_typeStringToTypeName = Module['_typeStringToTypeName'] = wasmExports['typeStringToTypeName'])(a0, a1);
-var _makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = (a0) => (_makeTypeNameFromNameList = Module['_makeTypeNameFromNameList'] = wasmExports['makeTypeNameFromNameList'])(a0);
-var _makeBoolean = Module['_makeBoolean'] = (a0) => (_makeBoolean = Module['_makeBoolean'] = wasmExports['makeBoolean'])(a0);
-var _makeInteger = Module['_makeInteger'] = (a0) => (_makeInteger = Module['_makeInteger'] = wasmExports['makeInteger'])(a0);
-var _makeTypeName = Module['_makeTypeName'] = (a0) => (_makeTypeName = Module['_makeTypeName'] = wasmExports['makeTypeName'])(a0);
-var _list_make4_impl = Module['_list_make4_impl'] = (a0, a1, a2, a3, a4) => (_list_make4_impl = Module['_list_make4_impl'] = wasmExports['list_make4_impl'])(a0, a1, a2, a3, a4);
-var _list_member = Module['_list_member'] = (a0, a1) => (_list_member = Module['_list_member'] = wasmExports['list_member'])(a0, a1);
-var _SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = (a0) => (_SignalHandlerForConfigReload = Module['_SignalHandlerForConfigReload'] = wasmExports['SignalHandlerForConfigReload'])(a0);
-var _SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = (a0) => (_SignalHandlerForShutdownRequest = Module['_SignalHandlerForShutdownRequest'] = wasmExports['SignalHandlerForShutdownRequest'])(a0);
-var _send = Module['_send'] = (a0, a1, a2, a3) => (_send = Module['_send'] = wasmExports['send'])(a0, a1, a2, a3);
-var _gai_strerror = Module['_gai_strerror'] = (a0) => (_gai_strerror = Module['_gai_strerror'] = wasmExports['gai_strerror'])(a0);
-var _RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = (a0) => (_RegisterBackgroundWorker = Module['_RegisterBackgroundWorker'] = wasmExports['RegisterBackgroundWorker'])(a0);
-var _WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = (a0, a1) => (_WaitForBackgroundWorkerStartup = Module['_WaitForBackgroundWorkerStartup'] = wasmExports['WaitForBackgroundWorkerStartup'])(a0, a1);
-var _pg_initdb = Module['_pg_initdb'] = () => (_pg_initdb = Module['_pg_initdb'] = wasmExports['pg_initdb'])();
-var _pg_initdb_main = Module['_pg_initdb_main'] = () => (_pg_initdb_main = Module['_pg_initdb_main'] = wasmExports['pg_initdb_main'])();
-var ___cxa_throw = Module['___cxa_throw'] = (a0, a1, a2) => (___cxa_throw = Module['___cxa_throw'] = wasmExports['__cxa_throw'])(a0, a1, a2);
-var _main_repl = Module['_main_repl'] = () => (_main_repl = Module['_main_repl'] = wasmExports['main_repl'])();
-var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['__main_argc_argv'])(a0, a1);
-var _list_make5_impl = Module['_list_make5_impl'] = (a0, a1, a2, a3, a4, a5) => (_list_make5_impl = Module['_list_make5_impl'] = wasmExports['list_make5_impl'])(a0, a1, a2, a3, a4, a5);
-var _lappend_xid = Module['_lappend_xid'] = (a0, a1) => (_lappend_xid = Module['_lappend_xid'] = wasmExports['lappend_xid'])(a0, a1);
-var _list_member_ptr = Module['_list_member_ptr'] = (a0, a1) => (_list_member_ptr = Module['_list_member_ptr'] = wasmExports['list_member_ptr'])(a0, a1);
-var _list_member_xid = Module['_list_member_xid'] = (a0, a1) => (_list_member_xid = Module['_list_member_xid'] = wasmExports['list_member_xid'])(a0, a1);
-var _list_append_unique_ptr = Module['_list_append_unique_ptr'] = (a0, a1) => (_list_append_unique_ptr = Module['_list_append_unique_ptr'] = wasmExports['list_append_unique_ptr'])(a0, a1);
-var _CleanQuerytext = Module['_CleanQuerytext'] = (a0, a1, a2) => (_CleanQuerytext = Module['_CleanQuerytext'] = wasmExports['CleanQuerytext'])(a0, a1, a2);
-var _EnableQueryId = Module['_EnableQueryId'] = () => (_EnableQueryId = Module['_EnableQueryId'] = wasmExports['EnableQueryId'])();
-var _make_orclause = Module['_make_orclause'] = (a0) => (_make_orclause = Module['_make_orclause'] = wasmExports['make_orclause'])(a0);
-var _join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = (a0, a1) => (_join_clause_is_movable_to = Module['_join_clause_is_movable_to'] = wasmExports['join_clause_is_movable_to'])(a0, a1);
-var _make_restrictinfo = Module['_make_restrictinfo'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_make_restrictinfo = Module['_make_restrictinfo'] = wasmExports['make_restrictinfo'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _get_plan_rowmark = Module['_get_plan_rowmark'] = (a0, a1) => (_get_plan_rowmark = Module['_get_plan_rowmark'] = wasmExports['get_plan_rowmark'])(a0, a1);
-var _add_row_identity_var = Module['_add_row_identity_var'] = (a0, a1, a2, a3) => (_add_row_identity_var = Module['_add_row_identity_var'] = wasmExports['add_row_identity_var'])(a0, a1, a2, a3);
-var _get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = (a0, a1) => (_get_rel_all_updated_cols = Module['_get_rel_all_updated_cols'] = wasmExports['get_rel_all_updated_cols'])(a0, a1);
-var _get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = (a0, a1, a2) => (_get_baserel_parampathinfo = Module['_get_baserel_parampathinfo'] = wasmExports['get_baserel_parampathinfo'])(a0, a1, a2);
-var _tlist_member = Module['_tlist_member'] = (a0, a1) => (_tlist_member = Module['_tlist_member'] = wasmExports['tlist_member'])(a0, a1);
-var _add_to_flat_tlist = Module['_add_to_flat_tlist'] = (a0, a1) => (_add_to_flat_tlist = Module['_add_to_flat_tlist'] = wasmExports['add_to_flat_tlist'])(a0, a1);
-var _get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = (a0, a1) => (_get_sortgrouplist_exprs = Module['_get_sortgrouplist_exprs'] = wasmExports['get_sortgrouplist_exprs'])(a0, a1);
-var _get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = (a0, a1) => (_get_sortgroupref_clause_noerr = Module['_get_sortgroupref_clause_noerr'] = wasmExports['get_sortgroupref_clause_noerr'])(a0, a1);
-var _grouping_is_sortable = Module['_grouping_is_sortable'] = (a0) => (_grouping_is_sortable = Module['_grouping_is_sortable'] = wasmExports['grouping_is_sortable'])(a0);
-var _copy_pathtarget = Module['_copy_pathtarget'] = (a0) => (_copy_pathtarget = Module['_copy_pathtarget'] = wasmExports['copy_pathtarget'])(a0);
-var _add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = (a0, a1) => (_add_new_columns_to_pathtarget = Module['_add_new_columns_to_pathtarget'] = wasmExports['add_new_columns_to_pathtarget'])(a0, a1);
-var _get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = (a0, a1, a2, a3) => (_get_translated_update_targetlist = Module['_get_translated_update_targetlist'] = wasmExports['get_translated_update_targetlist'])(a0, a1, a2, a3);
-var _contain_mutable_functions = Module['_contain_mutable_functions'] = (a0) => (_contain_mutable_functions = Module['_contain_mutable_functions'] = wasmExports['contain_mutable_functions'])(a0);
-var _cost_qual_eval = Module['_cost_qual_eval'] = (a0, a1, a2) => (_cost_qual_eval = Module['_cost_qual_eval'] = wasmExports['cost_qual_eval'])(a0, a1, a2);
-var _add_path = Module['_add_path'] = (a0, a1) => (_add_path = Module['_add_path'] = wasmExports['add_path'])(a0, a1);
-var _pathkeys_contained_in = Module['_pathkeys_contained_in'] = (a0, a1) => (_pathkeys_contained_in = Module['_pathkeys_contained_in'] = wasmExports['pathkeys_contained_in'])(a0, a1);
-var _cost_sort = Module['_cost_sort'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_cost_sort = Module['_cost_sort'] = wasmExports['cost_sort'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _create_foreignscan_path = Module['_create_foreignscan_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreignscan_path = Module['_create_foreignscan_path'] = wasmExports['create_foreignscan_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _create_foreign_join_path = Module['_create_foreign_join_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8, a9) => (_create_foreign_join_path = Module['_create_foreign_join_path'] = wasmExports['create_foreign_join_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8, a9);
-var _create_foreign_upper_path = Module['_create_foreign_upper_path'] = (a0, a1, a2, a3, a4, a5, a6, a7, a8) => (_create_foreign_upper_path = Module['_create_foreign_upper_path'] = wasmExports['create_foreign_upper_path'])(a0, a1, a2, a3, a4, a5, a6, a7, a8);
-var _create_projection_path = Module['_create_projection_path'] = (a0, a1, a2, a3) => (_create_projection_path = Module['_create_projection_path'] = wasmExports['create_projection_path'])(a0, a1, a2, a3);
-var _create_sort_path = Module['_create_sort_path'] = (a0, a1, a2, a3, a4) => (_create_sort_path = Module['_create_sort_path'] = wasmExports['create_sort_path'])(a0, a1, a2, a3, a4);
-var _adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = (a0, a1, a2, a3, a4) => (_adjust_limit_rows_costs = Module['_adjust_limit_rows_costs'] = wasmExports['adjust_limit_rows_costs'])(a0, a1, a2, a3, a4);
-var _extract_actual_clauses = Module['_extract_actual_clauses'] = (a0, a1) => (_extract_actual_clauses = Module['_extract_actual_clauses'] = wasmExports['extract_actual_clauses'])(a0, a1);
-var _get_agg_clause_costs = Module['_get_agg_clause_costs'] = (a0, a1, a2) => (_get_agg_clause_costs = Module['_get_agg_clause_costs'] = wasmExports['get_agg_clause_costs'])(a0, a1, a2);
-var _update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = (a0, a1) => (_update_mergeclause_eclasses = Module['_update_mergeclause_eclasses'] = wasmExports['update_mergeclause_eclasses'])(a0, a1);
-var _set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = (a0, a1) => (_set_baserel_size_estimates = Module['_set_baserel_size_estimates'] = wasmExports['set_baserel_size_estimates'])(a0, a1);
-var _make_canonical_pathkey = Module['_make_canonical_pathkey'] = (a0, a1, a2, a3, a4) => (_make_canonical_pathkey = Module['_make_canonical_pathkey'] = wasmExports['make_canonical_pathkey'])(a0, a1, a2, a3, a4);
-var _eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = (a0, a1, a2) => (_eclass_useful_for_merging = Module['_eclass_useful_for_merging'] = wasmExports['eclass_useful_for_merging'])(a0, a1, a2);
-var _generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = (a0, a1, a2, a3, a4) => (_generate_implied_equalities_for_column = Module['_generate_implied_equalities_for_column'] = wasmExports['generate_implied_equalities_for_column'])(a0, a1, a2, a3, a4);
-var _standard_planner = Module['_standard_planner'] = (a0, a1, a2, a3) => (_standard_planner = Module['_standard_planner'] = wasmExports['standard_planner'])(a0, a1, a2, a3);
-var _plan_create_index_workers = Module['_plan_create_index_workers'] = (a0, a1) => (_plan_create_index_workers = Module['_plan_create_index_workers'] = wasmExports['plan_create_index_workers'])(a0, a1);
-var _change_plan_targetlist = Module['_change_plan_targetlist'] = (a0, a1, a2) => (_change_plan_targetlist = Module['_change_plan_targetlist'] = wasmExports['change_plan_targetlist'])(a0, a1, a2);
-var _make_foreignscan = Module['_make_foreignscan'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_make_foreignscan = Module['_make_foreignscan'] = wasmExports['make_foreignscan'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _BeginCopyFrom = Module['_BeginCopyFrom'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_BeginCopyFrom = Module['_BeginCopyFrom'] = wasmExports['BeginCopyFrom'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _EndCopyFrom = Module['_EndCopyFrom'] = (a0) => (_EndCopyFrom = Module['_EndCopyFrom'] = wasmExports['EndCopyFrom'])(a0);
-var _ProcessCopyOptions = Module['_ProcessCopyOptions'] = (a0, a1, a2, a3) => (_ProcessCopyOptions = Module['_ProcessCopyOptions'] = wasmExports['ProcessCopyOptions'])(a0, a1, a2, a3);
-var _NextCopyFrom = Module['_NextCopyFrom'] = (a0, a1, a2, a3) => (_NextCopyFrom = Module['_NextCopyFrom'] = wasmExports['NextCopyFrom'])(a0, a1, a2, a3);
-var _defGetStreamingMode = Module['_defGetStreamingMode'] = (a0) => (_defGetStreamingMode = Module['_defGetStreamingMode'] = wasmExports['defGetStreamingMode'])(a0);
-var _plain_crypt_verify = Module['_plain_crypt_verify'] = (a0, a1, a2, a3) => (_plain_crypt_verify = Module['_plain_crypt_verify'] = wasmExports['plain_crypt_verify'])(a0, a1, a2, a3);
-var _getExtensionOfObject = Module['_getExtensionOfObject'] = (a0, a1) => (_getExtensionOfObject = Module['_getExtensionOfObject'] = wasmExports['getExtensionOfObject'])(a0, a1);
-var _nextval = Module['_nextval'] = (a0) => (_nextval = Module['_nextval'] = wasmExports['nextval'])(a0);
-var _CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = (a0) => (_CopyFromErrorCallback = Module['_CopyFromErrorCallback'] = wasmExports['CopyFromErrorCallback'])(a0);
-var _GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = (a0, a1, a2) => (_GetTopMostAncestorInPublication = Module['_GetTopMostAncestorInPublication'] = wasmExports['GetTopMostAncestorInPublication'])(a0, a1, a2);
-var _pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = (a0, a1, a2) => (_pub_collist_to_bitmapset = Module['_pub_collist_to_bitmapset'] = wasmExports['pub_collist_to_bitmapset'])(a0, a1, a2);
-var _ExplainBeginOutput = Module['_ExplainBeginOutput'] = (a0) => (_ExplainBeginOutput = Module['_ExplainBeginOutput'] = wasmExports['ExplainBeginOutput'])(a0);
-var _NewExplainState = Module['_NewExplainState'] = () => (_NewExplainState = Module['_NewExplainState'] = wasmExports['NewExplainState'])();
-var _ExplainEndOutput = Module['_ExplainEndOutput'] = (a0) => (_ExplainEndOutput = Module['_ExplainEndOutput'] = wasmExports['ExplainEndOutput'])(a0);
-var _ExplainPrintPlan = Module['_ExplainPrintPlan'] = (a0, a1) => (_ExplainPrintPlan = Module['_ExplainPrintPlan'] = wasmExports['ExplainPrintPlan'])(a0, a1);
-var _ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = (a0, a1) => (_ExplainPrintTriggers = Module['_ExplainPrintTriggers'] = wasmExports['ExplainPrintTriggers'])(a0, a1);
-var _ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = (a0, a1) => (_ExplainPrintJITSummary = Module['_ExplainPrintJITSummary'] = wasmExports['ExplainPrintJITSummary'])(a0, a1);
-var _ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = (a0, a1, a2, a3) => (_ExplainPropertyInteger = Module['_ExplainPropertyInteger'] = wasmExports['ExplainPropertyInteger'])(a0, a1, a2, a3);
-var _ExplainQueryText = Module['_ExplainQueryText'] = (a0, a1) => (_ExplainQueryText = Module['_ExplainQueryText'] = wasmExports['ExplainQueryText'])(a0, a1);
-var _ExplainPropertyText = Module['_ExplainPropertyText'] = (a0, a1, a2) => (_ExplainPropertyText = Module['_ExplainPropertyText'] = wasmExports['ExplainPropertyText'])(a0, a1, a2);
-var _ExplainQueryParameters = Module['_ExplainQueryParameters'] = (a0, a1, a2) => (_ExplainQueryParameters = Module['_ExplainQueryParameters'] = wasmExports['ExplainQueryParameters'])(a0, a1, a2);
-var _pg_is_ascii = Module['_pg_is_ascii'] = (a0) => (_pg_is_ascii = Module['_pg_is_ascii'] = wasmExports['pg_is_ascii'])(a0);
-var _pg_md5_encrypt = Module['_pg_md5_encrypt'] = (a0, a1, a2, a3, a4) => (_pg_md5_encrypt = Module['_pg_md5_encrypt'] = wasmExports['pg_md5_encrypt'])(a0, a1, a2, a3, a4);
-var _explicit_bzero = Module['_explicit_bzero'] = (a0, a1) => (_explicit_bzero = Module['_explicit_bzero'] = wasmExports['explicit_bzero'])(a0, a1);
-var _pg_strip_crlf = Module['_pg_strip_crlf'] = (a0) => (_pg_strip_crlf = Module['_pg_strip_crlf'] = wasmExports['pg_strip_crlf'])(a0);
-var _recv = Module['_recv'] = (a0, a1, a2, a3) => (_recv = Module['_recv'] = wasmExports['recv'])(a0, a1, a2, a3);
-var _pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = (a0, a1, a2, a3) => (_pg_getaddrinfo_all = Module['_pg_getaddrinfo_all'] = wasmExports['pg_getaddrinfo_all'])(a0, a1, a2, a3);
-var _pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = (a0, a1) => (_pg_freeaddrinfo_all = Module['_pg_freeaddrinfo_all'] = wasmExports['pg_freeaddrinfo_all'])(a0, a1);
-var _sigemptyset = Module['_sigemptyset'] = (a0) => (_sigemptyset = Module['_sigemptyset'] = wasmExports['sigemptyset'])(a0);
-var _getpeereid = Module['_getpeereid'] = (a0, a1, a2) => (_getpeereid = Module['_getpeereid'] = wasmExports['getpeereid'])(a0, a1, a2);
-var _socket = Module['_socket'] = (a0, a1, a2) => (_socket = Module['_socket'] = wasmExports['socket'])(a0, a1, a2);
-var _connect = Module['_connect'] = (a0, a1, a2) => (_connect = Module['_connect'] = wasmExports['connect'])(a0, a1, a2);
-var _setsockopt = Module['_setsockopt'] = (a0, a1, a2, a3, a4) => (_setsockopt = Module['_setsockopt'] = wasmExports['setsockopt'])(a0, a1, a2, a3, a4);
-var _getsockname = Module['_getsockname'] = (a0, a1, a2) => (_getsockname = Module['_getsockname'] = wasmExports['getsockname'])(a0, a1, a2);
-var _getsockopt = Module['_getsockopt'] = (a0, a1, a2, a3, a4) => (_getsockopt = Module['_getsockopt'] = wasmExports['getsockopt'])(a0, a1, a2, a3, a4);
-var _pg_b64_enc_len = Module['_pg_b64_enc_len'] = (a0) => (_pg_b64_enc_len = Module['_pg_b64_enc_len'] = wasmExports['pg_b64_enc_len'])(a0);
-var _pg_b64_encode = Module['_pg_b64_encode'] = (a0, a1, a2, a3) => (_pg_b64_encode = Module['_pg_b64_encode'] = wasmExports['pg_b64_encode'])(a0, a1, a2, a3);
-var _pg_b64_dec_len = Module['_pg_b64_dec_len'] = (a0) => (_pg_b64_dec_len = Module['_pg_b64_dec_len'] = wasmExports['pg_b64_dec_len'])(a0);
-var _pg_b64_decode = Module['_pg_b64_decode'] = (a0, a1, a2, a3) => (_pg_b64_decode = Module['_pg_b64_decode'] = wasmExports['pg_b64_decode'])(a0, a1, a2, a3);
-var _pg_hmac_create = Module['_pg_hmac_create'] = (a0) => (_pg_hmac_create = Module['_pg_hmac_create'] = wasmExports['pg_hmac_create'])(a0);
-var _pg_hmac_init = Module['_pg_hmac_init'] = (a0, a1, a2) => (_pg_hmac_init = Module['_pg_hmac_init'] = wasmExports['pg_hmac_init'])(a0, a1, a2);
-var _pg_hmac_update = Module['_pg_hmac_update'] = (a0, a1, a2) => (_pg_hmac_update = Module['_pg_hmac_update'] = wasmExports['pg_hmac_update'])(a0, a1, a2);
-var _pg_hmac_final = Module['_pg_hmac_final'] = (a0, a1, a2) => (_pg_hmac_final = Module['_pg_hmac_final'] = wasmExports['pg_hmac_final'])(a0, a1, a2);
-var _pg_hmac_error = Module['_pg_hmac_error'] = (a0) => (_pg_hmac_error = Module['_pg_hmac_error'] = wasmExports['pg_hmac_error'])(a0);
-var _scram_H = Module['_scram_H'] = (a0, a1, a2, a3, a4) => (_scram_H = Module['_scram_H'] = wasmExports['scram_H'])(a0, a1, a2, a3, a4);
-var _pg_saslprep = Module['_pg_saslprep'] = (a0, a1) => (_pg_saslprep = Module['_pg_saslprep'] = wasmExports['pg_saslprep'])(a0, a1);
-var _scram_build_secret = Module['_scram_build_secret'] = (a0, a1, a2, a3, a4, a5, a6) => (_scram_build_secret = Module['_scram_build_secret'] = wasmExports['scram_build_secret'])(a0, a1, a2, a3, a4, a5, a6);
-var _scram_SaltedPassword = Module['_scram_SaltedPassword'] = (a0, a1, a2, a3, a4, a5, a6, a7) => (_scram_SaltedPassword = Module['_scram_SaltedPassword'] = wasmExports['scram_SaltedPassword'])(a0, a1, a2, a3, a4, a5, a6, a7);
-var _scram_ServerKey = Module['_scram_ServerKey'] = (a0, a1, a2, a3, a4) => (_scram_ServerKey = Module['_scram_ServerKey'] = wasmExports['scram_ServerKey'])(a0, a1, a2, a3, a4);
-var _logicalrep_write_begin = Module['_logicalrep_write_begin'] = (a0, a1) => (_logicalrep_write_begin = Module['_logicalrep_write_begin'] = wasmExports['logicalrep_write_begin'])(a0, a1);
-var _logicalrep_write_commit = Module['_logicalrep_write_commit'] = (a0, a1, a2) => (_logicalrep_write_commit = Module['_logicalrep_write_commit'] = wasmExports['logicalrep_write_commit'])(a0, a1, a2);
-var _logicalrep_write_begin_prepare = Module['_logicalrep_write_begin_prepare'] = (a0, a1) => (_logicalrep_write_begin_prepare = Module['_logicalrep_write_begin_prepare'] = wasmExports['logicalrep_write_begin_prepare'])(a0, a1);
-var _logicalrep_write_prepare = Module['_logicalrep_write_prepare'] = (a0, a1, a2) => (_logicalrep_write_prepare = Module['_logicalrep_write_prepare'] = wasmExports['logicalrep_write_prepare'])(a0, a1, a2);
-var _logicalrep_write_commit_prepared = Module['_logicalrep_write_commit_prepared'] = (a0, a1, a2) => (_logicalrep_write_commit_prepared = Module['_logicalrep_write_commit_prepared'] = wasmExports['logicalrep_write_commit_prepared'])(a0, a1, a2);
-var _logicalrep_write_rollback_prepared = Module['_logicalrep_write_rollback_prepared'] = (a0, a1, a2, a3) => (_logicalrep_write_rollback_prepared = Module['_logicalrep_write_rollback_prepared'] = wasmExports['logicalrep_write_rollback_prepared'])(a0, a1, a2, a3);
-var _logicalrep_write_stream_prepare = Module['_logicalrep_write_stream_prepare'] = (a0, a1, a2) => (_logicalrep_write_stream_prepare = Module['_logicalrep_write_stream_prepare'] = wasmExports['logicalrep_write_stream_prepare'])(a0, a1, a2);
-var _logicalrep_write_origin = Module['_logicalrep_write_origin'] = (a0, a1, a2) => (_logicalrep_write_origin = Module['_logicalrep_write_origin'] = wasmExports['logicalrep_write_origin'])(a0, a1, a2);
-var _logicalrep_write_insert = Module['_logicalrep_write_insert'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_insert = Module['_logicalrep_write_insert'] = wasmExports['logicalrep_write_insert'])(a0, a1, a2, a3, a4, a5);
-var _logicalrep_write_update = Module['_logicalrep_write_update'] = (a0, a1, a2, a3, a4, a5, a6) => (_logicalrep_write_update = Module['_logicalrep_write_update'] = wasmExports['logicalrep_write_update'])(a0, a1, a2, a3, a4, a5, a6);
-var _logicalrep_write_delete = Module['_logicalrep_write_delete'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_delete = Module['_logicalrep_write_delete'] = wasmExports['logicalrep_write_delete'])(a0, a1, a2, a3, a4, a5);
-var _logicalrep_write_truncate = Module['_logicalrep_write_truncate'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_truncate = Module['_logicalrep_write_truncate'] = wasmExports['logicalrep_write_truncate'])(a0, a1, a2, a3, a4, a5);
-var _logicalrep_write_message = Module['_logicalrep_write_message'] = (a0, a1, a2, a3, a4, a5, a6) => (_logicalrep_write_message = Module['_logicalrep_write_message'] = wasmExports['logicalrep_write_message'])(a0, a1, a2, a3, a4, a5, a6);
-var _logicalrep_write_rel = Module['_logicalrep_write_rel'] = (a0, a1, a2, a3) => (_logicalrep_write_rel = Module['_logicalrep_write_rel'] = wasmExports['logicalrep_write_rel'])(a0, a1, a2, a3);
-var _logicalrep_write_typ = Module['_logicalrep_write_typ'] = (a0, a1, a2) => (_logicalrep_write_typ = Module['_logicalrep_write_typ'] = wasmExports['logicalrep_write_typ'])(a0, a1, a2);
-var _logicalrep_write_stream_start = Module['_logicalrep_write_stream_start'] = (a0, a1, a2) => (_logicalrep_write_stream_start = Module['_logicalrep_write_stream_start'] = wasmExports['logicalrep_write_stream_start'])(a0, a1, a2);
-var _logicalrep_write_stream_stop = Module['_logicalrep_write_stream_stop'] = (a0) => (_logicalrep_write_stream_stop = Module['_logicalrep_write_stream_stop'] = wasmExports['logicalrep_write_stream_stop'])(a0);
-var _logicalrep_write_stream_commit = Module['_logicalrep_write_stream_commit'] = (a0, a1, a2) => (_logicalrep_write_stream_commit = Module['_logicalrep_write_stream_commit'] = wasmExports['logicalrep_write_stream_commit'])(a0, a1, a2);
-var _logicalrep_write_stream_abort = Module['_logicalrep_write_stream_abort'] = (a0, a1, a2, a3, a4, a5) => (_logicalrep_write_stream_abort = Module['_logicalrep_write_stream_abort'] = wasmExports['logicalrep_write_stream_abort'])(a0, a1, a2, a3, a4, a5);
-var _OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = (a0, a1) => (_OutputPluginPrepareWrite = Module['_OutputPluginPrepareWrite'] = wasmExports['OutputPluginPrepareWrite'])(a0, a1);
-var _OutputPluginWrite = Module['_OutputPluginWrite'] = (a0, a1) => (_OutputPluginWrite = Module['_OutputPluginWrite'] = wasmExports['OutputPluginWrite'])(a0, a1);
-var _OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = (a0, a1) => (_OutputPluginUpdateProgress = Module['_OutputPluginUpdateProgress'] = wasmExports['OutputPluginUpdateProgress'])(a0, a1);
-var _replorigin_by_oid = Module['_replorigin_by_oid'] = (a0, a1, a2) => (_replorigin_by_oid = Module['_replorigin_by_oid'] = wasmExports['replorigin_by_oid'])(a0, a1, a2);
-var _ProcessWalRcvInterrupts = Module['_ProcessWalRcvInterrupts'] = () => (_ProcessWalRcvInterrupts = Module['_ProcessWalRcvInterrupts'] = wasmExports['ProcessWalRcvInterrupts'])();
-var _PQconnectStartParams = Module['_PQconnectStartParams'] = (a0, a1, a2) => (_PQconnectStartParams = Module['_PQconnectStartParams'] = wasmExports['PQconnectStartParams'])(a0, a1, a2);
-var _PQstatus = Module['_PQstatus'] = (a0) => (_PQstatus = Module['_PQstatus'] = wasmExports['PQstatus'])(a0);
-var _PQsocket = Module['_PQsocket'] = (a0) => (_PQsocket = Module['_PQsocket'] = wasmExports['PQsocket'])(a0);
-var _PQconnectPoll = Module['_PQconnectPoll'] = (a0) => (_PQconnectPoll = Module['_PQconnectPoll'] = wasmExports['PQconnectPoll'])(a0);
-var _PQconnectionUsedPassword = Module['_PQconnectionUsedPassword'] = (a0) => (_PQconnectionUsedPassword = Module['_PQconnectionUsedPassword'] = wasmExports['PQconnectionUsedPassword'])(a0);
-var _PQfinish = Module['_PQfinish'] = (a0) => (_PQfinish = Module['_PQfinish'] = wasmExports['PQfinish'])(a0);
-var _PQresultStatus = Module['_PQresultStatus'] = (a0) => (_PQresultStatus = Module['_PQresultStatus'] = wasmExports['PQresultStatus'])(a0);
-var _PQclear = Module['_PQclear'] = (a0) => (_PQclear = Module['_PQclear'] = wasmExports['PQclear'])(a0);
-var _PQerrorMessage = Module['_PQerrorMessage'] = (a0) => (_PQerrorMessage = Module['_PQerrorMessage'] = wasmExports['PQerrorMessage'])(a0);
-var _PQnfields = Module['_PQnfields'] = (a0) => (_PQnfields = Module['_PQnfields'] = wasmExports['PQnfields'])(a0);
-var _PQntuples = Module['_PQntuples'] = (a0) => (_PQntuples = Module['_PQntuples'] = wasmExports['PQntuples'])(a0);
-var _PQgetvalue = Module['_PQgetvalue'] = (a0, a1, a2) => (_PQgetvalue = Module['_PQgetvalue'] = wasmExports['PQgetvalue'])(a0, a1, a2);
-var _PQconsumeInput = Module['_PQconsumeInput'] = (a0) => (_PQconsumeInput = Module['_PQconsumeInput'] = wasmExports['PQconsumeInput'])(a0);
-var _PQgetisnull = Module['_PQgetisnull'] = (a0, a1, a2) => (_PQgetisnull = Module['_PQgetisnull'] = wasmExports['PQgetisnull'])(a0, a1, a2);
-var _PQresultErrorField = Module['_PQresultErrorField'] = (a0, a1) => (_PQresultErrorField = Module['_PQresultErrorField'] = wasmExports['PQresultErrorField'])(a0, a1);
-var _PQsendQuery = Module['_PQsendQuery'] = (a0, a1) => (_PQsendQuery = Module['_PQsendQuery'] = wasmExports['PQsendQuery'])(a0, a1);
-var _PQisBusy = Module['_PQisBusy'] = (a0) => (_PQisBusy = Module['_PQisBusy'] = wasmExports['PQisBusy'])(a0);
-var _PQgetResult = Module['_PQgetResult'] = (a0) => (_PQgetResult = Module['_PQgetResult'] = wasmExports['PQgetResult'])(a0);
-var _RelnameGetRelid = Module['_RelnameGetRelid'] = (a0) => (_RelnameGetRelid = Module['_RelnameGetRelid'] = wasmExports['RelnameGetRelid'])(a0);
 var _GetPublicationByName = Module['_GetPublicationByName'] = (a0, a1) => (_GetPublicationByName = Module['_GetPublicationByName'] = wasmExports['GetPublicationByName'])(a0, a1);
 var _function_parse_error_transpose = Module['_function_parse_error_transpose'] = (a0) => (_function_parse_error_transpose = Module['_function_parse_error_transpose'] = wasmExports['function_parse_error_transpose'])(a0);
+var _RelnameGetRelid = Module['_RelnameGetRelid'] = (a0) => (_RelnameGetRelid = Module['_RelnameGetRelid'] = wasmExports['RelnameGetRelid'])(a0);
 var _fputs = Module['_fputs'] = (a0, a1) => (_fputs = Module['_fputs'] = wasmExports['fputs'])(a0, a1);
 var _popen = Module['_popen'] = (a0, a1) => (_popen = Module['_popen'] = wasmExports['popen'])(a0, a1);
 var _float_to_shortest_decimal_bufn = Module['_float_to_shortest_decimal_bufn'] = (a0, a1) => (_float_to_shortest_decimal_bufn = Module['_float_to_shortest_decimal_bufn'] = wasmExports['float_to_shortest_decimal_bufn'])(a0, a1);
@@ -10404,155 +10404,144 @@ var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExpor
 var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
 var ___wasm_apply_data_relocs = () => (___wasm_apply_data_relocs = wasmExports['__wasm_apply_data_relocs'])();
-var _ScanKeywords = Module['_ScanKeywords'] = 69109908;
-var _stderr = Module['_stderr'] = 69132336;
-var _stdout = Module['_stdout'] = 69132640;
-var _CurrentMemoryContext = Module['_CurrentMemoryContext'] = 69164604;
-var _TopMemoryContext = Module['_TopMemoryContext'] = 69164608;
-var _TTSOpsVirtual = Module['_TTSOpsVirtual'] = 68971032;
+var _ScanKeywords = Module['_ScanKeywords'] = 69109956;
+var _stderr = Module['_stderr'] = 69132384;
+var _stdout = Module['_stdout'] = 69132688;
+var _CurrentMemoryContext = Module['_CurrentMemoryContext'] = 69184580;
+var _cpu_tuple_cost = Module['_cpu_tuple_cost'] = 68967776;
+var _cpu_operator_cost = Module['_cpu_operator_cost'] = 68967792;
+var _work_mem = Module['_work_mem'] = 68996224;
+var _seq_page_cost = Module['_seq_page_cost'] = 68967760;
+var _InterruptPending = Module['_InterruptPending'] = 69181232;
+var _error_context_stack = Module['_error_context_stack'] = 69189928;
+var _planner_hook = Module['_planner_hook'] = 69134032;
+var _IsUnderPostmaster = Module['_IsUnderPostmaster'] = 69181305;
+var _ParallelWorkerNumber = Module['_ParallelWorkerNumber'] = 68968004;
+var _maintenance_work_mem = Module['_maintenance_work_mem'] = 68996240;
+var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 68996244;
+var _CacheMemoryContext = Module['_CacheMemoryContext'] = 69184596;
+var _DataDir = Module['_DataDir'] = 69181284;
+var _MainLWLockArray = Module['_MainLWLockArray'] = 69136156;
+var _ShmemVariableCache = Module['_ShmemVariableCache'] = 69135968;
+var _wal_segment_size = Module['_wal_segment_size'] = 68968056;
+var _CritSectionCount = Module['_CritSectionCount'] = 69181280;
+var _TopMemoryContext = Module['_TopMemoryContext'] = 69184584;
+var _TopTransactionContext = Module['_TopTransactionContext'] = 69184604;
+var _MyProc = Module['_MyProc'] = 69137812;
+var _MyDatabaseId = Module['_MyDatabaseId'] = 69181288;
+var _InterruptHoldoffCount = Module['_InterruptHoldoffCount'] = 69181272;
+var _XactIsoLevel = Module['_XactIsoLevel'] = 68976532;
+var _MyProcPid = Module['_MyProcPid'] = 69181372;
+var _MyLatch = Module['_MyLatch'] = 69181404;
+var _pgWalUsage = Module['_pgWalUsage'] = 69154288;
+var _wal_level = Module['_wal_level'] = 68968036;
+var _NBuffers = Module['_NBuffers'] = 68996248;
+var _GUC_check_errdetail_string = Module['_GUC_check_errdetail_string'] = 69185224;
+var _RmgrTable = Module['_RmgrTable'] = 68968272;
+var _CurrentResourceOwner = Module['_CurrentResourceOwner'] = 69157384;
 var ___THREW__ = Module['___THREW__'] = 69290116;
 var ___threwValue = Module['___threwValue'] = 69290120;
-var _error_context_stack = Module['_error_context_stack'] = 69179660;
-var _PG_exception_stack = Module['_PG_exception_stack'] = 69179664;
-var _CurrentResourceOwner = Module['_CurrentResourceOwner'] = 69164684;
-var _wal_segment_size = Module['_wal_segment_size'] = 68980232;
-var _InterruptPending = Module['_InterruptPending'] = 69170468;
-var _MyLatch = Module['_MyLatch'] = 69170636;
-var _InterruptHoldoffCount = Module['_InterruptHoldoffCount'] = 69170508;
-var _CritSectionCount = Module['_CritSectionCount'] = 69170516;
+var _PG_exception_stack = Module['_PG_exception_stack'] = 69189932;
+var _process_shared_preload_libraries_in_progress = Module['_process_shared_preload_libraries_in_progress'] = 69184556;
 var _pg_global_prng_state = Module['_pg_global_prng_state'] = 69276368;
-var _MyProc = Module['_MyProc'] = 69138188;
-var _GUC_check_errdetail_string = Module['_GUC_check_errdetail_string'] = 69165640;
-var _IsUnderPostmaster = Module['_IsUnderPostmaster'] = 69170541;
-var _progname = Module['_progname'] = 69134004;
-var _MyDatabaseId = Module['_MyDatabaseId'] = 69170524;
-var _MyProcPid = Module['_MyProcPid'] = 69170604;
-var _MyProcPort = Module['_MyProcPort'] = 69170624;
-var _single_mode_feed = Module['_single_mode_feed'] = 69134020;
-var _debug_query_string = Module['_debug_query_string'] = 69134204;
-var _stdin = Module['_stdin'] = 69132488;
+var _TopTransactionResourceOwner = Module['_TopTransactionResourceOwner'] = 69157392;
+var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69139584;
+var _BufferBlocks = Module['_BufferBlocks'] = 69139628;
+var _SnapshotAnyData = Module['_SnapshotAnyData'] = 68994600;
+var _debug_query_string = Module['_debug_query_string'] = 69155436;
+var _old_snapshot_threshold = Module['_old_snapshot_threshold'] = 69157124;
+var _TTSOpsHeapTuple = Module['_TTSOpsHeapTuple'] = 68991064;
+var _pgBufferUsage = Module['_pgBufferUsage'] = 69154176;
+var _TTSOpsVirtual = Module['_TTSOpsVirtual'] = 68991016;
+var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69139424;
+var _BufferDescriptors = Module['_BufferDescriptors'] = 69139624;
+var _ClientAuthentication_hook = Module['_ClientAuthentication_hook'] = 69144880;
+var _MyProcPort = Module['_MyProcPort'] = 69181392;
+var _cma_rsize = Module['_cma_rsize'] = 69155444;
 var _SOCKET_DATA = Module['_SOCKET_DATA'] = 69194376;
 var _SOCKET_FILE = Module['_SOCKET_FILE'] = 69194372;
-var _cma_rsize = Module['_cma_rsize'] = 69134212;
-var _cma_wsize = Module['_cma_wsize'] = 69134216;
-var _quote_all_identifiers = Module['_quote_all_identifiers'] = 69134009;
-var _TopTransactionContext = Module['_TopTransactionContext'] = 69164628;
-var _TopTransactionResourceOwner = Module['_TopTransactionResourceOwner'] = 69164692;
-var _TTSOpsMinimalTuple = Module['_TTSOpsMinimalTuple'] = 68971128;
-var _ProcessUtility_hook = Module['_ProcessUtility_hook'] = 69134416;
-var _work_mem = Module['_work_mem'] = 69103744;
-var _ParallelWorkerNumber = Module['_ParallelWorkerNumber'] = 68971576;
-var _XactIsoLevel = Module['_XactIsoLevel'] = 68979988;
-var _SnapshotAnyData = Module['_SnapshotAnyData'] = 69042632;
-var _SPI_processed = Module['_SPI_processed'] = 69134920;
-var _SPI_tuptable = Module['_SPI_tuptable'] = 69134928;
-var _SPI_result = Module['_SPI_result'] = 69134932;
-var _CacheMemoryContext = Module['_CacheMemoryContext'] = 69164620;
-var _pgBufferUsage = Module['_pgBufferUsage'] = 69135792;
-var _pgWalUsage = Module['_pgWalUsage'] = 69135904;
-var _TTSOpsHeapTuple = Module['_TTSOpsHeapTuple'] = 68971080;
-var _ExecutorStart_hook = Module['_ExecutorStart_hook'] = 69135928;
-var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69135932;
-var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69135936;
-var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69135940;
-var _LocalBufferBlockPointers = Module['_LocalBufferBlockPointers'] = 69146620;
-var _BufferBlocks = Module['_BufferBlocks'] = 69141368;
-var _maintenance_work_mem = Module['_maintenance_work_mem'] = 69103760;
-var _wal_level = Module['_wal_level'] = 68980212;
-var _NBuffers = Module['_NBuffers'] = 69103768;
-var _old_snapshot_threshold = Module['_old_snapshot_threshold'] = 69164820;
-var _MainLWLockArray = Module['_MainLWLockArray'] = 69138220;
-var _ShmemVariableCache = Module['_ShmemVariableCache'] = 69137004;
-var _RmgrTable = Module['_RmgrTable'] = 68971792;
-var _process_shared_preload_libraries_in_progress = Module['_process_shared_preload_libraries_in_progress'] = 69170456;
-var _DataDir = Module['_DataDir'] = 69170520;
-var _shmem_startup_hook = Module['_shmem_startup_hook'] = 69141140;
-var _BufferDescriptors = Module['_BufferDescriptors'] = 69141364;
-var _application_name = Module['_application_name'] = 69166844;
-var _pg_crc32_table = Module['_pg_crc32_table'] = 67834960;
-var _oldSnapshotControl = Module['_oldSnapshotControl'] = 69164824;
-var _check_function_bodies = Module['_check_function_bodies'] = 69042806;
-var _cluster_name = Module['_cluster_name'] = 69042860;
-var _extra_float_digits = Module['_extra_float_digits'] = 69092388;
-var _max_parallel_maintenance_workers = Module['_max_parallel_maintenance_workers'] = 69103764;
-var _seq_page_cost = Module['_seq_page_cost'] = 69104632;
-var _cpu_tuple_cost = Module['_cpu_tuple_cost'] = 69104648;
-var _cpu_operator_cost = Module['_cpu_operator_cost'] = 69104664;
-var _Log_directory = Module['_Log_directory'] = 69180564;
-var _Log_filename = Module['_Log_filename'] = 69180568;
-var _IntervalStyle = Module['_IntervalStyle'] = 69170548;
-var _DateStyle = Module['_DateStyle'] = 69103732;
+var _stdin = Module['_stdin'] = 69132536;
+var _progname = Module['_progname'] = 69155236;
+var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69153776;
+var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68341760;
+var _TTSOpsMinimalTuple = Module['_TTSOpsMinimalTuple'] = 68991112;
+var _check_password_hook = Module['_check_password_hook'] = 69153884;
+var _DateStyle = Module['_DateStyle'] = 68996212;
+var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69156504;
+var _SPI_processed = Module['_SPI_processed'] = 69154312;
+var _SPI_tuptable = Module['_SPI_tuptable'] = 69154320;
+var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69156636;
+var _check_function_bodies = Module['_check_function_bodies'] = 69044502;
+var _ExecutorStart_hook = Module['_ExecutorStart_hook'] = 69154156;
+var _ExecutorRun_hook = Module['_ExecutorRun_hook'] = 69154160;
+var _ExecutorFinish_hook = Module['_ExecutorFinish_hook'] = 69154164;
+var _ExecutorEnd_hook = Module['_ExecutorEnd_hook'] = 69154168;
+var _SPI_result = Module['_SPI_result'] = 69154324;
+var _ProcessUtility_hook = Module['_ProcessUtility_hook'] = 69155188;
+var _single_mode_feed = Module['_single_mode_feed'] = 69155252;
+var _cma_wsize = Module['_cma_wsize'] = 69155448;
+var _quote_all_identifiers = Module['_quote_all_identifiers'] = 69155241;
+var _application_name = Module['_application_name'] = 69186596;
+var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69156640;
+var _cluster_name = Module['_cluster_name'] = 69044556;
+var _Log_directory = Module['_Log_directory'] = 69156648;
+var _Log_filename = Module['_Log_filename'] = 69156652;
+var _MyStartTime = Module['_MyStartTime'] = 69181376;
+var _oldSnapshotControl = Module['_oldSnapshotControl'] = 69157128;
+var _pg_crc32_table = Module['_pg_crc32_table'] = 68453760;
+var _IntervalStyle = Module['_IntervalStyle'] = 69181312;
+var _shmem_request_hook = Module['_shmem_request_hook'] = 69184560;
+var _extra_float_digits = Module['_extra_float_digits'] = 69101228;
 var _xmlStructuredError = Module['_xmlStructuredError'] = 69276732;
 var _xmlStructuredErrorContext = Module['_xmlStructuredErrorContext'] = 69276740;
 var _xmlGenericErrorContext = Module['_xmlGenericErrorContext'] = 69276736;
-var _xmlGenericError = Module['_xmlGenericError'] = 69114212;
-var _xmlIsBaseCharGroup = Module['_xmlIsBaseCharGroup'] = 69113976;
-var _xmlIsDigitGroup = Module['_xmlIsDigitGroup'] = 69114008;
-var _xmlIsCombiningGroup = Module['_xmlIsCombiningGroup'] = 69113992;
-var _xmlIsExtenderGroup = Module['_xmlIsExtenderGroup'] = 69114024;
-var _xmlFree = Module['_xmlFree'] = 69114176;
+var _xmlGenericError = Module['_xmlGenericError'] = 69114260;
+var _xmlIsBaseCharGroup = Module['_xmlIsBaseCharGroup'] = 69114024;
+var _xmlIsDigitGroup = Module['_xmlIsDigitGroup'] = 69114056;
+var _xmlIsCombiningGroup = Module['_xmlIsCombiningGroup'] = 69114040;
+var _xmlIsExtenderGroup = Module['_xmlIsExtenderGroup'] = 69114072;
+var _xmlFree = Module['_xmlFree'] = 69114224;
 var _pg_number_of_ones = Module['_pg_number_of_ones'] = 68773200;
-var _MyStartTime = Module['_MyStartTime'] = 69170608;
-var _shmem_request_hook = Module['_shmem_request_hook'] = 69170460;
-var _ScanKeywordTokens = Module['_ScanKeywordTokens'] = 68459296;
-var _post_parse_analyze_hook = Module['_post_parse_analyze_hook'] = 69180556;
-var _ConfigReloadPending = Module['_ConfigReloadPending'] = 69180588;
-var _ShutdownRequestPending = Module['_ShutdownRequestPending'] = 69180592;
-var _planner_hook = Module['_planner_hook'] = 69181032;
-var _WalReceiverFunctions = Module['_WalReceiverFunctions'] = 69190712;
-var _check_password_hook = Module['_check_password_hook'] = 69181140;
-var _ClientAuthentication_hook = Module['_ClientAuthentication_hook'] = 69181896;
 var _IDB_STAGE = Module['_IDB_STAGE'] = 69194384;
 var _IDB_PIPE_FP = Module['_IDB_PIPE_FP'] = 69194380;
-var _pg_scram_mech = Module['_pg_scram_mech'] = 69113920;
-var _pg_g_threadlock = Module['_pg_g_threadlock'] = 69112024;
-var _pgresStatus = Module['_pgresStatus'] = 69113712;
+var _pg_scram_mech = Module['_pg_scram_mech'] = 69113968;
+var _pg_g_threadlock = Module['_pg_g_threadlock'] = 69112072;
+var _pgresStatus = Module['_pgresStatus'] = 69113760;
 var _xmlIsPubidChar_tab = Module['_xmlIsPubidChar_tab'] = 68773488;
-var _xmlGetWarningsDefaultValue = Module['_xmlGetWarningsDefaultValue'] = 69114204;
-var _xmlMalloc = Module['_xmlMalloc'] = 69114180;
-var _xmlRealloc = Module['_xmlRealloc'] = 69114188;
+var _xmlGetWarningsDefaultValue = Module['_xmlGetWarningsDefaultValue'] = 69114252;
+var _xmlMalloc = Module['_xmlMalloc'] = 69114228;
+var _xmlRealloc = Module['_xmlRealloc'] = 69114236;
 var _xmlLastError = Module['_xmlLastError'] = 69276752;
-var _xmlMallocAtomic = Module['_xmlMallocAtomic'] = 69114184;
-var _xmlMemStrdup = Module['_xmlMemStrdup'] = 69114192;
-var _xmlBufferAllocScheme = Module['_xmlBufferAllocScheme'] = 69114196;
-var _xmlDefaultBufferSize = Module['_xmlDefaultBufferSize'] = 69114200;
+var _xmlMallocAtomic = Module['_xmlMallocAtomic'] = 69114232;
+var _xmlMemStrdup = Module['_xmlMemStrdup'] = 69114240;
+var _xmlBufferAllocScheme = Module['_xmlBufferAllocScheme'] = 69114244;
+var _xmlDefaultBufferSize = Module['_xmlDefaultBufferSize'] = 69114248;
 var _xmlParserDebugEntities = Module['_xmlParserDebugEntities'] = 69276692;
 var _xmlDoValidityCheckingDefaultValue = Module['_xmlDoValidityCheckingDefaultValue'] = 69276696;
 var _xmlLoadExtDtdDefaultValue = Module['_xmlLoadExtDtdDefaultValue'] = 69276700;
 var _xmlPedanticParserDefaultValue = Module['_xmlPedanticParserDefaultValue'] = 69276704;
 var _xmlLineNumbersDefaultValue = Module['_xmlLineNumbersDefaultValue'] = 69276708;
-var _xmlKeepBlanksDefaultValue = Module['_xmlKeepBlanksDefaultValue'] = 69114208;
+var _xmlKeepBlanksDefaultValue = Module['_xmlKeepBlanksDefaultValue'] = 69114256;
 var _xmlSubstituteEntitiesDefaultValue = Module['_xmlSubstituteEntitiesDefaultValue'] = 69276712;
 var _xmlRegisterNodeDefaultValue = Module['_xmlRegisterNodeDefaultValue'] = 69276716;
 var _xmlDeregisterNodeDefaultValue = Module['_xmlDeregisterNodeDefaultValue'] = 69276720;
 var _xmlParserInputBufferCreateFilenameValue = Module['_xmlParserInputBufferCreateFilenameValue'] = 69276724;
 var _xmlOutputBufferCreateFilenameValue = Module['_xmlOutputBufferCreateFilenameValue'] = 69276728;
-var _xmlIndentTreeOutput = Module['_xmlIndentTreeOutput'] = 69114216;
-var _xmlTreeIndentString = Module['_xmlTreeIndentString'] = 69114220;
+var _xmlIndentTreeOutput = Module['_xmlIndentTreeOutput'] = 69114264;
+var _xmlTreeIndentString = Module['_xmlTreeIndentString'] = 69114268;
 var _xmlSaveNoEmptyTags = Module['_xmlSaveNoEmptyTags'] = 69276744;
-var _xmlDefaultSAXHandler = Module['_xmlDefaultSAXHandler'] = 69114224;
-var _xmlDefaultSAXLocator = Module['_xmlDefaultSAXLocator'] = 69114336;
-var _xmlParserMaxDepth = Module['_xmlParserMaxDepth'] = 69114996;
+var _xmlDefaultSAXHandler = Module['_xmlDefaultSAXHandler'] = 69114272;
+var _xmlDefaultSAXLocator = Module['_xmlDefaultSAXLocator'] = 69114384;
+var _xmlParserMaxDepth = Module['_xmlParserMaxDepth'] = 69115044;
 var _xmlStringText = Module['_xmlStringText'] = 68775296;
 var _xmlStringComment = Module['_xmlStringComment'] = 68775311;
 var _xmlStringTextNoenc = Module['_xmlStringTextNoenc'] = 68775301;
 var _xmlXPathNAN = Module['_xmlXPathNAN'] = 69277416;
 var _xmlXPathNINF = Module['_xmlXPathNINF'] = 69277432;
 var _xmlXPathPINF = Module['_xmlXPathPINF'] = 69277424;
-var _z_errmsg = Module['_z_errmsg'] = 69131552;
+var _z_errmsg = Module['_z_errmsg'] = 69131600;
 var __length_code = Module['__length_code'] = 68794960;
 var __dist_code = Module['__dist_code'] = 68794448;
-function invoke_i(index) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)();
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_iii(index,a1,a2) {
   var sp = stackSave();
   try {
@@ -10586,10 +10575,32 @@ function invoke_viii(index,a1,a2,a3) {
   }
 }
 
-function invoke_ji(index,a1) {
+function invoke_v(index) {
   var sp = stackSave();
   try {
-    return getWasmTableEntry(index)(a1);
+    getWasmTableEntry(index)();
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_vii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_jii(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -10620,10 +10631,10 @@ function invoke_iiiii(index,a1,a2,a3,a4) {
   }
 }
 
-function invoke_vii(index,a1,a2) {
+function invoke_iiii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)(a1,a2);
+    return getWasmTableEntry(index)(a1,a2,a3);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -10631,14 +10642,15 @@ function invoke_vii(index,a1,a2) {
   }
 }
 
-function invoke_v(index) {
+function invoke_ji(index,a1) {
   var sp = stackSave();
   try {
-    getWasmTableEntry(index)();
+    return getWasmTableEntry(index)(a1);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
     _setThrew(1, 0);
+    return 0n;
   }
 }
 
@@ -10646,6 +10658,17 @@ function invoke_viiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_i(index) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)();
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -10710,17 +10733,6 @@ function invoke_vji(index,a1,a2) {
   }
 }
 
-function invoke_iiii(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_iiiijii(index,a1,a2,a3,a4,a5,a6) {
   var sp = stackSave();
   try {
@@ -10754,29 +10766,6 @@ function invoke_viji(index,a1,a2,a3) {
   }
 }
 
-function invoke_j(index) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)();
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-
-function invoke_viiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
@@ -10788,155 +10777,10 @@ function invoke_iiiiii(index,a1,a2,a3,a4,a5) {
   }
 }
 
-function invoke_jiiii(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-
 function invoke_viiiiii(index,a1,a2,a3,a4,a5,a6) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_jii(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-    return 0n;
-  }
-}
-
-function invoke_iiij(index,a1,a2,a3) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_di(index,a1) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_id(index,a1) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_ijiiiii(index,a1,a2,a3,a4,a5,a6) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_ij(index,a1) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiij(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_viiij(index,a1,a2,a3,a4) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2,a3,a4);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -10966,6 +10810,72 @@ function invoke_iiji(index,a1,a2,a3) {
   }
 }
 
+function invoke_vid(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiij(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_ij(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiij(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
   var sp = stackSave();
   try {
@@ -10978,28 +10888,6 @@ function invoke_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
 }
 
 function invoke_vij(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    getWasmTableEntry(index)(a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
-  var sp = stackSave();
-  try {
-    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vid(index,a1,a2) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1,a2);
@@ -11029,6 +10917,74 @@ function invoke_vj(index,a1) {
     stackRestore(sp);
     if (e !== e+0) throw e;
     _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiij(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_jiiii(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+    return 0n;
+  }
+}
+
+function invoke_viiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12) {
+  var sp = stackSave();
+  try {
+    getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_j(index) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)();
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+    return 0n;
   }
 }
 
@@ -11080,6 +11036,50 @@ function invoke_viij(index,a1,a2,a3) {
   var sp = stackSave();
   try {
     getWasmTableEntry(index)(a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiii(index,a1,a2,a3,a4,a5,a6,a7) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6,a7);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_di(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_id(index,a1) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_ijiiiii(index,a1,a2,a3,a4,a5,a6) {
+  var sp = stackSave();
+  try {
+    return getWasmTableEntry(index)(a1,a2,a3,a4,a5,a6);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
