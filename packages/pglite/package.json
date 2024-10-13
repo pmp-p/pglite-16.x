@@ -1,6 +1,6 @@
 {
   "name": "@electric-sql/pglite",
-  "version": "0.2.10",
+  "version": "0.2.12",
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -50,9 +50,9 @@
       "types": "./dist/fs/nodefs.d.ts"
     },
     "./opfs-ahp": {
-      "import": "./dist/fs/opfs-ahp/index.js",
-      "require": "./dist/fs/opfs-ahp/index.cjs",
-      "types": "./dist/fs/opfs-ahp/index.d.ts"
+      "import": "./dist/fs/opfs-ahp.js",
+      "require": "./dist/fs/opfs-ahp.cjs",
+      "types": "./dist/fs/opfs-ahp.d.ts"
     },
     "./contrib/*": {
       "import": "./dist/contrib/*.js",
@@ -115,6 +115,7 @@
     "crypto": false,
     "ws": false,
     "child_process": false,
-    "module": false
+    "module": false,
+    "util": false
   }
 }
