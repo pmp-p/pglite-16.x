@@ -771,7 +771,7 @@ llvm-ar cr ../../libpglite.a $PGOBJ
 
 # just linking
 
-
+# -Wl,--no-entry -mexec-model=reactor
 
 $CC -o postgres \
  -fno-strict-aliasing \
@@ -785,6 +785,8 @@ $CC -o postgres \
     ../../src/pl/plpgsql/src/libplpgsql.a \
  -lz -lm -lwasi-emulated-mman -lwasi-emulated-signal -lc \
  -Wl,--export=pg_initdb \
+ -Wl,--export=setup \
+ -Wl,--export=loop \
  -Wl,--export=interactive_one \
  -Wl,--export=use_socketfile \
  -Wl,--export=interactive_write \

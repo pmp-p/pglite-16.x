@@ -184,13 +184,12 @@ interactive_one() {
 	StringInfoData input_message;
 	StringInfoData *inBuf;
     FILE *stream ;
-    FILE *c_lock;
     FILE *fp;
     int packetlen;
     bool is_socket = false;
     bool is_wire = true;
 
-    if (is_node && is_repl) {
+    if (!is_embed && is_repl) {
 
         //wait_unlock();
 
@@ -228,14 +227,13 @@ interactive_one() {
     // in web mode, client call the wire loop itself waiting synchronously for the results
     // in repl mode, the wire loop polls a pseudo socket made from incoming and outgoing files.
 
-    if (is_node && is_repl) {
+    if (!is_embed || is_repl) {
 
-        // ready to read marker
-        if (access(PGS_ILOCK, R_OK) != 0) {
+        // do not try to read when lock/buffer file still there
+        if (!access(PGS_ILOCK, R_OK)) {
 
             packetlen = 0;
 
-            // TODO: lock file
             fp = fopen(PGS_IN, "r");
 
             // read as a socket.
@@ -335,13 +333,14 @@ PDEBUG("# 324 : TODO: set a pg_main started flag");
                         fprintf(stderr, "]\n");
 #endif
                     }
-                    // when using lock files
-                    //ftruncate(filenum(fp), 0);
+                    // when using locks
+                    // ftruncate(filenum(fp), 0);
                 }
 /* FD CLEANUP */
                 fclose(fp);
                 unlink(PGS_IN);
 
+                // Check if auth bypass work with socketfiles
                 if (packetlen) {
                     if (!firstchar || (firstchar==112)) {
                         PDEBUG("# 351: handshake/auth skip");
@@ -364,7 +363,7 @@ printf("# 353 : node+repl is_wire/is_socket -> true : %c\n", firstchar);
 
         } // ok lck
 
-    } // is_node && is_repl
+    } // !is_embed || is_repl
 
     if (cma_rsize) {
         PDEBUG("wire message in cma buffer !");

@@ -1,13 +1,19 @@
 
-mkdir -p build
+BUILD=build
+mkdir -p ${BUILD}
 
-pushd build
-    if [ -d postgis-3.4.2 ]
+
+
+pushd ${BUILD}
+    if [ -d postgis-3.5.0 ]
     then
         echo -n
     else
-        wget -c https://download.osgeo.org/postgis/source/postgis-3.4.2.tar.gz
-        tar xfz postgis-3.4.2.tar.gz && rm postgis-3.4.2.tar.gz
+        [ -f postgis-3.5.0.tar.gz ] || wget -c https://download.osgeo.org/postgis/source/postgis-3.5.0.tar.gz
+        tar xfz postgis-3.5.0.tar.gz && rm postgis-3.5.0.tar.gz
+        pushd postgis-3.5.0
+            patch -p1 < ${WORKSPACE}/extra/postgis.diff
+        popd
     fi
 popd
 
@@ -21,7 +27,7 @@ else
     export PATH=${PGROOT}/bin:$PATH
 fi
 
-pushd build/postgis-3.4.2
+pushd ${BUILD}/postgis-3.5.0
 
     cat > config.site <<END
 ac_cv_exeext=.cjs
@@ -40,7 +46,8 @@ END
     # --without-raster => --with-gdalconfig=
     # --with-gdalconfig=$PREFIX/bin/gdal-config
     CONFIG_SITE=config.site emconfigure ./configure \
-  --without-raster --without-topology --without-address-standardizer \
+        --without-raster --without-topology --without-address-standardizer \
+     --with-gdalconfig=$PREFIX/bin/gdal-config \
      --without-gui --without-phony-revision --without-protobuf \
      --without-interrupt-tests --without-json \
      --without-libiconv --without-libiconv-prefix \
@@ -53,10 +60,14 @@ END
     mkdir -p loader/no/lib
 
     # or would fail on some frontend functions linking.
-    sed -i 's/PGSQL_FE_LDFLAGS=-L/PGSQL_FE_LDFLAGS=-sERROR_ON_UNDEFINED_SYMBOLS=0 -L/g' loader/Makefile
-    EMCC_CFLAGS="-sERROR_ON_UNDEFINED_SYMBOLS=0 -Wno-unused-function -lc++-noexcept -lpng -ljpeg -lsqlite3" emmake make install
+    sed -i 's/PGSQL_FE_LDFLAGS=-L/PGSQL_FE_LDFLAGS=-O0 -g3 -sERROR_ON_UNDEFINED_SYMBOLS=0 -L/g' loader/Makefile
+    #DEFAULT_LIBRARY_FUNCS_TO_INCLUDE="_emscripten_memcpy_js"
+    EMCC_CFLAGS="-O0 -g3 -sERROR_ON_UNDEFINED_SYMBOLS=0 -Wno-unused-function -lpng -ljpeg" emmake make
+    # /opt/python-wasm-sdk/devices/emsdk/usr/lib/libgeos.a
+    rm postgis/postgis-3.s*
+    PATH=/tmp/pglite/bin:$PATH PG_LINK="em++ $PREFIX/lib/libgeos.a $EMSDK/upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/pic/libsqlite3.a"  emmake make install
     rm $PGROOT/share/postgresql/extension/postgis*.sql
-    cp ./extensions/postgis/sql/postgis--3.4.2.sql $PGROOT/share/postgresql/extension/postgis--3.4.2.sql
+    cp ./extensions/postgis/sql/postgis--3.5.0.sql $PGROOT/share/postgresql/extension/postgis--3.5.0.sql
 
 popd
 

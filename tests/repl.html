@@ -198,11 +198,13 @@
                     data = "SELECT now(), current_database(), session_user, current_user;CREATE EXTENSION IF NOT EXISTS vector;"
                     break
 
-
                 case 2:
                     data = "SELECT now(), current_database(), session_user, current_user;CREATE EXTENSION IF NOT EXISTS postgis;"
                     break
 
+                case 3:
+                    data = "SELECT now(), PostGIS_Version();"
+                    break
 
 /*
                 case 2:
@@ -318,7 +320,7 @@
             */
             console.error("TODO: load ext from pg_extensions")
             await Module.load_package("vector", "vector.tar.gz")
-            //await Module.load_package("postgis", "postgis-3.tar.gz")
+            await Module.load_package("postgis", "postgis-3.tar.gz")
             //await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
 
             vm._setenv(vm.stringToUTF8OnStack("REPL"),vm.stringToUTF8OnStack("Y"),1)
@@ -454,7 +456,7 @@ SET ROLE test_user;
 
             load_package: load_package,
 // "PGDATABASE=test_user", "PGUSER=test_user"
-            arguments : ["PGDATA=/tmp/pglite/base", "PREFIX=/tmp/pglite", "PGUSER=postgres", "REPL=N"],
+            arguments : ["--single", "postgres", "--", "PGDATA=/tmp/pglite/base", "PREFIX=/tmp/pglite", "PGUSER=postgres", "REPL=Y"],
 
             config : {
                 cdn : "https://pygame-web.github.io/archives/0.9/",
@@ -576,7 +578,7 @@ SET ROLE test_user;
 
         const { WasmTerminal } = await /**/ import("./vtx.js")
 
-        Module.vt = new WasmTerminal("repl", 132, 72, 12)
+        Module.vt = new WasmTerminal("repl", 200, 72, 10)
 #if MODULARIZE
         if (is_es6)
             window.Module = await initModule(Module)
