@@ -401,21 +401,28 @@ volatile FILE *fd_FILE = NULL;
 
 // default fd is stderr
 int socket(int domain, int type, int protocol) {
-    printf("# 360 : domain =%d type=%d proto=%d\n", domain , type, protocol);
+    printf("# 404 : domain =%d type=%d proto=%d\n", domain , type, protocol);
+    return 3;
     if (domain|AF_UNIX) {
-        fd_FILE = fopen(PGS_ILOCK, "w+");
-        fd_out = fileno(fd_FILE);
-        printf("# 361 AF_UNIX sock=%d (fd_sock) FILE=%s\n", fd_out, PGS_ILOCK);
+        fd_FILE = fopen(PGS_ILOCK, "w");
+        if (fd_FILE) {
+            fd_out = fileno(fd_FILE);
+            printf("# 409: AF_UNIX sock=%d (fd_sock write) FILE=%s\n", fd_out, PGS_ILOCK);
+        } else {
+            printf("# 411: AF_UNIX ERROR OPEN (w/w+) FILE=%s\n", PGS_ILOCK);
+            abort();
+        }
     }
     return fd_out;
 }
 
 int connect(int socket, void *address, socklen_t address_len) {
 #if 1
-    puts("# 370: connect STUB");
+    puts("# 4190: connect STUB");
+    fd_out = 3;
     return 0;
 #else
-    puts("# 370: connect EINPROGRESS");
+    puts("# 422: connect EINPROGRESS");
     errno = EINPROGRESS;
     return -1;
 #endif
@@ -423,22 +430,31 @@ int connect(int socket, void *address, socklen_t address_len) {
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags, void *dest_addr, socklen_t addrlen) {
     int sent = write( fd_out, buf, len);
-    printf("# 375: sendto(%d/%d sock=%d fno=%d fd_out=%d)\n", ftell(fd_FILE), len, sockfd, fileno(fd_FILE), fd_out);
+
+//    printf("# 375: sendto(%d/%d sock=%d fno=%d fd_out=%d)\n", ftell(fd_FILE), len, sockfd, fileno(fd_FILE), fd_out);
     fd_queue+=sent;
     return sent;
 }
 
+volatile bool web_warned = false;
 
 void sock_flush() {
     if (fd_queue) {
-        printf("#       385: SENT=%d/%d fd_out=%d fno=%d\n", ftell(fd_FILE), fd_queue, fd_out, fileno(fd_FILE));
-        fclose(fd_FILE);
-        fd_queue = 0;
+        if (!fd_FILE) {
+            if (!web_warned) {
+                puts("# 440: WARNING: fd_FILE not set but queue not empty, assuming web");
+                web_warned = true;
+            }
 
-        rename(PGS_ILOCK, PGS_IN);
-        //freopen(PGS_ILOCK, "w", fd_FILE);
-        fd_FILE = fopen(PGS_ILOCK, "w+");
-        printf("#       390: fd_out=%d fno=%d\n", fd_out, fileno(fd_FILE));
+         } else {
+            printf("#       443: SENT=%d/%d fd_out=%d fno=%d\n", ftell(fd_FILE), fd_queue, fd_out, fileno(fd_FILE));
+            fclose(fd_FILE);
+            rename(PGS_ILOCK, PGS_IN);
+        //freopen(PGS_ILOCK, "w+", fd_FILE);
+            fd_FILE = fopen(PGS_ILOCK, "w+");
+            printf("#       450: fd_out=%d fno=%d\n", fd_out, fileno(fd_FILE));
+        }
+        fd_queue = 0;
     }
 }
 
@@ -447,13 +463,24 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 }
 
 
-ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
-    sock_flush();
-    int busy = 0;
 
+volatile int fd_current_pos = 0;
+volatile int fd_filesize = 0;
+
+
+ssize_t recvfrom_bc(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
+    int busy = 0;
+    int rcv = -1;
+
+    sock_flush();
+
+    puts("STUB");
+    return 0;
+/*
     while (access(PGS_OUT, F_OK) != 0) {
-        if (!(busy++ % 555111))
-            printf("# 403: FIXME: busy wait (%s) for input stream %s\n", busy, PGS_OUT);
+        if (!(++busy % 555111)) {
+            printf("# 471: FIXME: busy wait (%d) for input stream %s\n", busy, PGS_OUT);
+        }
         if (busy>1665334) {
             errno = EINTR;
             return -1;
@@ -461,14 +488,95 @@ ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *addre
     }
 
     FILE *sock_in = fopen(PGS_OUT,"r");
-    char *buf = buffer;
-    buf[0] = 0;
-    int rcv = fread(buf, 1, length, sock_in);
-    printf("# 408: recvfrom(%s max=%d) read=%d\n", PGS_OUT, length, rcv);
-    fclose(sock_in);
-    unlink(PGS_OUT);
+    if (sock_in) {
+        if (!fd_filesize) {
+            fseek(sock_in, 0L, SEEK_END);
+            fd_filesize = ftell(sock_in);
+        }
+        fseek(sock_in, fd_current_pos, SEEK_SET);
+
+        char *buf = buffer;
+        buf[0] = 0;
+        rcv = fread(buf, 1, length, sock_in);
+
+        if (rcv<fd_filesize) {
+            fd_current_pos = ftell(sock_in);
+            if (fd_current_pos<fd_filesize) {
+                printf("# 492: recvfrom(%s max=%d) block=%d read=%d / %d\n", PGS_OUT, length, rcv, fd_current_pos, fd_filesize);
+                fclose(sock_in);
+                return rcv;
+            }
+        }
+
+        // fully read
+        printf("# 501: recvfrom(%s max=%d total=%d) read=%d\n", PGS_OUT, length, fd_filesize, rcv);
+        fd_queue = 0;
+        fd_filesize = 0;
+        fd_current_pos = 0;
+        fclose(sock_in);
+        unlink(PGS_OUT);
+
+    } else {
+        printf("# 504: recvfrom(%s max=%d) ERROR\n", PGS_OUT, length);
+        errno = EINTR;
+    }
+    return rcv;
+*/
+}
+
+
+ssize_t recvfrom(int socket, void *buffer, size_t length, int flags, void *address, socklen_t *address_len) {
+    int busy = 0;
+    int rcv = -1;
+
+    sock_flush();
+
+    while (access(PGS_OUT, F_OK) != 0) {
+        if (!(++busy % 555111)) {
+            printf("# 471: FIXME: busy wait (%d) for input stream %s\n", busy, PGS_OUT);
+        }
+        if (busy>1665334) {
+            errno = EINTR;
+            return -1;
+        }
+    }
+
+    FILE *sock_in = fopen(PGS_OUT,"r");
+    if (sock_in) {
+        if (!fd_filesize) {
+            fseek(sock_in, 0L, SEEK_END);
+            fd_filesize = ftell(sock_in);
+        }
+        fseek(sock_in, fd_current_pos, SEEK_SET);
+
+        char *buf = buffer;
+        buf[0] = 0;
+        rcv = fread(buf, 1, length, sock_in);
+
+        if (rcv<fd_filesize) {
+            fd_current_pos = ftell(sock_in);
+            if (fd_current_pos<fd_filesize) {
+                printf("# 492: recvfrom(%s max=%d) block=%d read=%d / %d\n", PGS_OUT, length, rcv, fd_current_pos, fd_filesize);
+                fclose(sock_in);
+                return rcv;
+            }
+        }
+
+        // fully read
+        printf("# 501: recvfrom(%s max=%d total=%d) read=%d\n", PGS_OUT, length, fd_filesize, rcv);
+        fd_queue = 0;
+        fd_filesize = 0;
+        fd_current_pos = 0;
+        fclose(sock_in);
+        unlink(PGS_OUT);
+
+    } else {
+        printf("# 504: recvfrom(%s max=%d) ERROR\n", PGS_OUT, length);
+        errno = EINTR;
+    }
     return rcv;
 }
+
 
 ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
     return recvfrom(sockfd, buf, len, flags, NULL, NULL);

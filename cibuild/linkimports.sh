@@ -8,6 +8,11 @@ echo "============= link imports : begin ==============="
 
 pushd ${WORKSPACE}
     > patches/imports/pgcore
+
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+    cp -v /tmp/arrays.so /tmp/pglite/lib/postgresql/arrays.so
+echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
+
     for extra_pg_so in $(find $PGROOT/lib/postgresql/|grep \.so$)
     do
         SOBASE=patches/imports.pgcore/$(basename $extra_pg_so .so)
@@ -50,6 +55,7 @@ matches = list( imports.intersection(exports) )
 
 # ?
 for sym in """
+_ErrorContext
 _check_function_bodies
 _clock_gettime
 _CurrentMemoryContext
@@ -62,8 +68,8 @@ _interactive_write
 _loop
 _lowerstr
 _main
+_pg_getport
 _pg_initdb
-_pg_repl_raf
 _pg_shutdown
 _readstoplist
 _searchstoplist

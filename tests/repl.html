@@ -50,17 +50,35 @@
     <link rel="prefetch" href="./vtx.js">
     <link rel="prefetch" href="https://pygame-web.github.io/archives/0.9/vt/xterm.js">
     <link rel="prefetch" href="https://pygame-web.github.io/archives/0.9/vt/xterm-addon-image.js">
+    <link rel="prefetch" href="./easywasi.js">
 
     <script src="tinytar.min.js"></script>
+
+
+<script type="importmap">
+{
+  "imports": {
+    "pglite" : "./postgres.js",
+    "easywasi": "./easywasi.js",
+    "wip" : "/pygbag/wip.js",
+    "@zenfs/core": "https://esm.sh/@zenfs/core",
+    "@zenfs/dom": "https://esm.sh/@zenfs/dom",
+    "@zenfs/zip": "https://esm.sh/@zenfs/zip"
+  }
+}
+</script>
 
 <script type=module>
 #if MODULARIZE
     console.log(" ============= ES6 MODULE ============= ");
-    import initModule from "./postgres.js";
+    import initModule from "pglite";
     window.initModule = initModule //(Module)
+
+    import "wip";
 #endif
 </script>
 </head>
+
 
 <body>
     <hr/>
@@ -199,14 +217,30 @@
                     break
 
                 case 2:
+                    data = "SELECT now(), current_database(), session_user, current_user;"
+                    break
+
+/*
+                case 2:
                     data = "SELECT now(), current_database(), session_user, current_user;CREATE EXTENSION IF NOT EXISTS postgis;"
                     break
+
 
                 case 3:
                     data = "SELECT now(), PostGIS_Version();"
                     break
 
-/*
+                case 4:
+                    data = "CREATE EXTENSION IF NOT EXISTS arrays;"
+                    break
+
+
+                case 5:
+                    data = "CHECKPOINT;SELECT pg_terminate_backend(42);";
+                    break
+
+
+
                 case 2:
                     data = "CREATE USER test_user WITH PASSWORD 'md5abdbecd56d5fbd2cdaee3d0fa9e4f434';"
                     break
@@ -280,6 +314,7 @@
 
         function fs_callback(err) {
             if (!err) {
+/*
                 if (vm.FS.filesystems.PGFS && vm.FS.filesystems.PGFS.load_package) {
                     vm.FS.filesystems.PGFS.load_package("vector","vector.tar.gz")
                     if (vm.FS.analyzePath(PGDATA+"/PG_VERSION").exists) {
@@ -290,6 +325,7 @@
                         console.warn("@@@@ no db @@@@");
                     }
                 }
+*/
                 setTimeout(delayed_init, 0)
             } else
                 console.error("fs callback : FS error", err)
@@ -320,12 +356,21 @@
             */
             console.error("TODO: load ext from pg_extensions")
             await Module.load_package("vector", "vector.tar.gz")
-            await Module.load_package("postgis", "postgis-3.tar.gz")
+            await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
+
+            //await Module.load_package("postgis", "postgis-3.tar.gz")
+            //await Module.load_package("arrays", "arrays.tar.gz")
+
+
+
             //await Module.load_package("pg_stat_statements", "pg_stat_statements.tar.gz")
 
-            vm._setenv(vm.stringToUTF8OnStack("REPL"),vm.stringToUTF8OnStack("Y"),1)
+            // vm._setenv(vm.stringToUTF8OnStack("REPL"),vm.stringToUTF8OnStack("Y"),1)
 
-            const idb  = vm._pg_initdb()
+
+            console.log("XXXXXX CMA ADDR REPLACEMENT ( for -O0 ) XXXXXXXXXXXX", vm._pg_getport() );
+
+            const idb = vm._pg_initdb()
 
             if (!idb) {
                 console.error("FATAL: INITDB failed to return value");
@@ -364,8 +409,32 @@ SET ROLE test_user;
 `);
 */
                 }
+
+
+/*
+                vm.PGDATA = PGDATA
+                await pglite_conf(vm,{"shared_preload_libraries" : ["pg_stat_statements"]}, {})
+
+compute_query_id = on
+pg_stat_statements.max = 10000
+pg_stat_statements.track = all
+*/
+
             }
-            vm._pg_repl_raf()
+
+
+            vm.PGDATA = PGDATA
+            await pglite_conf(vm, {
+                "shared_preload_libraries" : ["pg_stat_statements"],
+                "compute_query_id" : "on",
+                "pg_stat_statements.max" : "10000",
+                "pg_stat_statements.track": "all",
+            })
+
+
+
+//vm._pg_repl_raf()
+
             setTimeout(test_drive, 2400)
         }
 
@@ -456,7 +525,7 @@ SET ROLE test_user;
 
             load_package: load_package,
 // "PGDATABASE=test_user", "PGUSER=test_user"
-            arguments : ["--single", "postgres", "--", "PGDATA=/tmp/pglite/base", "PREFIX=/tmp/pglite", "PGUSER=postgres", "REPL=Y"],
+            arguments : ["--single", "postgres", "--", "PGDATA=/tmp/pglite/base", "PREFIX=/tmp/pglite", "PGUSER=postgres", "REPL=N"],
 
             config : {
                 cdn : "https://pygame-web.github.io/archives/0.9/",
@@ -534,12 +603,30 @@ SET ROLE test_user;
             },
 
             readline : function(line) {
-                const ud = { "type" : "stdin", "data" : line }
-                if (window.worker) {
-                    window.worker.postMessage({ target: 'custom', userData: ud });
-                } else {
-                    window.Module.postMessage(ud);
+                const os = vm.os
+                if (line.startsWith('?')){
+                    setTimeout(async()=> { await os.exec("pg_dump", "--help") } , 0 )
+                    return
                 }
+                if (line.startsWith('!')){
+                    setTimeout(async()=> { await os.exec("pg_dump", "-U", "postgres", "--inserts", "-j", "1", "-v", "-c", "-C", "--disable-dollar-quoting", "-f", "/tmp/out.sql", "postgres") } , 0 )
+                    return
+                }
+
+                if (line.startsWith('pg_dump ')) {
+                    console.log("RL:", line)
+
+                } else {
+
+                    const ud = { "type" : "stdin", "data" : line }
+                    if (window.worker) {
+                        window.worker.postMessage({ target: 'custom', userData: ud });
+                    } else {
+                        window.Module.postMessage(ud);
+                    }
+                    vm._interactive_one()
+                }
+
             }
           };
 
@@ -555,7 +642,6 @@ SET ROLE test_user;
           };
 
         try {
-            console.log(initModule)
             globalThis.window.is_es6 = true
         } catch (x) {
             globalThis.window.is_es6 = false
@@ -579,10 +665,41 @@ SET ROLE test_user;
         const { WasmTerminal } = await /**/ import("./vtx.js")
 
         Module.vt = new WasmTerminal("repl", 200, 72, 10)
+
+        Module.bc = new BroadcastChannel("pglite")
+
+        const pg_lck = "/tmp/pglite/base/.s.PGSQL.5432.in"
+        const pg_in = "/tmp/pglite/base/.s.PGSQL.5432.in"
+        const pg_out = "/tmp/pglite/base/.s.PGSQL.5432.out"
+
+        Module.bc.onmessage = (event) => {
+            const FS = Module.FS
+            console.warn("BC(srv):", event);
+            FS.writeFile(pg_lck, event.data)
+            FS.rename(pg_lck, pg_in)
+            /* CMA
+            Module._interactive_write(event.data.byteLength)
+            Module.HEAPU8.set(event.data, Module.cma_port)
+            */
+            Module._interactive_one()
+            const fstat = FS.stat(pg_out)
+            console.log("pgreply", fstat.size)
+            var stream = FS.open(pg_out, 'r');
+            var buf = new Uint8Array(fstat.size);
+            FS.read(stream, buf, 0, fstat.size, 0);
+            FS.close(stream);
+            FS.unlink(pg_out)
+            Module.bc.postMessage(buf)
+        };
+
+
+
 #if MODULARIZE
-        if (is_es6)
+        if (is_es6) {
             window.Module = await initModule(Module)
-        else
+            Module.os = await wasi_init(Module.FS)
+
+        } else
 #endif
         {
             window.Module = Module
@@ -590,11 +707,149 @@ SET ROLE test_user;
             console.log("main:", Module )
         }
 
+
     }
 
     window.addEventListener("load", boot )
 
 </script>
+
+#if MODULARIZE
+<script type="module">
+    import { WasiPreview1 } from 'easywasi'
+    import { configure, InMemory, fs } from '@zenfs/core'
+
+    async function fget(url) {
+        return await fetch(url).then((r) => r.arrayBuffer())
+    }
+
+    const isObject = (value) => {
+      return typeof value === 'object'
+      && value !== null
+      && !Array.isArray(value)
+      && !(value instanceof RegExp)
+      && !(value instanceof Date)
+      && !(value instanceof Set)
+      && !(value instanceof Map)
+    }
+
+    const isMapping = (value) => {
+      return typeof value === 'object'
+      && value !== null
+      && !Array.isArray(value)
+      && !(value instanceof RegExp)
+      && !(value instanceof Date)
+      && (value instanceof Set)
+      && (value instanceof Map)
+    }
+
+
+    function update(map1, map2) {
+        let all = new Map([...map1]);
+
+        map2.forEach((value, key) => {
+            if (all.has(key)) {
+                all.set(key, combinedMap.get(key) + value);
+            } else {
+                all.set(key, value);
+            }
+        });
+
+        return all;
+    }
+
+
+    async function os_exec(bin, ...stack) {
+        var kw = {PWD: '/'}
+
+        if (stack.length) {
+            if (isMapping(stack[stack.length-1])) {
+                update(kw, stack.pop())
+            }
+        }
+        var argv= ["/"+bin]
+            argv.push(stack)
+
+        var wasi = new WasiPreview1({
+          fs: os.fs,
+          args: argv,
+          env: kw,
+        })
+
+        wasi.stdout = kw["stdout"] || ((buf) => { console.log(os.codec.decode(buf)) })
+        wasi.stderr = kw["stderr"] || ((buf) => { console.warn(os.codec.decode(buf)) })
+
+        const exe = `bin/${bin}.wasm`
+        console.log("Loading wasi bin : ", bin, "from", exe, "in", vm )
+
+        await os.FS.writeFile('/pg_dump', '\0', {mode:os.umask})
+
+        os.PATH[bin] = await WebAssembly.instantiateStreaming(fetch(exe), {wasi_snapshot_preview1:wasi})
+        var app= os.PATH[bin]
+            app.wasi = wasi
+            app.cmdline = exe+" "+ stack.join(' ')
+            app.codec = kw["encoding"] || os.codec
+        console.log(app)
+
+        const ec = wasi.start(app.instance.exports)
+        console.log(`${bin} ${wasi.args}  exit code = ${ec}`)
+        return ec
+    }
+
+    function os_system(cmdline) {
+        // TODO
+    }
+
+    function os_sched_yield() {
+        // call interactive one
+        console.error("FLUSH SOCKET FILE")
+        vm._interactive_one()
+    }
+
+    function os_mkdir(path) {
+        os.FS.mkdir(path, { recursive: true, mode: os.umask} )
+    }
+
+    function os_listdir(path) {
+        var entries = os.FS.readdir(path)
+        console.log(`--------- ${path} -------------`)
+        for (var i=0;i<entries.length;i++) {
+            console.log(entries[i]);
+        }
+        console.log(`------------------------------`)
+    }
+
+    async function wasi_init(userfs) {
+        var selected_fs = userfs
+        if (!selected_fs) {
+            await configure({
+              mounts: { '/tmp': InMemory, }
+            })
+            selected_fs = fs
+        }
+
+        var os = {
+            'umask' : 18,
+            'PATH' : {},
+            'FS'   : selected_fs,
+            'system': os_system,
+            'codec' : new TextDecoder(),
+            'sched_yield'  : os_sched_yield,
+
+            'exec': os_exec,
+            'mkdir' : os_mkdir,
+            'listdir' : os_listdir,
+        }
+
+        vm.os = os
+        window.os = os
+        return os
+    }
+    globalThis.wasi_init = wasi_init
+</script>
+
+#endif
+
 
 <!--
     {{{ SCRIPT }}}

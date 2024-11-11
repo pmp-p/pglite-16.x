@@ -5,7 +5,7 @@
  
  	if (MyProc != NULL)
 -		elog(ERROR, "you already exist");
-+#if defined(__wasi__)
++#if defined(__wasi__) || defined(__EMSCRIPTEN__)
 +		elog(WARNING, "# 309: you already exist");
 +#else
 +		elog(ERROR, "# 309: you already exist");

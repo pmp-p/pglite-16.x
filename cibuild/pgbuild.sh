@@ -80,6 +80,14 @@ CC_PGLITE=$CC_PGLITE
     mkdir -p bin
 
 
+    [ -f /usr/bin/zic ] && cp /usr/bin/zic bin/
+    if [ -f bin/zic ]
+    then
+        echo "using system zic"
+        GETZIC=false
+    else
+        GETZIC=true
+    fi
 
 
     if $WASI
@@ -88,22 +96,29 @@ CC_PGLITE=$CC_PGLITE
         cat > ${PGROOT}/config.site <<END
 ac_cv_exeext=.wasi
 END
-        cat > bin/zic <<END
+        if $GETZIC
+        then
+            cat > bin/zic <<END
 #!/bin/bash
 #. /opt/python-wasm-sdk/wasm32-wasi-shell.sh
-TZ=UTC PGTZ=UTC wasi-run $(pwd)/src/timezone/zic.wasi \$@
+TZ=UTC PGTZ=UTC $(command -v wasi-run) $(pwd)/src/timezone/zic.wasi \$@
 END
+        fi
 
     else
         export EXT=wasm
         cat > ${PGROOT}/config.site <<END
 ac_cv_exeext=.cjs
 END
-        cat > bin/zic <<END
+
+        if $GETZIC
+        then
+            cat > bin/zic <<END
 #!/bin/bash
 #. /opt/python-wasm-sdk/wasm32-bi-emscripten-shell.sh
-TZ=UTC PGTZ=UTC node $(pwd)/src/timezone/zic.cjs \$@
+TZ=UTC PGTZ=UTC $(command -v node) $(pwd)/src/timezone/zic.cjs \$@
 END
+        fi
     fi
 
     if EM_PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig CONFIG_SITE=${PGROOT}/config.site emconfigure $CNF --with-template=$BUILD
@@ -131,6 +146,8 @@ END
     # --disable-shared not supported so be able to use a fake linker
 
     > /tmp/disable-shared.log
+
+    mkdir -p $PGROOT/bin
 
     cat > $PGROOT/bin/emsdk-shared <<END
 #!/bin/bash
@@ -169,12 +186,8 @@ END
     EMCC_ENV="${EMCC_NODE} -sFORCE_FILESYSTEM=0"
     EMCC_ENV="${EMCC_NODE} -sERROR_ON_UNDEFINED_SYMBOLS"
 
-    # only required for static initdb
-    EMCC_CFLAGS="-sERROR_ON_UNDEFINED_SYMBOLS=1 ${CC_PGLITE}"
-    EMCC_CFLAGS="${EMCC_CFLAGS} $MEMORY"
-    EMCC_CFLAGS="${EMCC_CFLAGS} -DPREFIX=${PGROOT}"
-
-    EMCC_CFLAGS="${EMCC_CFLAGS} -Wno-macro-redefined -Wno-unused-function"
+    # PREFIX only required for static initdb
+    EMCC_CFLAGS="-sERROR_ON_UNDEFINED_SYMBOLS=1 ${CC_PGLITE} -DPREFIX=${PGROOT} -Wno-macro-redefined -Wno-unused-function"
 
     WASI_CFLAGS="${CC_PGLITE} -DPREFIX=${PGROOT} -DPYDK=1 -Wno-declaration-after-statement -Wno-macro-redefined -Wno-unused-function -Wno-missing-prototypes -Wno-incompatible-pointer-types"
 

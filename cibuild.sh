@@ -2,7 +2,7 @@
 
 # data transfer zone this is == (wire query size + result size ) + 2
 # expressed in EMSDK MB
-export CMA_MB=${CMA_MB:-2}
+export CMA_MB=${CMA_MB:-32}
 
 export CI=${CI:-false}
 
@@ -23,8 +23,10 @@ export TOTAL_MEMORY=${TOTAL_MEMORY:-512MB}
 export WASI=${WASI:-false}
 # 72 - 144228352
 # -sINITIAL_HEAP not compatible with IMPORTED_MEMORY (which is enabled indirectly via SHARED_MEMORY, RELOCATABLE, ASYNCIFY_LAZY_LOAD_CODE)
-export MEMORY="-sINITIAL_MEMORY=128MB -sMAXIMUM_MEMORY=${TOTAL_MEMORY} -sSTACK_SIZE=2MB -sGLOBAL_BASE=${CMA_MB}MB -sALLOW_TABLE_GROWTH -sALLOW_MEMORY_GROWTH"
-#export MEMORY="-sTOTAL_MEMORY=${TOTAL_MEMORY} -sSTACK_SIZE=2MB -sGLOBAL_BASE=${CMA_MB}MB -sALLOW_TABLE_GROWTH -sALLOW_MEMORY_GROWTH"
+
+export MEMORY="-sINITIAL_MEMORY=128MB -sMAXIMUM_MEMORY=${TOTAL_MEMORY} -sSTACK_SIZE=2MB  -sALLOW_TABLE_GROWTH -sALLOW_MEMORY_GROWTH"
+# -sGLOBAL_BASE=${CMA_MB}MB
+# export MEMORY="-sTOTAL_MEMORY=${TOTAL_MEMORY} -sSTACK_SIZE=4MB -sGLOBAL_BASE=${CMA_MB}MB -sALLOW_TABLE_GROWTH -sALLOW_MEMORY_GROWTH"
 
 
 export PYDK_CFLAGS="-Wno-missing-prototypes"
@@ -235,7 +237,7 @@ END
     fi
 
     mkdir -p ${PGROOT}/include/postgresql/server
-    cp ${PG_DEBUG_HEADER} ${PGROOT}/include/
+    #cp ${PG_DEBUG_HEADER} ${PGROOT}/include/
     cp ${PG_DEBUG_HEADER} ${PGROOT}/include/postgresql
     cp ${PG_DEBUG_HEADER} ${PGROOT}/include/postgresql/server
 
@@ -389,8 +391,20 @@ then
             fi
         fi
         echo "======================= ${extra_ext} : $(pwd) ==================="
+        if [ -f ./extra/${extra_ext}.sh ]
+        then
+            ./extra/${extra_ext}.sh || exit 400
+        else
+            echo "
 
-        ./extra/${extra_ext}.sh || exit 400
+    WARNING: Current source tree has not support ./extra/${extra_ext}.sh
+             for building ${extra_ext}
+
+
+
+"
+        fi
+
 
         python3 cibuild/pack_extension.py
     done
@@ -464,6 +478,7 @@ do
 
 __________________________ enabled extensions (dlfcn)_____________________________
 "
+    cp -f ${WORKSPACE}/extra/*.tar.gz ${WEBROOT}/
     cp -vf ${WEBROOT}/*.tar.gz ${PGLITE}/release/
 echo "
 __________________________________________________________________________________
@@ -483,19 +498,6 @@ ________________________________________________________________________________
 
                 mv $packed /tmp/sdk/pg${PG_VERSION}-${packed}
 
-                # for repl demo
-#                mkdir -p /tmp/web/pglite
-
-                #cp -r ${PGLITE}/dist ${WEBROOT}/pglite/
-                #cp -r ${PGLITE}/examples ${WEBROOT}/pglite/
-
-#                for dir in /tmp/web ${WEBROOT}/pglite/examples
-#                do
-#                    pushd "$dir"
-#                    cp ${PGLITE}/dist/postgres.data ./
-#                    popd
-#                done
-
                 echo "<html>
                 <body>
                     <ul>
@@ -513,9 +515,6 @@ ________________________________________________________________________________
 
             mkdir -p ${PGROOT}/sdk/packages/ /tmp/web/pglite /tmp/web/repl/
             cp -r $PGLITE ${PGROOT}/sdk/packages/
-
-            #mkdir /tmp/web/repl/dist-webcomponent -p
-            #cp -r ${WORKSPACE}/packages/pglite-repl/dist-webcomponent /tmp/web/repl/
 
             if $CI
             then
@@ -555,8 +554,9 @@ ________________________________________________________________________________
             #rm $PGLITE/release/*
 
             # copy packed extensions
-            cp -vf ${WEBROOT}/*.tar.gz ${PGLITE}/release/
-            cp -vf ${WEBROOT}/postgres.{js,data,wasm} $PGLITE/release/
+            cp -f ${WORKSPACE}/extra/*.tar.gz ${WEBROOT}/
+            cp -vf ${WEBROOT}/*.tar.gz  ${PGLITE}/release/
+            cp -vf ${WEBROOT}/postgres.{js,data,wasm} ${PGLITE}/release/
         ;;
 
         pglite-bundle-interim) echo "================== pglite-bundle-interim ======================"

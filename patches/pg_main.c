@@ -548,13 +548,14 @@ PDEBUG("# 334");
 
         if (is_embed) {
 #if PGDEBUG
-            fprintf(stdout,"# 566: now in webloop(RAF)\npg> %c\n", 4);
+            fprintf(stdout,"# 551: now in webloop(RAF)\npg> %c\n", 4);
 #endif
             emscripten_set_main_loop( (em_callback_func)interactive_one, 0, 0);
         } else {
-            PDEBUG("# 570: REPL(single after initdb):Begin(NORETURN)");
+
+            PDEBUG("# 556: REPL(single after initdb):Begin(NORETURN)");
             while (repl) { interactive_file(); }
-            PDEBUG("# 572: REPL:End Raising a 'RuntimeError Exception' to halt program NOW");
+            PDEBUG("# 558: REPL:End Raising a 'RuntimeError Exception' to halt program NOW");
             {
                 void (*npe)() = NULL;
                 npe();
@@ -577,53 +578,6 @@ PDEBUG("# 334");
 
 
 extern int cma_rsize;
-
-EMSCRIPTEN_KEEPALIVE void
-pg_repl_raf(){
-
-    is_repl = strlen(getenv("REPL")) && getenv("REPL")[0]=='Y';
-    if (!is_embed) {
-        PDEBUG(WASM_PREFIX "/bin/postgres.js");
-        printf("cma_rsize was %d\n now set to 0\n", cma_rsize);
-        // force wire socket emulation
-        cma_rsize = 0;
-        if (!strcmp(getenv("_"), WASM_PREFIX "/bin/postgres.js")) {
-            while (1) {
-                interactive_one();
-            }
-            PDEBUG("# 609: REPL:End Raising a 'RuntimeError Exception' to halt program NOW");
-            {
-                void (*npe)() = NULL;
-                npe();
-            }
-
-        }
-    }
-    if (is_repl) {
-PDEBUG("# 618: pg_repl_raf(REPL)");
-        repl = true;
-        single_mode_feed = NULL;
-        force_echo = true;
-        whereToSendOutput = DestNone;
-        emscripten_set_main_loop( (em_callback_func)interactive_one, 0, 0);
-    } else {
-        PDEBUG("# 625: TODO: headless wire mode");
-    }
-
-    if (!is_embed) {
-#if defined(__wasi__)
-        if (!getenv("EMBED")) {
-            PDEBUG("# 610: pg_repl_raf(WASI) endless loop");
-            while (1) {
-                interactive_one();
-            }
-        }
-#else
-        PDEBUG("# 615: pg_repl_raf(NODE) EXIT!!!");
-#endif
-    }
-
-}
 
 
 EMSCRIPTEN_KEEPALIVE void
@@ -763,7 +717,6 @@ void mkdirp(const char *p) {
 #endif /* wasm */
 
 
-#if defined(PG_INITDB_MAIN) || defined(__wasi__) || 1
 extern int pg_initdb_main(void);
 
 extern void RePostgresSingleUserMain(int single_argc, char *single_argv[], const char *username);
@@ -970,8 +923,6 @@ initdb_done:;
 }
 
 
-#endif // PG_INITDB_MAIN
-
 #define PGDB WASM_PREFIX "/base"
 
 EM_JS(int, is_web_env, (), {
@@ -1082,21 +1033,38 @@ extern void AsyncPostgresSingleUserMain(int single_argc, char *single_argv[], co
 #endif // __wasi__
 
 
-extern void pg_repl_raf(void);
-
 
 int exit_code = 0;
 
 
-//extern int pg_initdb();
-//extern int pg_initdb_main(void);
+extern char *cma_port ;
 
 EMSCRIPTEN_KEEPALIVE void
 setup() {
     PDEBUG("=setup=");
 
     // default for web is embed ( CMA )
-    is_embed = is_web_env();
+PDEBUG(" >>>>>>>>>>>>> FORCING EMBED MODE <<<<<<<<<<<<<<<<");
+    is_embed = true; // is_web_env();
+
+
+/*
+// and now for some undisclosed reason
+// we may not use CMA https://github.com/llvm/llvm-project/blob/f78610af3feb88f0e1edb2482dc77490fb4cad77/lld/wasm/Driver.cpp#L767
+
+// check https://github.com/llvm/llvm-project/issues?q=is%3Aissue+is%3Aopen+global-base+label%3Abackend%3AWebAssembly
+#define IO ((char *)(0))
+{
+    for (int i=0;i<64;i++)
+        if ( IO[i] )
+            printf("%c", IO[i] );
+        else
+            printf(".");
+    puts("");
+}
+*/
+
+
 
 #if PGDEBUG
     printf("# 1095: argv0 (%s) PGUSER=%s PGDATA=%s PGDATABASE=%s PGEMBED=%s REPL=%s\n",
@@ -1159,8 +1127,9 @@ extra_env:;
     EM_ASM({
         Module.is_worker = (typeof WorkerGlobalScope !== 'undefined') && self instanceof WorkerGlobalScope;
         Module.FD_BUFFER_MAX = $0;
+        Module.cma_port = $1;
         Module.emscripten_copy_to = console.warn;
-    }, FD_BUFFER_MAX);  /* ( global mem start / num fd max ) */
+    }, FD_BUFFER_MAX, &cma_port[0]);  /* ( global mem start / num fd max ) */
 
     if (!is_embed) {
     	setenv("ENVIRONMENT", "node" , 1);
@@ -1180,7 +1149,6 @@ extra_env:;
             console.warn("prerun(C-web) worker=", Module.is_worker);
         });
 #endif
-        is_repl = true;
     }
 
     EM_ASM({
@@ -1204,7 +1172,7 @@ extra_env:;
                     }
 
                     case "stdin" :  {
-                        stringToUTF8( event.data, 1, Module.FD_BUFFER_MAX);
+                        stringToUTF8( event.data, Module.cma_port, Module.FD_BUFFER_MAX);
                         break;
                     }
                     case "rcon" :  {
@@ -1311,10 +1279,10 @@ extra_env:;
 
     whereToSendOutput = DestNone;
 
-if (is_embed) {
-    puts("\n\n    setup: is_embed : not running initdb\n\n");
-    return ;
-}
+    if (is_embed) {
+        puts("\n\n    setup: is_embed : not running initdb\n\n");
+        return ;
+    }
 
     int initdb_code = pg_initdb();
 
@@ -1365,16 +1333,82 @@ if (is_embed) {
 
 }
 
+
+
+/*
+EMSCRIPTEN_KEEPALIVE void
+pg_repl_raf(){
+
+    is_repl = strlen(getenv("REPL")) && getenv("REPL")[0]=='Y';
+    if (!is_embed) {
+        PDEBUG(WASM_PREFIX "/bin/postgres.js");
+        printf("cma_rsize was %d\n now set to 0\n", cma_rsize);
+        // force wire socket emulation
+        cma_rsize = 0;
+        if (!strcmp(getenv("_"), WASM_PREFIX "/bin/postgres.js")) {
+            while (1) {
+                interactive_one();
+            }
+            PDEBUG("# 609: REPL:End Raising a 'RuntimeError Exception' to halt program NOW");
+            {
+                void (*npe)() = NULL;
+                npe();
+            }
+
+        }
+    }
+    if (is_repl) {
+PDEBUG("# 618: pg_repl_raf(REPL)");
+        repl = true;
+        single_mode_feed = NULL;
+        force_echo = true;
+        whereToSendOutput = DestNone;
+        emscripten_set_main_loop( (em_callback_func)interactive_one, 0, 0);
+    } else {
+        PDEBUG("# 625: TODO: headless wire mode");
+    }
+
+    if (!is_embed) {
+#if defined(__wasi__)
+        if (!getenv("EMBED")) {
+            PDEBUG("# 610: pg_repl_raf(WASI) endless loop");
+            while (1) {
+                interactive_one();
+            }
+        }
+#else
+        PDEBUG("# 615: pg_repl_raf(NODE) EXIT!!!");
+#endif
+    }
+
+}
+
+*/
+
+extern void interactive_one(void);
+
 EMSCRIPTEN_KEEPALIVE void
 loop() {
     PDEBUG("=loop=");
     // so it is repl
     if (!is_embed) {
         PDEBUG("# 1344: node repl");
-        pg_repl_raf();
+        //pg_repl_raf();
     }
+    //interactive_one();
 }
 
+
+EMSCRIPTEN_KEEPALIVE void
+set_repl(int value) {
+    if (value) {
+        setenv("REPL","Y",1);
+        is_repl = true;
+    } else {
+        setenv("REPL","N",1);
+        is_repl = false;
+    }
+}
 
 /*
 char **copy_argv(int argc, char *argv[]) {
@@ -1400,20 +1434,33 @@ char **copy_argv(int argc, char *argv[]) {
 }
 */
 
-extern void *_ZNSt12length_errorD1Ev(void *p);
+//extern void *_ZNSt12length_errorD1Ev(void *p);
+
+char *cma_port;
+extern int cma_rsize;
+
+EMSCRIPTEN_KEEPALIVE int
+pg_getport() {
+    return (int)(&cma_port[0]);
+}
+
 
 int
 main(int argc, char **argv) {
-    void *hold = &_ZNSt12length_errorD1Ev;
+//    void *hold = &_ZNSt12length_errorD1Ev;
+    cma_port = malloc(16384*1024);
     g_argc =argc;
     g_argv =argv;
     setup();
     if (is_embed) {
-        puts("\n\n\n   @@@@@@@@@@@@@@@@@@@@@@@@@ EXITING with live runtime @@@@@@@@@@@@@@@@\n\n\n");
-        return exit_code;
+        printf("\n\n\n   @@@@@@@@@@@@@@@@@@@@@@@@@ EXITING with live runtime port %d @@@@@@@@@@@@@@@@\n\n\n", pg_getport());
+        whereToSendOutput = DestNone;
+        cma_rsize = 0;
+
+    } else {
+        loop();
+        emscripten_force_exit(exit_code);
     }
-    loop();
-    emscripten_force_exit(exit_code);
 	return exit_code;
 }
 

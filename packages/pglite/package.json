@@ -117,5 +117,8 @@
     "child_process": false,
     "module": false,
     "util": false
+  },
+  "dependencies": {
+    "prettier": "^3.3.3"
   }
 }

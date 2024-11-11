@@ -8,8 +8,7 @@ def dbg(*argv, **kw):
     return print(*argv,**kw)
 
 
-SNIFF="_ZNSt14overflow_errorD1Ev"
-# SNIFF=""
+SNIFF="__signbitl"
 
 
 # we use output from wasi `wasm-objdump -x` run
@@ -161,7 +160,11 @@ if 1:
             dbg("ERROR", typ, header, e)
 
     dbg(len(REPORT),"unique")
+    NODUNDER=[] #'abort access acos __signbitl __ctype_get_mb_cur_max __ctype_tolower_loc __fpclassifyl __ctype_toupper_loc __cxa_atexit'.split(' ')
 
     for rep in REPORT:
-        print(f"_{rep}")
+        if rep in NODUNDER:
+            print(f"{rep}")
+        else:
+            print(f"_{rep}")
 

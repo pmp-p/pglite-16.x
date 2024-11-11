@@ -86,9 +86,9 @@ pushd src/backend
      ../../src/timezone/strftime.o \
      ../../src/pg_initdb.o"
 
+
     PG_L="../../src/common/libpgcommon_srv.a ../../src/port/libpgport_srv.a ../.././src/interfaces/libpq/libpq.a -L$PREFIX/lib -lxml2 -lz"
-    # -lz for xml2
-    # -sUSE_ZLIB"
+#    PG_L="/tmp/libarrays.a $PG_L"
 
     if $DEBUG
     then
@@ -102,24 +102,20 @@ pushd src/backend
 # -sSINGLE_FILE  => Uncaught SyntaxError: Cannot use 'import.meta' outside a module (at postgres.html:1:6033)
 # -sENVIRONMENT=web => XHR
 
-    export EMCC_WEB="-sNO_EXIT_RUNTIME=1 -sFORCE_FILESYSTEM=1"
+    export EMCC_WEB="-sENVIRONMENT=web -sNO_EXIT_RUNTIME=1 -sFORCE_FILESYSTEM=1"
 
     if ${PGES6:-true}
     then
         # es6
-        MODULE="-g3 -O0 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module" #OK
-        MODULE="-g0 -Os -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module" # no plpgsql 7.2M
-        MODULE="-g0 -O2 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module" #OK 7.4M
-        #MODULE="-g0 -O3 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module" # NO
-        # MODULE="-g0 -Os -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module" # NO  08-23 3.1.65
-        MODULE="$LDEBUG --closure 0 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module"
-
+        MODULE="--closure 0 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module"
+        export COPTS="-O2 -g3"
     else
         # local debug always fast build
-        MODULE="-g3 -O0 -sMODULARIZE=0 -sEXPORT_ES6=0"
+        MODULE="-sMODULARIZE=0 -sEXPORT_ES6=0"
+        export COPTS="-O2 -g3"
     fi
 
-    MODULE="$MODULE  --shell-file ${WORKSPACE}/tests/repl.html"
+    export MODULE="$MODULE --shell-file ${WORKSPACE}/tests/repl.html"
     # closure -sSIMPLE_OPTIMIZATION ?
 
     # =======================================================
@@ -145,7 +141,6 @@ pushd src/backend
     # encodings ?
     # ./lib/postgresql/utf8_and*.so
     rm ${PGROOT}/lib/postgresql/utf8_and*.so
-
 
     # =========================================================
 
@@ -174,7 +169,8 @@ pushd src/backend
 
         Calling cibuild/linkimports.sh
 "
-            . ${WORKSPACE}/cibuild/linkimports.sh || exit 163
+            . ${WORKSPACE}/cibuild/linkimports.sh 2>&1 | grep ^WASI
+        # || exit 163
 
         else
             echo "
@@ -198,26 +194,66 @@ _________________________________________________________
 "
     fi
 
-
-    cat ${WORKSPACE}/patches/exports/pglite > exports
+    cat ${WORKSPACE}/patches/exports/pglite > ${WORKSPACE}/build/exports
 
     # min
     # LINKER="-sMAIN_MODULE=2"
 
     # tailored
-    LINKER="-sMAIN_MODULE=2 -sEXPORTED_FUNCTIONS=@exports"
+    LINKER="-sMAIN_MODULE=2 -sEXPORTED_FUNCTIONS=@${WORKSPACE}/build/exports"
 
     # FULL
-    # LINKER="-sMAIN_MODULE=1 -sEXPORTED_FUNCTIONS=@exports"
+    # LINKER="-sMAIN_MODULE=1 -sEXPORTED_FUNCTIONS=@${WORKSPACE}/build/exports"
+    LINKER="-sMAIN_MODULE=1 -sEXPORT_ALL"
+
+    echo "
 
 
-    emcc $EMCC_WEB $LINKER $MODULE $MEMORY \
-     -fPIC -D__PYDK__=1 -DPREFIX=${PGROOT} \
-     -sERROR_ON_UNDEFINED_SYMBOLS -sASSERTIONS=0 \
-     -lnodefs.js -lidbfs.js \
-     -sEXPORTED_RUNTIME_METHODS=FS,setValue,getValue,UTF8ToString,stringToNewUTF8,stringToUTF8OnStack,ccall,cwrap,callMain \
-     $PGPRELOAD \
-     -o postgres.html $PG_O $PG_L || exit 200
+    Begin : linking web postgres (main PGES6=$PGES6) with : '$LINKER'
+    CC = ${CC:-emcc}
+
+"
+    $SDKROOT/emsdk/upstream/emscripten/emar rcs ${WORKSPACE}/libpgstatic.a $PG_O
+
+# ??? -Wl,--global-base=33333333
+
+    cat > ${WORKSPACE}/final_link.sh <<END
+#!/bin/bash
+# TERM=linux reset
+pushd $(pwd)
+. ${SDKROOT}/scripts/emsdk-fetch.sh
+rm postgres.js postgres.cjs postgres.data postgres.wasm postgres.html
+COPTS="$COPTS" emcc -sENVIRONMENT=node -sNO_EXIT_RUNTIME=1 -sFORCE_FILESYSTEM=1 \\
+     $LINKER \\
+     $MODULE \\
+     $MEMORY \\
+     -fPIC -D__PYDK__=1 -DPREFIX=${PGROOT} \\
+     -sSTACK_OVERFLOW_CHECK=0 -sERROR_ON_UNDEFINED_SYMBOLS -sASSERTIONS=0 \\
+     -lnodefs.js -lidbfs.js \\
+     -sEXPORTED_RUNTIME_METHODS=FS,setValue,getValue,UTF8ToString,stringToNewUTF8,stringToUTF8OnStack,ccall,cwrap,callMain \\
+     $PGPRELOAD \\
+     -o postgres.js ${WORKSPACE}/libpgstatic.a $PG_L
+cp postgres.js /tmp/postgres.node
+
+rm postgres.js postgres.cjs postgres.data postgres.wasm postgres.html
+COPTS="$COPTS" emcc $EMCC_WEB \\
+     $LINKER \\
+     $MODULE \\
+     $MEMORY \\
+     -fPIC -D__PYDK__=1 -DPREFIX=${PGROOT} \\
+     -sSTACK_OVERFLOW_CHECK=0 -sERROR_ON_UNDEFINED_SYMBOLS -sASSERTIONS=0 \\
+     -lnodefs.js -lidbfs.js \\
+     -sEXPORTED_RUNTIME_METHODS=FS,setValue,getValue,UTF8ToString,stringToNewUTF8,stringToUTF8OnStack,ccall,cwrap,callMain \\
+     $PGPRELOAD \\
+     -o postgres.html ${WORKSPACE}/libpgstatic.a $PG_L
+file postgres.*
+popd
+END
+
+    chmod +x ${WORKSPACE}/final_link.sh
+    env -i ${WORKSPACE}/final_link.sh || exit 222
+
+    echo "End : linking web postgres (main)"
 
     cp postgres.js /tmp/
 

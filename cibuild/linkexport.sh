@@ -3,10 +3,9 @@
 echo "============= link export : begin ==============="
 
 
-emcc $EMCC_WEB -fPIC -sMAIN_MODULE=1 -O0 \
+emcc $EMCC_WEB -fPIC -sMAIN_MODULE=1 -sEXPORT_ALL \
+ -O0 -g3 -sERROR_ON_UNDEFINED_SYMBOLS -sASSERTIONS=0 \
  -D__PYDK__=1 -DPREFIX=${PGROOT} \
- $MEMORY \
- -sEXPORT_ALL -sERROR_ON_UNDEFINED_SYMBOLS -sASSERTIONS=0 \
  -lnodefs.js -lidbfs.js \
  -sEXPORTED_RUNTIME_METHODS=FS,setValue,getValue,UTF8ToString,stringToNewUTF8,stringToUTF8OnStack,ccall,cwrap,callMain \
  $PGPRELOAD \

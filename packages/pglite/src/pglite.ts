@@ -1,3 +1,6 @@
+// @ts-ignore
+import "./wip.js"  //eval( await fetch("wip.js") )
+
 import { Mutex } from 'async-mutex'
 import PostgresModFactory, { type PostgresMod } from './postgresMod.js'
 import { type Filesystem, parseDataDir, loadFs } from './fs/index.js'
@@ -39,6 +42,8 @@ export class PGlite
   #closed = false
   #inTransaction = false
   #relaxedDurability = false
+
+  #cma_port = 0
 
   readonly waitReady: Promise<void>
 
@@ -146,7 +151,7 @@ export class PGlite
             dataDir: dataDirOrPGliteOptions,
             ...(options ?? {}),
           }
-        : dataDirOrPGliteOptions ?? {}
+        : (dataDirOrPGliteOptions ?? {})
 
     const pg = new PGlite(resolvedOpts)
     await pg.waitReady
@@ -173,7 +178,6 @@ export class PGlite
       `PREFIX=${WASM_PREFIX}`,
       `PGUSER=${options.username ?? 'postgres'}`,
       `PGDATABASE=${options.database ?? 'template1'}`,
-      'MODE=REACT',
       'REPL=N',
       // "-F", // Disable fsync (TODO: Only for in-memory mode?)
       ...(this.debug ? ['-d', this.debug.toString()] : []),
@@ -373,6 +377,12 @@ export class PGlite
       throw new Error('INITDB failed to return value')
     }
 
+    // preloading is finished
+    // NOTE: if shm init was not in plugin constructor we may have to call
+    // process_shared_preload_libraries after filling shared_preload_libraries_string
+    // from here because right now postgres.conf exists (if initdb did not fail ofc).
+    this.mod.HEAPU8[this.mod._process_shared_preload_libraries_in_progress] = 0
+
     // initdb states:
     // - populating pgdata
     // - reconnect a previous db
@@ -407,6 +417,14 @@ export class PGlite
         }
       }
     }
+
+    this.#cma_port = this.mod._pg_getport()
+
+    console.log(
+      ' ================ CMA ADDR ===============',
+      this.#cma_port,
+      this.mod.cma_port,
+    )
 
     // Sync any changes back to the persisted store (if there is one)
     // TODO: only sync here if initdb did init db.
@@ -558,8 +576,8 @@ export class PGlite
     // set buffer size so answer will be at size+0x2 pointer addr
     mod._interactive_write(msg_len)
 
-    // copy whole buffer at addr 0x1
-    mod.HEAPU8.set(message, 1)
+    // copy whole buffer at cma addr
+    mod.HEAPU8.set(message, this.#cma_port)
 
     // execute the message
     mod._interactive_one()

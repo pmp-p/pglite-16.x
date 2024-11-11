@@ -18,3 +18,9 @@ node_modules
 docs/.vitepress/dist
 docs/.vitepress/cache
 
+
+/patchwork/postgresql-16.4-wasm
+/patchwork/postgresql
+/patchwork/postgresql-wasm
+/patchwork/postgresql-wasm.patchset
+

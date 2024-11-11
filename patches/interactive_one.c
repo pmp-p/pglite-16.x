@@ -176,6 +176,7 @@ interactive_read() {
 
 volatile int sf_connected = 0;
 volatile bool sockfiles = false;
+extern char * cma_port;
 
 EMSCRIPTEN_KEEPALIVE void
 interactive_one() {
@@ -189,7 +190,7 @@ interactive_one() {
     bool is_socket = false;
     bool is_wire = true;
 
-    if (!is_embed && is_repl) {
+//    if (!is_embed && is_repl) {
 
         //wait_unlock();
 
@@ -209,7 +210,7 @@ interactive_one() {
         }
 
 
-    } // is_node && is_repl
+//    } // is_node && is_repl
 
 
     doing_extended_query_message = false;
@@ -222,15 +223,22 @@ interactive_one() {
     DoingCommandRead = true;
 
 
-    #define IO ((char *)(1))
+//    #define IO ((char *)(1))
+    #define IO cma_port
 
-    // in web mode, client call the wire loop itself waiting synchronously for the results
-    // in repl mode, the wire loop polls a pseudo socket made from incoming and outgoing files.
+/*
+ * in web mode, client call the wire loop itself waiting synchronously for the results
+ * in repl mode, the wire loop polls a pseudo socket made from incoming and outgoing files. aka "socketfiles"
+ * always use "socketfiles" when wasi
+ *
+ */
 
+
+#if 0 //!defined(__wasi__)
     if (!is_embed || is_repl) {
-
         // do not try to read when lock/buffer file still there
         if (!access(PGS_ILOCK, R_OK)) {
+#endif
 
             packetlen = 0;
 
@@ -360,11 +368,10 @@ printf("# 353 : node+repl is_wire/is_socket -> true : %c\n", firstchar);
                 } // wire msg
 
             } // fp data read
-
+#if 0 //!defined(__wasi__)
         } // ok lck
-
     } // !is_embed || is_repl
-
+#endif
     if (cma_rsize) {
         PDEBUG("wire message in cma buffer !");
         is_wire = true;
@@ -381,7 +388,7 @@ printf("# 353 : node+repl is_wire/is_socket -> true : %c\n", firstchar);
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 #if PGDEBUG
-        printf("# 385: fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
+        printf("# 391: fd %s: %s fd=%d is_embed=%d\n", PGS_OLOCK, IO, MyProcPort->sock, is_embed);
 #endif
         goto incoming;
 
@@ -393,6 +400,8 @@ printf("# 353 : node+repl is_wire/is_socket -> true : %c\n", firstchar);
 // TODO: use a msg queue length
     if (!c)
         return;
+
+    is_repl = true;
 
     if (is_repl) {
         whereToSendOutput = DestNone;
@@ -420,7 +429,7 @@ printf("# 353 : node+repl is_wire/is_socket -> true : %c\n", firstchar);
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 #if PGDEBUG
-        printf("# 424: fd %s: %s fd=%d\n", PGS_OLOCK, IO, MyProcPort->sock);
+        printf("# 430: fd %s: %s fd=%d is_embed=%d\n", PGS_OLOCK, IO, MyProcPort->sock, is_embed);
 #endif
 
     }
