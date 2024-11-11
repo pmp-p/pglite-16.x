@@ -218,8 +218,33 @@ interactive_one() {
     MemoryContextResetAndDeleteChildren(MessageContext);
 
     initStringInfo(&input_message);
+
     inBuf = &input_message;
 
+		InvalidateCatalogSnapshotConditionally();
+
+		if (send_ready_for_query)
+		{
+
+            // puts("postgres.c 4538-4624 TODO");
+			if (IsAbortedTransactionBlockState())
+			{
+				puts("@@@@ TODO 231: idle in transaction (aborted)");
+			}
+			else if (IsTransactionOrTransactionBlock())
+			{
+				puts("@@@@ TODO 235: idle in transaction");
+			}
+			else
+			{
+				if (notifyInterruptPending)
+					ProcessNotifyInterrupt(false);
+            }
+            send_ready_for_query = false;
+        }
+
+
+// postgres.c 4627
     DoingCommandRead = true;
 
 
@@ -331,10 +356,10 @@ PDEBUG("# 324 : TODO: set a pg_main started flag");
                     } else {
 #if PGDEBUG
                         fprintf(stderr, "# 331: CLI[%d] incoming=%d [%d, ", sf_connected, packetlen, firstchar);
-                        for (int i=1;i<packetlen;i++) {
+                        for (int i=0;i<packetlen;i++) {
                             int b = getc(fp);
                             /* skip header (size uint32) */
-                            if (i>5) {
+                            if (i>4) {
                                 fprintf(stderr, "%d, ", b);
                             }
                         }
@@ -456,7 +481,7 @@ printf("# 353 : node+repl is_wire/is_socket -> true : %c\n", firstchar);
 
 incoming:
 #if defined(__wasi__) //PGDEBUG
-    PDEBUG("# 451: sjlj exception handler off");
+    PDEBUG("# 484: sjlj exception handler off");
 #else
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)
 	{
@@ -514,47 +539,66 @@ incoming:
     }
 
 	PG_exception_stack = &local_sigjmp_buf;
-#endif
+#endif // wasi
+
+    if (!ignore_till_sync)
+        send_ready_for_query = true;
+
 
     if (force_echo) {
-        printf("# 512: wire=%d socket=%d 1stchar=%c Q: %s", is_wire, is_socket, firstchar, inBuf->data);
+        printf("# 549: wire=%d socket=%d 1stchar=%c Q: %s", is_wire, is_socket, firstchar, inBuf->data);
     }
 
 
-    if (is_wire) {
-        /* wire on a socket or cma */
-        firstchar = SocketBackend(inBuf);
-
-    } else {
-        /* nowire */
-        if (c == EOF && inBuf->len == 0) {
-            firstchar = EOF;
+        if (is_wire) {
+            /* wire on a socket or cma */
+            firstchar = SocketBackend(inBuf);
 
         } else {
-            appendStringInfoChar(inBuf, (char) '\0');
-        	firstchar = 'Q';
+            /* nowire */
+            if (c == EOF && inBuf->len == 0) {
+                firstchar = EOF;
+
+            } else {
+                appendStringInfoChar(inBuf, (char) '\0');
+            	firstchar = 'Q';
+            }
+
+            /* stdio node repl */
+            if (is_repl)
+                whereToSendOutput = DestDebug;
         }
+    while (1) {
+	    if (ignore_till_sync && firstchar != EOF) {
+	        puts("@@@@@@@@@@@@@ 573 TODO: postgres.c 	4684 :	continue");
+        } else {
+            #include "pg_proto.c"
 
-        /* stdio node repl */
-        if (is_repl)
-            whereToSendOutput = DestDebug;
+            /* process notifications */
+            ProcessClientReadInterrupt(true);
+        }
+        if (is_wire && pq_buffer_has_data()) {
+            firstchar = SocketBackend(inBuf);
+#if PGDEBUG
+            printf("583: PIPELINING [%c]!\n", firstchar);
+#endif
+        } else {
+            break;
+        }
     }
-
-    #include "pg_proto.c"
-
-    /* process notifications */
-    ProcessClientReadInterrupt(true);
 
     if (is_wire) {
 wire_flush:
         if (!ClientAuthInProgress) {
-            PDEBUG("# 543: end packet - sending rfq");
             if (send_ready_for_query) {
+                PDEBUG("# 594: end packet - sending rfq");
                 ReadyForQuery(DestRemote);
-                send_ready_for_query = false;
+                //done at postgres.c 4623 send_ready_for_query = false;
+            } else {
+                PDEBUG("# 598: end packet - with no rfq");
             }
         } else {
-            PDEBUG("# 549: end packet (ClientAuthInProgress - no rfq) ");
+            PDEBUG("# 601: end packet (ClientAuthInProgress - no rfq) ");
         }
 
         if (SOCKET_DATA>0) {
@@ -571,10 +615,10 @@ wire_flush:
                 SOCKET_FILE = NULL;
                 SOCKET_DATA = 0;
                 if (cma_wsize)
-                    PDEBUG("# 566: cma and sockfile ???");
+                    PDEBUG("# 618: cma and sockfile ???");
                 if (sockfiles) {
 #if PGDEBUG
-                    printf("# 569: client:ready -> read(%d) " PGS_OLOCK "->" PGS_OUT"\n", outb);
+                    printf("# 621: client:ready -> read(%d) " PGS_OLOCK "->" PGS_OUT"\n", outb);
 #endif
                     rename(PGS_OLOCK, PGS_OUT);
                 }

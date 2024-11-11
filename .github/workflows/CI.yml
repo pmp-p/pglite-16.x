@@ -32,7 +32,7 @@ jobs:
       contrib: contrib
       OBJDUMP: true
       TOTAL_MEMORY: 256MB
-      CMA_MB=32
+      CMA_MB: 32
       EXTRA_EXT: vector postgis
 
 

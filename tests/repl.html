@@ -59,6 +59,7 @@
 {
   "imports": {
     "pglite" : "./postgres.js",
+    "browser_wasi_shim" : "./browser_wasi_shim/dist/index.js",
     "easywasi": "./easywasi.js",
     "wip" : "/pygbag/wip.js",
     "@zenfs/core": "https://esm.sh/@zenfs/core",
@@ -505,6 +506,7 @@ pg_stat_statements.track = all
         function copyFrom(filename, is_program) {
             console.warn("copyFrom:", filename, is_program);
         }
+
         function copyTo(filename, is_program) {
             console.warn("copyTo:", filename, is_program);
         }
@@ -658,7 +660,7 @@ pg_stat_statements.track = all
             document.head.appendChild(jsloader)
         }
 
-        jsimport("tinytar.min.js")
+        //jsimport("tinytar.min.js")
 
         window.vm = Module
 
@@ -697,8 +699,8 @@ pg_stat_statements.track = all
 #if MODULARIZE
         if (is_es6) {
             window.Module = await initModule(Module)
-            Module.os = await wasi_init(Module.FS)
-
+            //Module.os = await async_wasi_init(Module.FS)
+            //globalThis = Module.os
         } else
 #endif
         {
@@ -716,48 +718,111 @@ pg_stat_statements.track = all
 
 #if MODULARIZE
 <script type="module">
+
+async function fget(url) {
+    return await fetch(url).then((r) => r.arrayBuffer())
+}
+
+const isObject = (value) => {
+  return typeof value === 'object'
+  && value !== null
+  && !Array.isArray(value)
+  && !(value instanceof RegExp)
+  && !(value instanceof Date)
+  && !(value instanceof Set)
+  && !(value instanceof Map)
+}
+
+const isMapping = (value) => {
+  return typeof value === 'object'
+  && value !== null
+  && !Array.isArray(value)
+  && !(value instanceof RegExp)
+  && !(value instanceof Date)
+  && (value instanceof Set)
+  && (value instanceof Map)
+}
+
+
+function update(map1, map2) {
+    let all = new Map([...map1]);
+
+    map2.forEach((value, key) => {
+        if (all.has(key)) {
+            all.set(key, combinedMap.get(key) + value);
+        } else {
+            all.set(key, value);
+        }
+    });
+
+    return all;
+}
+
+function os_system(cmdline) {
+    // TODO
+}
+
+function os_sched_yield() {
+    // call interactive one
+    console.error("FLUSH SOCKET FILE")
+    vm._interactive_one()
+}
+
+function os_mkdir(path) {
+    os.FS.mkdir(path, { recursive: true, mode: os.umask} )
+}
+
+function os_listdir(path) {
+    var entries = os.FS.readdir(path)
+    console.log(`--------- ${path} -------------`)
+    for (var i=0;i<entries.length;i++) {
+        console.log(entries[i]);
+    }
+    console.log(`------------------------------`)
+}
+
+
+async function async_wasi_init(root_fs, pre, post) {
+    if (!root_fs) {
+        await configure({
+          mounts: { '/tmp': InMemory, }
+        })
+        root_fs = fs
+    }
+
+    if (pre) {
+        await pre(root_fs)
+    }
+
+    var os = {
+        'umask' : 18,
+        'PATH' : {},
+        'FS'   : root_fs,
+        'system': os_system,
+        'codec' : new TextDecoder(),
+        'sched_yield'  : os_sched_yield,
+
+        'exec': os_exec,
+        'mkdir' : os_mkdir,
+        'listdir' : os_listdir,
+    }
+
+    if (post) {
+        await post(os)
+    }
+    //globalThis.os = os
+    return os
+}
+
+globalThis.async_wasi_init = async_wasi_init
+
+
+/*
+    console.log("Using wasi : easywasi")
+    console.log("---------------------")
+
     import { WasiPreview1 } from 'easywasi'
     import { configure, InMemory, fs } from '@zenfs/core'
-
-    async function fget(url) {
-        return await fetch(url).then((r) => r.arrayBuffer())
-    }
-
-    const isObject = (value) => {
-      return typeof value === 'object'
-      && value !== null
-      && !Array.isArray(value)
-      && !(value instanceof RegExp)
-      && !(value instanceof Date)
-      && !(value instanceof Set)
-      && !(value instanceof Map)
-    }
-
-    const isMapping = (value) => {
-      return typeof value === 'object'
-      && value !== null
-      && !Array.isArray(value)
-      && !(value instanceof RegExp)
-      && !(value instanceof Date)
-      && (value instanceof Set)
-      && (value instanceof Map)
-    }
-
-
-    function update(map1, map2) {
-        let all = new Map([...map1]);
-
-        map2.forEach((value, key) => {
-            if (all.has(key)) {
-                all.set(key, combinedMap.get(key) + value);
-            } else {
-                all.set(key, value);
-            }
-        });
-
-        return all;
-    }
-
 
     async function os_exec(bin, ...stack) {
         var kw = {PWD: '/'}
@@ -782,7 +847,7 @@ pg_stat_statements.track = all
         const exe = `bin/${bin}.wasm`
         console.log("Loading wasi bin : ", bin, "from", exe, "in", vm )
 
-        await os.FS.writeFile('/pg_dump', '\0', {mode:os.umask})
+        //await os.FS.writeFile('/pg_dump', '\0', {mode:os.umask})
 
         os.PATH[bin] = await WebAssembly.instantiateStreaming(fetch(exe), {wasi_snapshot_preview1:wasi})
         var app= os.PATH[bin]
@@ -796,56 +861,75 @@ pg_stat_statements.track = all
         return ec
     }
 
-    function os_system(cmdline) {
-        // TODO
-    }
 
-    function os_sched_yield() {
-        // call interactive one
-        console.error("FLUSH SOCKET FILE")
-        vm._interactive_one()
-    }
 
-    function os_mkdir(path) {
-        os.FS.mkdir(path, { recursive: true, mode: os.umask} )
-    }
+*/
+    console.log("Using wasi : browser_wasi_shim")
+    console.log("------------------------------")
 
-    function os_listdir(path) {
-        var entries = os.FS.readdir(path)
-        console.log(`--------- ${path} -------------`)
-        for (var i=0;i<entries.length;i++) {
-            console.log(entries[i]);
+    import { WASI, Fd, File, OpenFile, Directory, PreopenDirectory, strace, ConsoleStdout, UnixSocket_W } from "browser_wasi_shim"
+
+    async function os_exec(bin, ...stack) {
+        var kw = {PWD: '/'}
+
+        if (stack.length) {
+            if (isMapping(stack[stack.length-1])) {
+                update(kw, stack.pop())
+            }
         }
-        console.log(`------------------------------`)
-    }
+        var argv= ["/"+bin]
+            argv.push(stack)
 
-    async function wasi_init(userfs) {
-        var selected_fs = userfs
-        if (!selected_fs) {
-            await configure({
-              mounts: { '/tmp': InMemory, }
-            })
-            selected_fs = fs
+        function Module_bc_postMessage(data) {
+            // Module.bc.postMessage(msg)
+            console.error("postMessage:", data)
         }
 
-        var os = {
-            'umask' : 18,
-            'PATH' : {},
-            'FS'   : selected_fs,
-            'system': os_system,
-            'codec' : new TextDecoder(),
-            'sched_yield'  : os_sched_yield,
+        let fds = [
+            new OpenFile(new File([])), // stdin
+            ConsoleStdout.lineBuffered((buf) => { console.log(os.codec.decode(buf)) }), // stdout
+            ConsoleStdout.lineBuffered((buf) => { console.warn(os.codec.decode(buf)) }),  // stderr
+            new UnixSocket_W(msg => Module_bc_postMessage(msg)),
+            new PreopenDirectory("/", [
+                new PreopenDirectory("tmp", [
+                    new PreopenDirectory("pglite", [
+                        new PreopenDirectory("base", []),
+                    ]),
+                ]),
+            ]),
 
-            'exec': os_exec,
-            'mkdir' : os_mkdir,
-            'listdir' : os_listdir,
-        }
+        ]
 
-        vm.os = os
-        window.os = os
-        return os
+        const exe = `bin/${bin}.wasm`
+        console.log("Loading wasi bin : ", bin, "from", exe, "in", vm )
+
+        const wasm = await WebAssembly.compileStreaming(fetch(exe));
+
+        const wasi = new WASI(argv, [], fds, { debug: true });
+
+        const notrace = ["args_sizes_get", "args_get", "environ_sizes_get", "clock_time_get", "fd_fdstat_set_flags", "fd_prestat_get", "fd_prestat_dir_name", "fd_fdstat_get", "fd_write"]
+
+        // await os.FS.writeFile('/pg_dump', '\0', {mode:os.umask})
+
+        os.PATH[bin] = await WebAssembly.instantiate(wasm, {
+            "env": { memory: new WebAssembly.Memory({ initial: 1024, maximum: 32768, shared: true }) },
+            "wasi": { },
+            "wasi_snapshot_preview1": strace(vm.wasiImport, notrace),
+        })
+        var app= os.PATH[bin]
+            app.wasi = wasi
+            app.cmdline = exe+" "+ stack.join(' ')
+            app.codec = kw["encoding"] || os.codec
+        console.log(app)
+
+        const ec = wasi.start(app.instance.exports)
+        console.log(`${bin} ${wasi.args}  exit code = ${ec}`)
+        return ec
     }
-    globalThis.wasi_init = wasi_init
+
+// }
+
+
 </script>
 
 #endif

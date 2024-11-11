@@ -46,12 +46,11 @@ CLOCK_in_progress = False
 
 
 def dbg(code, data):
-    fit=int( 100 / 2 )
-    if len(data)>(fit*2):
-        print(code,len(data), data[:fit], '...' , data[-fit:] )
+    fit = int(100 / 2)
+    if len(data) > (fit * 2):
+        print(code, len(data), data[:fit], "...", data[-fit:])
     else:
-        print(code,str(len(data)).zfill(2), data)
-
+        print(code, str(len(data)).zfill(2), data)
 
 
 class Client:
@@ -61,7 +60,7 @@ class Client:
     def run(self):
 
         # initial clean up
-        for f in [SINPUT,CINPUT]:
+        for f in [SINPUT, CINPUT]:
             try:
                 os.remove(f)
                 print(f"removed {f}")
@@ -127,7 +126,7 @@ class Client:
                         else:
                             terminate = True
             if targetHostData:
-                outputsReady.append('pglite')
+                outputsReady.append("pglite")
 
             data = pump()
             if data and len(data) > 0:
@@ -142,10 +141,10 @@ class Client:
                         clientData = clientData[bytesWritten:]
                         hcmp = b""
 
-                elif out == 'pglite' and (len(targetHostData) > 0):
-                    bytesWritten=len(targetHostData)
-                    print("unixsocket -> pglite", bytesWritten, targetHostData )
-                    if bytesWritten>0:
+                elif out == "pglite" and (len(targetHostData) > 0):
+                    bytesWritten = len(targetHostData)
+                    print("unixsocket -> pglite", bytesWritten, targetHostData)
+                    if bytesWritten > 0:
                         with open(SLOCK, "wb") as file:
                             file.write(targetHostData[:bytesWritten])
 
@@ -154,8 +153,8 @@ class Client:
 
                         targetHostData = targetHostData[bytesWritten:]
 
-
             time.sleep(0.016)
+
 
 # ===============================================================================
 
@@ -167,12 +166,18 @@ except OSError:
     if os.path.exists(socket_path):
         raise
 
+if "inet" not in sys.argv:
+    print(" using unix socket , use 'inet' on cmdline to switch to inet")
+    # Create the Unix socket server
+    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    # Bind the socket to the path
+    server.bind(socket_path)
+else:
+    # create a tcp server instead
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    server.bind(("127.0.0.1", 5432))
 
-# Create the Unix socket server
-server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
-# Bind the socket to the path
-server.bind(socket_path)
 
 # Listen for incoming connections
 server.listen(1)
@@ -184,7 +189,7 @@ while True:
     connection, client_address = server.accept()
 
     FD = connection.fileno()
-    Client(connection, "127.0.0.1", 5432).run()
+    Client(connection, "127.0.0.1", 25432).run()
     print("ClienThread terminating")
 
     # close the connection
