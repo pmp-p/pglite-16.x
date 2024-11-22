@@ -83,6 +83,13 @@ then
     echo "Wasi build (experimental)"
     . /opt/python-wasm-sdk/wasm32-wasi-shell.sh
 
+    if [ -f ${WORKSPACE}/sdk-fix.tar ]
+    then
+        pushd $WASI_SDK_DIR
+        tar xf ${WORKSPACE}/sdk-fix.tar
+        popd
+    fi
+
 else
     if which emcc
     then
@@ -140,7 +147,7 @@ then
     then
         echo "wasm-objdump found"
     else
-        WRAPPER=$(which wasm-objdump)
+        WRAPPER=$(command -v wasm-objdump)
         WASIFILE=$(realpath ${WRAPPER}.wasi)
         if $WRAPPER -h $WASIFILE | grep -q 'file format wasm 0x1'
         then
@@ -332,6 +339,16 @@ then
  sslinfo bool_plperl hstore_plperl hstore_plpython jsonb_plperl jsonb_plpython\
  ltree_plpython sepgsql bool_plperl start-scripts\
  ]"
+
+    if $WASI
+    then
+        SKIP="\
+ [\
+ sslinfo bool_plperl hstore_plperl hstore_plpython jsonb_plperl jsonb_plpython\
+ ltree_plpython sepgsql bool_plperl start-scripts\
+ pgcrypto uuid-ossp xml2\
+ ]"
+    fi
 
     for extdir in postgresql/contrib/*
     do

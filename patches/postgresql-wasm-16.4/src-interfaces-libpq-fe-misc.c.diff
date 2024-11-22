@@ -77,3 +77,21 @@
  	return 0;
  }
  
+@@ -1038,6 +1057,9 @@
+ static int
+ pqSocketCheck(PGconn *conn, int forRead, int forWrite, time_t end_time)
+ {
++#if defined(__wasi__)
++    return 1;
++#else
+ 	int			result;
+ 
+ 	if (!conn)
+@@ -1071,6 +1093,7 @@
+ 	}
+ 
+ 	return result;
++#endif
+ }
+ 
+ 

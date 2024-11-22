@@ -354,7 +354,7 @@ PDEBUG("# 324 : TODO: set a pg_main started flag");
                             send_ready_for_query = true;
                         } // auth
                     } else {
-#if PGDEBUG
+#if 0 // PGDEBUG
                         fprintf(stderr, "# 331: CLI[%d] incoming=%d [%d, ", sf_connected, packetlen, firstchar);
                         for (int i=0;i<packetlen;i++) {
                             int b = getc(fp);

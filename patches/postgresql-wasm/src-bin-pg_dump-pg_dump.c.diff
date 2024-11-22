@@ -37,7 +37,18 @@
  		{"load-via-partition-root", no_argument, &dopt.load_via_partition_root, 1},
  		{"role", required_argument, NULL, 3},
  		{"section", required_argument, NULL, 5},
-@@ -803,9 +813,12 @@
+@@ -435,7 +445,9 @@
+ 
+ 		{NULL, 0, NULL, 0}
+ 	};
+-
++#if defined(__wasi__)
++chdir("/");
++#endif
+ 	pg_logging_init(argv[0]);
+ 	pg_logging_set_level(PG_LOG_WARNING);
+ 	set_pglocale_pgservice(argv[0], PG_TEXTDOMAIN("pg_dump"));
+@@ -803,9 +815,12 @@
  	 * Open the database using the Archiver, so it knows about it. Errors mean
  	 * death.
  	 */
@@ -51,7 +62,7 @@
  	/*
  	 * On hot standbys, never try to dump unlogged table data, since it will
  	 * just throw an error.
-@@ -1152,9 +1165,10 @@
+@@ -1152,9 +1167,10 @@
  				 const char *dumpsnapshot, char *use_role)
  {
  	DumpOptions *dopt = AH->dopt;
@@ -63,7 +74,7 @@
  	PQclear(ExecuteSqlQueryForSingleRow(AH, ALWAYS_SECURE_SEARCH_PATH_SQL));
  
  	/*
-@@ -1239,8 +1253,8 @@
+@@ -1239,8 +1255,8 @@
  	/*
  	 * Quote all identifiers, if requested.
  	 */
