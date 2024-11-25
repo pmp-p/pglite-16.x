@@ -180,14 +180,8 @@ interactive_one() {
     bool is_socket = false;
     bool is_wire = true;
 
-<<<<<<< HEAD
 //    if (!is_embed && is_repl) {
-
         //wait_unlock();
-=======
-    if (!is_node && is_repl) {
-
->>>>>>> upstream/main
 
         if (!MyProcPort) {
             io_init(false, false);
@@ -204,12 +198,7 @@ interactive_one() {
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 
-<<<<<<< HEAD
-
 //    } // is_node && is_repl
-=======
-    } // is_node && is_repl
->>>>>>> upstream/main
 
 
     doing_extended_query_message = false;
@@ -246,14 +235,8 @@ interactive_one() {
 // postgres.c 4627
     DoingCommandRead = true;
 
-
-<<<<<<< HEAD
 //    #define IO ((char *)(1))
-    #define IO cma_port
-=======
-    #define IO ((char *)(1))
-//    #define IO cma_port    this would be a temp fix for -O0 but less efficient than a
->>>>>>> upstream/main
+    #define IO cma_port   //  temp fix for -O0 but less efficient than literal
 
 /*
  * in web mode, client call the wire loop itself waiting synchronously for the results
