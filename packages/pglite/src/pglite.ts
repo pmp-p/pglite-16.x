@@ -2,29 +2,35 @@
 // import "./wip.js"  //eval( await fetch("wip.js") )
 
 import { Mutex } from 'async-mutex'
-import PostgresModFactory, { type PostgresMod } from './postgresMod.js'
-import { type Filesystem, parseDataDir, loadFs } from './fs/index.js'
-import { instantiateWasm, getFsBundle, startWasmDownload } from './utils.js'
-import type {
-  DebugLevel,
-  PGliteOptions,
-  PGliteInterface,
-  ExecProtocolOptions,
-  PGliteInterfaceExtensions,
-  Extensions,
-} from './interface.js'
 import { BasePGlite } from './base.js'
 import { loadExtensionBundle, loadExtensions } from './extensionUtils.js'
-import { loadTar, DumpTarCompressionOptions } from './fs/tarUtils.js'
-import { PGDATA, WASM_PREFIX } from './fs/index.js'
+import {
+  type Filesystem,
+  loadFs,
+  parseDataDir,
+  PGDATA,
+  WASM_PREFIX,
+} from './fs/index.js'
+import { DumpTarCompressionOptions, loadTar } from './fs/tarUtils.js'
+import type {
+  DebugLevel,
+  ExecProtocolOptions,
+  ExecProtocolResult,
+  Extensions,
+  PGliteInterface,
+  PGliteInterfaceExtensions,
+  PGliteOptions,
+} from './interface.js'
+import PostgresModFactory, { type PostgresMod } from './postgresMod.js'
+import { getFsBundle, instantiateWasm, startWasmDownload } from './utils.js'
 
 // Importing the source as the built version is not ESM compatible
-import { serialize, Parser as ProtocolParser } from '@electric-sql/pg-protocol'
+import { Parser as ProtocolParser, serialize } from '@electric-sql/pg-protocol'
 import {
   BackendMessage,
+  CommandCompleteMessage,
   DatabaseError,
   NoticeMessage,
-  CommandCompleteMessage,
   NotificationResponseMessage,
 } from '@electric-sql/pg-protocol/messages'
 
@@ -97,6 +103,14 @@ export class PGlite
     }
     this.dataDir = options.dataDir
 
+    // Override default parsers and serializers if requested
+    if (options.parsers !== undefined) {
+      this.parsers = { ...this.parsers, ...options.parsers }
+    }
+    if (options.serializers !== undefined) {
+      this.serializers = { ...this.serializers, ...options.serializers }
+    }
+
     // Enable debug logging if requested
     if (options?.debug !== undefined) {
       this.debug = options.debug
@@ -141,10 +155,10 @@ export class PGlite
     options?: O,
   ): Promise<PGlite & PGliteInterfaceExtensions<O['extensions']>>
 
-  static async create<O extends PGliteOptions>(
-    dataDirOrPGliteOptions?: string | O,
-    options?: O,
-  ): Promise<PGlite & PGliteInterfaceExtensions<O['extensions']>> {
+  static async create<TExtensions extends Extensions = Extensions>(
+    dataDirOrPGliteOptions?: string | PGliteOptions<TExtensions>,
+    options?: PGliteOptions<TExtensions>,
+  ): Promise<PGlite & PGliteInterface<TExtensions>> {
     const resolvedOpts: PGliteOptions =
       typeof dataDirOrPGliteOptions === 'string'
         ? {
@@ -606,9 +620,9 @@ export class PGlite
       throwOnError = true,
       onNotice,
     }: ExecProtocolOptions = {},
-  ): Promise<Array<[BackendMessage, Uint8Array]>> {
+  ): Promise<ExecProtocolResult> {
     const data = await this.execProtocolRaw(message, { syncToFs })
-    const results: Array<[BackendMessage, Uint8Array]> = []
+    const results: BackendMessage[] = []
 
     this.#protocolParser.parse(data, (msg) => {
       if (msg instanceof DatabaseError) {
@@ -650,10 +664,10 @@ export class PGlite
           queueMicrotask(() => cb(msg.channel, msg.payload))
         })
       }
-      results.push([msg, data])
+      results.push(msg)
     })
 
-    return results
+    return { messages: results, data }
   }
 
   /**

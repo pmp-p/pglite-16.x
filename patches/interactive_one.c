@@ -143,16 +143,6 @@ static void io_init(bool in_auth, bool out_auth) {
 
 }
 
-/*
-static void wait_unlock() {
-    int busy = 0;
-    while (access(PGS_OLOCK, F_OK) == 0) {
-        if (!(busy++ % 1110222))
-            printf("# 150: FIXME: busy wait lock removed %d\n", busy);
-    }
-}
-*/
-
 EMSCRIPTEN_KEEPALIVE int
 cma_wsize = 0;
 
@@ -190,9 +180,14 @@ interactive_one() {
     bool is_socket = false;
     bool is_wire = true;
 
+<<<<<<< HEAD
 //    if (!is_embed && is_repl) {
 
         //wait_unlock();
+=======
+    if (!is_node && is_repl) {
+
+>>>>>>> upstream/main
 
         if (!MyProcPort) {
             io_init(false, false);
@@ -209,8 +204,12 @@ interactive_one() {
             MyProcPort->sock = fileno(SOCKET_FILE);
         }
 
+<<<<<<< HEAD
 
 //    } // is_node && is_repl
+=======
+    } // is_node && is_repl
+>>>>>>> upstream/main
 
 
     doing_extended_query_message = false;
@@ -248,8 +247,13 @@ interactive_one() {
     DoingCommandRead = true;
 
 
+<<<<<<< HEAD
 //    #define IO ((char *)(1))
     #define IO cma_port
+=======
+    #define IO ((char *)(1))
+//    #define IO cma_port    this would be a temp fix for -O0 but less efficient than a
+>>>>>>> upstream/main
 
 /*
  * in web mode, client call the wire loop itself waiting synchronously for the results

@@ -110,7 +110,7 @@ pushd src/backend
         MODULE="--closure 0 -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=Module"
         export COPTS="-O2 -g3"
     else
-        # local debug always fast build
+        # local debug always fast build   O0 / O1 still broken on emsdk
         MODULE="-sMODULARIZE=0 -sEXPORT_ES6=0"
         export COPTS="-O2 -g3"
     fi
