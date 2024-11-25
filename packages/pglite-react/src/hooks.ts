@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import { Results } from '@electric-sql/pglite'
+import type { LiveQuery, LiveQueryResults } from '@electric-sql/pglite/live'
 import { usePGlite } from './provider'
 import { query as buildQuery } from '@electric-sql/pglite/template'
 
@@ -18,13 +18,23 @@ function paramsEqual(
 }
 
 function useLiveQueryImpl<T = { [key: string]: unknown }>(
-  query: string,
+  query: string | LiveQuery<T> | Promise<LiveQuery<T>>,
   params: unknown[] | undefined | null,
   key?: string,
-): Omit<Results<T>, 'affectedRows'> | undefined {
+): Omit<LiveQueryResults<T>, 'affectedRows'> | undefined {
   const db = usePGlite()
-  const [results, setResults] = useState<Results<T>>()
   const paramsRef = useRef(params)
+  const liveQueryRef = useRef<LiveQuery<T> | undefined>()
+  let liveQuery: LiveQuery<T> | undefined
+  let liveQueryChanged = false
+  if (!(typeof query === 'string') && !(query instanceof Promise)) {
+    liveQuery = query
+    liveQueryChanged = liveQueryRef.current !== liveQuery
+    liveQueryRef.current = liveQuery
+  }
+  const [results, setResults] = useState<LiveQueryResults<T> | undefined>(
+    liveQuery?.initialResults,
+  )
 
   let currentParams = paramsRef.current
   if (!paramsEqual(paramsRef.current, params)) {
@@ -34,24 +44,54 @@ function useLiveQueryImpl<T = { [key: string]: unknown }>(
 
   useEffect(() => {
     let cancelled = false
-    const cb = (results: Results<T>) => {
+    const cb = (results: LiveQueryResults<T>) => {
       if (cancelled) return
       setResults(results)
     }
-    const ret =
-      key !== undefined
-        ? db.live.incrementalQuery<T>(query, currentParams, key, cb)
-        : db.live.query<T>(query, currentParams, cb)
+    if (typeof query === 'string') {
+      const ret =
+        key !== undefined
+          ? db.live.incrementalQuery<T>(query, currentParams, key, cb)
+          : db.live.query<T>(query, currentParams, cb)
 
-    return () => {
-      cancelled = true
-      ret.then(({ unsubscribe }) => unsubscribe())
+      return () => {
+        cancelled = true
+        ret.then(({ unsubscribe }) => unsubscribe())
+      }
+    } else if (query instanceof Promise) {
+      query.then((liveQuery) => {
+        if (cancelled) return
+        liveQueryRef.current = liveQuery
+        setResults(liveQuery.initialResults)
+        liveQuery.subscribe(cb)
+      })
+      return () => {
+        cancelled = true
+        liveQueryRef.current?.unsubscribe(cb)
+      }
+    } else if (liveQuery) {
+      setResults(liveQuery.initialResults)
+      liveQuery.subscribe(cb)
+      return () => {
+        cancelled = true
+        liveQuery.unsubscribe(cb)
+      }
+    } else {
+      throw new Error('Should never happen')
     }
-  }, [db, key, query, currentParams])
+  }, [db, key, query, currentParams, liveQuery])
+
+  if (liveQueryChanged && liveQuery) {
+    return liveQuery.initialResults
+  }
+
   return (
     results && {
       rows: results.rows,
       fields: results.fields,
+      totalCount: results.totalCount,
+      offset: results.offset,
+      limit: results.limit,
     }
   )
 }
@@ -59,14 +99,27 @@ function useLiveQueryImpl<T = { [key: string]: unknown }>(
 export function useLiveQuery<T = { [key: string]: unknown }>(
   query: string,
   params?: unknown[] | null,
-): Results<T> | undefined {
+): LiveQueryResults<T> | undefined
+
+export function useLiveQuery<T = { [key: string]: unknown }>(
+  liveQuery: LiveQuery<T>,
+): LiveQueryResults<T>
+
+export function useLiveQuery<T = { [key: string]: unknown }>(
+  liveQueryPromise: Promise<LiveQuery<T>>,
+): LiveQueryResults<T> | undefined
+
+export function useLiveQuery<T = { [key: string]: unknown }>(
+  query: string | LiveQuery<T> | Promise<LiveQuery<T>>,
+  params?: unknown[] | null,
+): LiveQueryResults<T> | undefined {
   return useLiveQueryImpl<T>(query, params)
 }
 
 useLiveQuery.sql = function <T = { [key: string]: unknown }>(
   strings: TemplateStringsArray,
   ...values: any[]
-): Results<T> | undefined {
+): LiveQueryResults<T> | undefined {
   const { query, params } = buildQuery(strings, ...values)
   // eslint-disable-next-line react-compiler/react-compiler
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -77,6 +130,6 @@ export function useLiveIncrementalQuery<T = { [key: string]: unknown }>(
   query: string,
   params: unknown[] | undefined | null,
   key: string,
-): Results<T> | undefined {
+): LiveQueryResults<T> | undefined {
   return useLiveQueryImpl<T>(query, params, key)
 }

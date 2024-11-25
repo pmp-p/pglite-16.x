@@ -9,10 +9,6 @@ echo "============= link imports : begin ==============="
 pushd ${WORKSPACE}
     > patches/imports/pgcore
 
-echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-    cp -v /tmp/arrays.so /tmp/pglite/lib/postgresql/arrays.so
-echo "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-
     for extra_pg_so in $(find $PGROOT/lib/postgresql/|grep \.so$)
     do
         SOBASE=patches/imports.pgcore/$(basename $extra_pg_so .so)

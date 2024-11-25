@@ -1,6 +1,6 @@
 
 BUILD=build
-mkdir -p ${BUILD}
+mkdir -p ${BUILD} src
 
 
 
@@ -9,8 +9,8 @@ pushd ${BUILD}
     then
         echo -n
     else
-        [ -f postgis-3.5.0.tar.gz ] || wget -c https://download.osgeo.org/postgis/source/postgis-3.5.0.tar.gz
-        tar xfz postgis-3.5.0.tar.gz && rm postgis-3.5.0.tar.gz
+        [ -f ../src/postgis-3.5.0.tar.gz ] || wget -c https://download.osgeo.org/postgis/source/postgis-3.5.0.tar.gz -O../src/postgis-3.5.0.tar.gz
+        tar xfz ../src/postgis-3.5.0.tar.gz
         pushd postgis-3.5.0
             patch -p1 < ${WORKSPACE}/extra/postgis.diff
         popd

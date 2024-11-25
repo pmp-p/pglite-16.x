@@ -5810,7 +5810,6 @@ _opendir
 _pairingheap_add
 _pairingheap_allocate
 _pairingheap_first
-_pairingheap_free
 _pairingheap_remove_first
 _palloc
 _palloc0

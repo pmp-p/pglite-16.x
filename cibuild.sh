@@ -6,12 +6,12 @@ export CMA_MB=${CMA_MB:-32}
 
 export CI=${CI:-false}
 
-if $CI
-then
-    . .buildconfig
-fi
+chmod +x ./extra/*.sh cibuild/*.sh
 
-export PG_VERSION=${PG_VERSION:-16.4}
+. .buildconfig
+
+export PG_VERSION SDK_VERSION WASI_SDK_VERSION SDKROOT
+
 export WORKSPACE=${GITHUB_WORKSPACE:-$(pwd)}
 export PGROOT=${PGROOT:-/tmp/pglite}
 export WEBROOT=${WEBROOT:-/tmp/web}
@@ -34,7 +34,16 @@ export PYDK_CFLAGS="-Wno-missing-prototypes"
 # exit on error
 EOE=false
 
-mkdir -p /tmp/sdk
+
+
+if ./cibuild/sdk.sh
+then
+    echo "sdk check passed (emscripten)"
+else
+    echo sdk failed
+    exit 44
+fi
+
 
 # the default is a user writeable path.
 if mkdir -p ${PGROOT}/sdk
@@ -404,7 +413,6 @@ then
                 SDK_URL=https://github.com/pygame-web/python-wasm-sdk-extra/releases/download/$SDK_VERSION/python-emsdk-sdk-extra-${CIVER}.tar.lz4
                 echo "Installing $SDK_URL"
                 curl -sL --retry 5 $SDK_URL | tar xvP --use-compress-program=lz4 | pv -p -l -s 15000 >/dev/null
-                chmod +x ./extra/*.sh
             fi
         fi
         echo "======================= ${extra_ext} : $(pwd) ==================="
@@ -486,9 +494,8 @@ do
             pushd ${PGLITE}
                 pnpm install --frozen-lockfile
 
-                mkdir -p $PGLITE/release
-                rm $PGLITE/release/* 2>/dev/null
-
+                #mkdir -p $PGLITE/release
+                #rm $PGLITE/release/* 2>/dev/null
 
                 # copy packed extensions for dist
                 echo "
@@ -501,6 +508,7 @@ echo "
 __________________________________________________________________________________
 "
 
+
                 # copy wasm web prebuilt artifacts to release folder
                 # TODO: get them from web for nosdk systems.
 
@@ -508,9 +516,9 @@ ________________________________________________________________________________
 
                 # debug CI does not use pnpm/npm for building pg, so call the typescript build
                 # part from here
-                pnpm --filter "pglite^..." build || exit 450
-
-                pnpm pack || exit 31
+                #pnpm --filter "pglite^..." build || exit 450
+                pnpm run build || exit 520
+                pnpm pack || exit 521
                 packed=$(echo -n electric-sql-pglite-*.tgz)
 
                 mv $packed /tmp/sdk/pg${PG_VERSION}-${packed}
