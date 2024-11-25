@@ -434,12 +434,6 @@ export class PGlite
 
     this.#cma_port = this.mod._pg_getport()
 
-    console.log(
-      ' ================ CMA ADDR ===============',
-      this.#cma_port,
-      this.mod.cma_port,
-    )
-
     // Sync any changes back to the persisted store (if there is one)
     // TODO: only sync here if initdb did init db.
     await this.syncToFs()
