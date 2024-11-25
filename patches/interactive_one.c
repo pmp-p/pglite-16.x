@@ -236,7 +236,7 @@ interactive_one() {
     DoingCommandRead = true;
 
 //    #define IO ((char *)(1))
-    #define IO cma_port   //  temp fix for -O0 but less efficient than literal
+    #define IO (cma_port+1)   //  temp fix for -O0 but less efficient than literal
 
 /*
  * in web mode, client call the wire loop itself waiting synchronously for the results

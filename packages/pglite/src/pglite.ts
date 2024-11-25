@@ -591,7 +591,7 @@ export class PGlite
     mod._interactive_write(msg_len)
 
     // copy whole buffer at cma addr
-    mod.HEAPU8.set(message, this.#cma_port)
+    mod.HEAPU8.set(message, this.#cma_port +1 )
 
     // execute the message
     mod._interactive_one()
