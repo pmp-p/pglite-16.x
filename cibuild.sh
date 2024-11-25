@@ -494,7 +494,7 @@ do
             pushd ${PGLITE}
                 pnpm install --frozen-lockfile
 
-                #mkdir -p $PGLITE/release
+                mkdir -p $PGLITE/release
                 #rm $PGLITE/release/* 2>/dev/null
 
                 # copy packed extensions for dist
@@ -516,8 +516,8 @@ ________________________________________________________________________________
 
                 # debug CI does not use pnpm/npm for building pg, so call the typescript build
                 # part from here
-                #pnpm --filter "pglite^..." build || exit 450
-                pnpm run build || exit 520
+                #pnpm --filter "pglite^..." build || exit 519
+                pnpm run build:js || exit 520
                 pnpm pack || exit 521
                 packed=$(echo -n electric-sql-pglite-*.tgz)
 
